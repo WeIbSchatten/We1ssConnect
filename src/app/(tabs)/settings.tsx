@@ -1,15 +1,19 @@
 import Constants from 'expo-constants';
 import { router } from 'expo-router';
+import { reloadAppAsync } from 'expo';
 import { useEffect, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Switch, View } from 'react-native';
 import XrayVpn from 'xray-vpn';
 
+import { UpdateCard } from '@/components/UpdateCard';
 import { Card, Muted, Row, SectionTitle, Segmented, type IconName } from '@/components/ui';
 import { updateGeo } from '@/lib/geo';
-import { formatDate, t } from '@/lib/i18n';
+import { formatDate, lang, t } from '@/lib/i18n';
+import type { StylePreset } from '@/lib/palettes';
 import { updateSettings, useStore } from '@/lib/store';
 import { usePalette } from '@/lib/theme';
-import type { DnsProvider, Settings as SettingsType } from '@/lib/types';
+import type { DnsProvider, Language, Settings as SettingsType, ThemeMode } from '@/lib/types';
+import { checkForUpdate, useUpdater } from '@/lib/updater';
 import { reconnectIfActive } from '@/lib/vpn';
 
 type Flag = { [K in keyof SettingsType]: SettingsType[K] extends boolean ? K : never }[keyof SettingsType];
@@ -20,6 +24,21 @@ export default function Settings() {
   const [core, setCore] = useState('');
   const [geoAt, setGeoAt] = useState(() => XrayVpn.geoUpdatedAt());
   const [geoBusy, setGeoBusy] = useState(false);
+  const updater = useUpdater();
+
+  function setLanguage(v: Language) {
+    if (v === lang) return;
+    updateSettings({ language: v });
+    XrayVpn.setItem('native.language', v);
+    // Every screen reads the language once, so the app starts over in the new one.
+    reloadAppAsync().catch(() => Alert.alert(t('language'), t('restartHint')));
+  }
+
+  function onCheck() {
+    checkForUpdate()
+      .then((u) => (u ? undefined : Alert.alert(t('updates'), t('upToDate'))))
+      .catch((e) => Alert.alert(t('updates'), (e as Error).message));
+  }
 
   function change(patch: Partial<SettingsType>) {
     updateSettings(patch);
@@ -107,6 +126,53 @@ export default function Settings() {
         {toggle('mux', 'git-merge-outline', t('mux'), t('muxHint'), true)}
         {toggle('autoPing', 'speedometer-outline', t('autoPing'), t('autoPingHint'), false)}
         {toggle('autoUpdate', 'refresh-outline', t('autoUpdate'), t('autoUpdateHint'), false)}
+      </Card>
+
+      <SectionTitle>{t('appearance')}</SectionTitle>
+      <Card style={{ gap: 12 }}>
+        <Muted>{t('theme')}</Muted>
+        <Segmented<ThemeMode>
+          value={settings.theme}
+          onChange={(v) => updateSettings({ theme: v })}
+          options={[
+            { value: 'system', label: t('themeSystem') },
+            { value: 'light', label: t('themeLight') },
+            { value: 'dark', label: t('themeDark') },
+            { value: 'amoled', label: 'AMOLED' },
+          ]}
+        />
+        <Muted>{t('colors')}</Muted>
+        <Segmented<StylePreset>
+          value={settings.style}
+          onChange={(v) => updateSettings({ style: v })}
+          options={[
+            { value: 'ocean', label: t('styleOcean') },
+            { value: 'emerald', label: t('styleEmerald') },
+            { value: 'pastel', label: t('stylePastel') },
+            { value: 'mono', label: t('styleMono') },
+          ]}
+        />
+        <Muted>{t('language')}</Muted>
+        <Segmented<Language>
+          value={settings.language}
+          onChange={setLanguage}
+          options={[
+            { value: 'ru', label: 'Русский' },
+            { value: 'en', label: 'English' },
+          ]}
+        />
+      </Card>
+
+      <SectionTitle>{t('updates')}</SectionTitle>
+      <UpdateCard notes style={{ marginBottom: 12 }} />
+      <Card style={styles.group}>
+        <Row
+          first
+          icon="sync-outline"
+          title={updater.checking ? t('checking') : t('checkUpdates')}
+          subtitle={t('versionNow', { v: Constants.expoConfig?.version ?? '' })}
+          onPress={updater.checking ? undefined : onCheck}
+        />
       </Card>
 
       <SectionTitle>{t('about')}</SectionTitle>

@@ -159,3 +159,13 @@ export function flag(code?: string): string {
   if (!code || code.length !== 2) return '🌐';
   return String.fromCodePoint(...[...code.toUpperCase()].map((c) => 0x1f1a5 + c.charCodeAt(0)));
 }
+
+/** Hides the middle of an address: 185.*.*.12, 2a01:…:7f3e. */
+export function maskIp(ip: string): string {
+  if (ip.includes(':')) {
+    const groups = ip.split(':').filter(Boolean);
+    return groups.length > 2 ? `${groups[0]}:…:${groups[groups.length - 1]}` : ip;
+  }
+  const parts = ip.split('.');
+  return parts.length === 4 ? `${parts[0]}.*.*.${parts[3]}` : ip;
+}

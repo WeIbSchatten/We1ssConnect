@@ -1,3 +1,6 @@
+import { getState } from './store';
+import type { Language } from './types';
+
 const en = {
   connect: 'Connect',
   disconnect: 'Disconnect',
@@ -12,7 +15,7 @@ const en = {
   settings: 'Settings',
   add: 'Add',
   addTitle: 'Add a subscription or links',
-  addHint: 'Subscription URL (https://…) or one link per line',
+  addHint: 'Subscription URL (https://…) or one link per line. Links are saved as a group of their own.',
   paste: 'Paste from clipboard',
   added: 'Added servers: {n}',
   refresh: 'Update subscriptions',
@@ -25,7 +28,6 @@ const en = {
   trafficUnlimited: 'Used {used}',
   expires: 'Until {date}',
   updated: 'Updated {date}',
-  manualProfile: 'Added manually',
   vpnDenied: 'VPN permission was not granted',
   forceChrome: 'Chrome fingerprint for Reality',
   forceChromeHint: 'Fixes connecting to Reality servers on Xray 26.9.8 and newer.',
@@ -86,6 +88,37 @@ const en = {
   copyLink: 'Copy link',
   copied: 'Link copied',
   tileHint: 'A We1ssConnect tile can be added to quick settings to connect from the notification shade.',
+  keysGroup: 'Keys {n}',
+  serversCount: 'Servers: {n}',
+  refreshOne: 'Update subscription',
+  removeGroup: 'Remove group',
+  groupName: 'Group name (optional)',
+  autoRoundRobin: 'Auto (round robin)',
+  roundRobinHint: 'New connections take the live servers in turn',
+  balancerLeastPing: 'Lowest delay',
+  balancerRoundRobin: 'Round robin',
+  appearance: 'Appearance',
+  theme: 'Theme',
+  themeSystem: 'System',
+  themeLight: 'Light',
+  themeDark: 'Dark',
+  colors: 'Colours',
+  styleOcean: 'Ocean',
+  styleEmerald: 'Emerald',
+  stylePastel: 'Pastel',
+  styleMono: 'Mono',
+  language: 'Language',
+  restartHint: 'Restart the app to switch the language.',
+  updates: 'Updates',
+  checkUpdates: 'Check for updates',
+  checking: 'Checking…',
+  versionNow: 'Installed: {v}',
+  upToDate: 'You have the latest version.',
+  updateAvailable: 'Version {v} is available',
+  updateInstall: 'Download and install ({size})',
+  downloading: 'Downloading… {p}%',
+  updateFailed: 'Update failed',
+  openRelease: 'Open the release page',
 };
 
 type Dict = typeof en;
@@ -104,7 +137,7 @@ const ru: Dict = {
   settings: 'Настройки',
   add: 'Добавить',
   addTitle: 'Подписка или ссылки',
-  addHint: 'Ссылка на подписку (https://…) или по ссылке на строку',
+  addHint: 'Ссылка на подписку (https://…) или по ссылке на строку. Ссылки сохраняются отдельной группой.',
   paste: 'Вставить из буфера',
   added: 'Добавлено серверов: {n}',
   refresh: 'Обновить подписки',
@@ -117,7 +150,6 @@ const ru: Dict = {
   trafficUnlimited: 'Использовано {used}',
   expires: 'До {date}',
   updated: 'Обновлено {date}',
-  manualProfile: 'Добавлены вручную',
   vpnDenied: 'Разрешение на VPN не выдано',
   forceChrome: 'Отпечаток Chrome для Reality',
   forceChromeHint: 'Чинит подключение к Reality-серверам на Xray 26.9.8 и новее.',
@@ -178,17 +210,41 @@ const ru: Dict = {
   copyLink: 'Скопировать ссылку',
   copied: 'Ссылка скопирована',
   tileHint: 'Плитку We1ssConnect можно добавить в быстрые настройки и подключаться из шторки.',
+  keysGroup: 'Ключи {n}',
+  serversCount: 'Серверов: {n}',
+  refreshOne: 'Обновить подписку',
+  removeGroup: 'Удалить группу',
+  groupName: 'Название группы (необязательно)',
+  autoRoundRobin: 'Авто (по кругу)',
+  roundRobinHint: 'Новые соединения по очереди идут через живые серверы',
+  balancerLeastPing: 'По задержке',
+  balancerRoundRobin: 'По кругу',
+  appearance: 'Оформление',
+  theme: 'Тема',
+  themeSystem: 'Система',
+  themeLight: 'Светлая',
+  themeDark: 'Тёмная',
+  colors: 'Цвета',
+  styleOcean: 'Океан',
+  styleEmerald: 'Изумруд',
+  stylePastel: 'Пастель',
+  styleMono: 'Моно',
+  language: 'Язык',
+  restartHint: 'Перезапустите приложение, чтобы сменить язык.',
+  updates: 'Обновления',
+  checkUpdates: 'Проверить обновления',
+  checking: 'Проверяю…',
+  versionNow: 'Установлена: {v}',
+  upToDate: 'У вас последняя версия.',
+  updateAvailable: 'Доступна версия {v}',
+  updateInstall: 'Скачать и установить ({size})',
+  downloading: 'Скачиваю… {p}%',
+  updateFailed: 'Не удалось обновить',
+  openRelease: 'Открыть страницу релиза',
 };
 
-function systemLanguage(): string {
-  try {
-    return Intl.DateTimeFormat().resolvedOptions().locale.slice(0, 2).toLowerCase();
-  } catch {
-    return 'en';
-  }
-}
-
-export const lang = systemLanguage() === 'ru' ? 'ru' : 'en';
+// The app speaks Russian unless English is chosen in the settings; changing it reloads the app.
+export const lang: Language = getState().settings.language === 'en' ? 'en' : 'ru';
 const dict: Dict = lang === 'ru' ? ru : en;
 
 export function t(key: keyof Dict, vars: Record<string, string | number> = {}): string {

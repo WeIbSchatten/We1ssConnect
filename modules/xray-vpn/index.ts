@@ -45,7 +45,12 @@ interface XrayVpnNative {
   appIcon(packageName: string): Promise<string | null>;
   getItem(key: string): string | null;
   setItem(key: string, value: string | null): void;
+  /** The device's preferred ABI, such as arm64-v8a. */
+  abi(): string;
+  /** Downloads the APK and opens the system installer; progress arrives as onDownload. */
+  installUpdate(url: string): Promise<void>;
   addListener(event: 'onStatus', listener: (status: VpnStatus) => void): EventSubscription;
+  addListener(event: 'onDownload', listener: (p: { done: number; total: number }) => void): EventSubscription;
 }
 
 const XrayVpn = requireNativeModule<XrayVpnNative>('XrayVpn');

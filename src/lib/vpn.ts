@@ -52,7 +52,7 @@ export async function connect(): Promise<void> {
   } catch (e) {
     throw new Error(t('geoFailed', { error: (e as Error).message }));
   }
-  const title = isAuto(state) ? t('auto') : fallback.name;
+  const title = isAuto(state) ? (state.settings.balancer === 'roundRobin' ? t('autoRoundRobin') : t('auto')) : fallback.name;
   XrayVpn.start(
     buildVpnConfig(servers, fallback, state.settings),
     title,

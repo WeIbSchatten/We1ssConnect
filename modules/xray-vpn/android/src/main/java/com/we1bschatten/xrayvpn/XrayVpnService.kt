@@ -73,6 +73,8 @@ class XrayVpnService : VpnService() {
 
     private const val PREFS = "we1ssconnect"
     private const val LAST_REQUEST = "native.lastRequest"
+    /** "ru" or "en", written by the app so notifications speak its language. */
+    private const val LANGUAGE = "native.language"
 
     /** Where geoip.dat and geosite.dat for the routing presets live. */
     fun geoDir(context: Context): File = File(context.filesDir, "geo")
@@ -271,14 +273,18 @@ class XrayVpnService : VpnService() {
       Intent(this, XrayVpnService::class.java).setAction(ACTION_STOP),
       PendingIntent.FLAG_IMMUTABLE,
     )
-    val text = if (state == State.CONNECTED) "Connected" else "Connecting…"
+    val ru = getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString(LANGUAGE, "ru") != "en"
+    val text = when {
+      state == State.CONNECTED -> if (ru) "Подключено" else "Connected"
+      else -> if (ru) "Подключение…" else "Connecting…"
+    }
     val notification: Notification = NotificationCompat.Builder(this, CHANNEL_ID)
       .setSmallIcon(android.R.drawable.ic_lock_lock)
       .setContentTitle(title ?: "We1ssConnect")
       .setContentText(text)
       .setContentIntent(open)
       .setOngoing(true)
-      .addAction(0, "Disconnect", stop)
+      .addAction(0, if (ru) "Отключить" else "Disconnect", stop)
       .build()
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
       startForeground(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)

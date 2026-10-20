@@ -1,5 +1,7 @@
 import type { AppMode } from 'xray-vpn';
 
+import type { StylePreset } from './palettes';
+
 export interface XrayOutbound {
   protocol: string;
   tag?: string;
@@ -72,7 +74,19 @@ export interface Settings {
   mux: boolean;
   /** Refresh subscriptions older than 12 hours when the app opens. */
   autoUpdate: boolean;
+  /** How "Auto" picks a server: lowest delay, or every live server in turn. */
+  balancer: BalancerStrategy;
+  theme: ThemeMode;
+  /** Colour preset shared with the We1ssBoard panel. */
+  style: StylePreset;
+  language: Language;
+  /** Show the full exit IP instead of hiding its middle part. */
+  showFullIp: boolean;
 }
+
+export type BalancerStrategy = 'leastPing' | 'roundRobin';
+export type ThemeMode = 'system' | 'light' | 'dark' | 'amoled';
+export type Language = 'ru' | 'en';
 
 export type DnsProvider = 'cloudflare' | 'google' | 'quad9';
 
@@ -90,4 +104,9 @@ export const DEFAULT_SETTINGS: Settings = {
   fragment: false,
   mux: false,
   autoUpdate: true,
+  balancer: 'leastPing',
+  theme: 'system',
+  style: 'ocean',
+  language: 'ru',
+  showFullIp: false,
 };

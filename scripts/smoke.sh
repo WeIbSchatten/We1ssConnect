@@ -25,8 +25,8 @@ fi
 if grep -q "FATAL EXCEPTION" smoke/logcat.txt; then
   grep "FATAL EXCEPTION" -A30 smoke/logcat.txt | head -60; exit 1
 fi
-# The About card reads "Xray core <version>" once libXray answers (the emulator runs in English).
-core="$(grep -oE 'Xray core [0-9]+\.[0-9]+\.[0-9]+' smoke/settings.xml | head -1)"
+# The About card reads "Ядро Xray <version>" (or "Xray core" in English) once the core answers.
+core="$(grep -oE '(Xray core|Ядро Xray) [0-9]+\.[0-9]+\.[0-9]+' smoke/settings.xml | head -1)"
 if [[ -z "$core" ]]; then
   echo "settings screen does not show the Xray core version"
   grep -oE 'text="[^"]*"' smoke/settings.xml | head -40

@@ -1,13 +1,16 @@
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useColorScheme } from 'react-native';
+import XrayVpn from 'xray-vpn';
 
-import { t } from '@/lib/i18n';
-import { usePalette } from '@/lib/theme';
+import { lang, t } from '@/lib/i18n';
+import { useIsLight, usePalette } from '@/lib/theme';
+
+// Notifications and the quick settings tile are drawn natively and read this.
+XrayVpn.setItem('native.language', lang);
 
 export default function RootLayout() {
   const p = usePalette();
-  const light = useColorScheme() === 'light';
+  const light = useIsLight();
   return (
     <>
       <StatusBar style={light ? 'dark' : 'light'} />

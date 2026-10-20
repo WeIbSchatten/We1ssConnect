@@ -3,13 +3,15 @@ import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Animated, Easing, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { UpdateCard } from '@/components/UpdateCard';
 import { Button, Card, Muted, PingBadge } from '@/components/ui';
 import { protocolLabel, serverAddress } from '@/lib/config';
 import { countryName, formatBytes, formatDate, formatDuration, formatSpeed, t } from '@/lib/i18n';
-import { flag, useLive } from '@/lib/live';
-import { allServers, getState, hasServers, isAuto, selectedServer, useStore } from '@/lib/store';
+import { flag, maskIp, useLive } from '@/lib/live';
+import { allServers, getState, hasServers, isAuto, selectedServer, updateSettings, useStore } from '@/lib/store';
 import { refreshStale } from '@/lib/subscription';
 import { usePalette } from '@/lib/theme';
+import { autoCheck } from '@/lib/updater';
 import { autoPing, connect, disconnect, useVpnStatus } from '@/lib/vpn';
 
 function useNow(active: boolean): number {
@@ -51,6 +53,8 @@ export default function Home() {
   const any = useStore((s) => hasServers(s));
   const profiles = useStore((s) => s.profiles);
   const live = useLive((l) => l);
+  const fullIp = useStore((s) => s.settings.showFullIp);
+  const roundRobin = useStore((s) => s.settings.balancer === 'roundRobin');
   const [busy, setBusy] = useState(false);
 
   const on = status.state === 'connected';
@@ -62,9 +66,11 @@ export default function Home() {
     // New servers from a refresh get their delays tested right after.
     const refresh = getState().settings.autoUpdate ? refreshStale() : Promise.resolve();
     void refresh.finally(autoPing);
+    autoCheck();
   }, []);
 
-  const activeId = auto ? live.activeId : server?.id;
+  // Round robin moves on with every connection, so there is no single server to show.
+  const activeId = auto ? (roundRobin ? undefined : live.activeId) : server?.id;
   const active = activeId ? allServers().find((s) => s.id === activeId) : server;
   const shown = active ?? server;
   const ping = on && shown ? (live.pings[shown.id] ?? shown.ping) : shown?.ping;
@@ -138,6 +144,8 @@ export default function Home() {
         {status.state === 'error' && status.error ? <Muted>{status.error}</Muted> : null}
       </View>
 
+      <UpdateCard style={{ marginBottom: 12 }} />
+
       {any ? (
         <Pressable onPress={() => router.navigate('/servers')}>
           <Card style={styles.row}>
@@ -146,13 +154,15 @@ export default function Home() {
             </View>
             <View style={{ flex: 1 }}>
               <Text style={[styles.name, { color: p.text }]} numberOfLines={1}>
-                {auto ? t('auto') : (shown?.name ?? '')}
+                {auto ? (roundRobin ? t('autoRoundRobin') : t('auto')) : (shown?.name ?? '')}
               </Text>
               <Muted numberOfLines={1}>
                 {auto
-                  ? active
-                    ? t('autoNow', { name: active.name })
-                    : t('autoHint')
+                  ? roundRobin
+                    ? t('roundRobinHint')
+                    : active
+                      ? t('autoNow', { name: active.name })
+                      : t('autoHint')
                   : shown
                     ? `${protocolLabel(shown.outbound)} · ${serverAddress(shown.outbound)}`
                     : ''}
@@ -178,9 +188,10 @@ export default function Home() {
             <Muted>{t('yourIp')}</Muted>
             {live.ip ? (
               <>
-                <Text style={[styles.ip, { color: p.text }]} selectable>
-                  {live.ip.ip}
-                </Text>
+                <Pressable onPress={() => updateSettings({ showFullIp: !fullIp })} style={styles.ipRow}>
+                  <Text style={[styles.ip, { color: p.text }]}>{fullIp ? live.ip.ip : maskIp(live.ip.ip)}</Text>
+                  <Ionicons name={fullIp ? 'eye-off-outline' : 'eye-outline'} size={16} color={p.text3} />
+                </Pressable>
                 <Muted numberOfLines={1}>
                   {[countryName(live.ip.countryCode, live.ip.country), live.ip.city, live.ip.isp]
                     .filter(Boolean)
@@ -275,7 +286,8 @@ const styles = StyleSheet.create({
   icon: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   name: { fontSize: 16, fontWeight: '600' },
   flag: { fontSize: 36 },
-  ip: { fontSize: 18, fontWeight: '700', marginTop: 2, fontVariant: ['tabular-nums'] },
+  ipRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 2 },
+  ip: { fontSize: 18, fontWeight: '700', fontVariant: ['tabular-nums'] },
   speeds: { flexDirection: 'row', alignItems: 'stretch' },
   bar: { height: 6, borderRadius: 3, marginTop: 10, overflow: 'hidden' },
 });

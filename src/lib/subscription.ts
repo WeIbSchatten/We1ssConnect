@@ -69,7 +69,8 @@ export async function fetchSubscription(url: string, existing?: Profile): Promis
   })();
   return {
     id: existing?.id ?? newId(),
-    name: parseTitle(res.headers.get('profile-title')) ?? existing?.name ?? host,
+    // A name the user gave (or the first title) stays across refreshes.
+    name: existing?.name ?? parseTitle(res.headers.get('profile-title')) ?? host,
     url: url.trim(),
     updatedAt: Date.now(),
     userInfo: parseUserInfo(res.headers.get('subscription-userinfo')),
@@ -77,25 +78,37 @@ export async function fetchSubscription(url: string, existing?: Profile): Promis
   };
 }
 
-/** Adds a subscription URL or one or more share links; returns how many servers were added. */
-export async function addFromText(text: string): Promise<number> {
+/**
+ * Adds a subscription URL, or share links as a group of their own; returns how many servers were added.
+ * name labels the group (a subscription's own title is used when it has one).
+ */
+export async function addFromText(text: string, name?: string): Promise<number> {
   const trimmed = text.trim();
+  const label = name?.trim();
   if (!trimmed) throw new Error('empty');
   if (isUrl(trimmed) && !trimmed.includes('\n')) {
-    const profile = await fetchSubscription(trimmed);
-    upsertProfile(profile);
+    const existing = getState().profiles.find((p) => p.url === trimmed);
+    const profile = await fetchSubscription(trimmed, existing);
+    upsertProfile(label ? { ...profile, name: label } : profile);
     return profile.servers.length;
   }
   const servers = await toServers(trimmed);
   if (servers.length === 0) throw new Error('no servers found');
-  const manual = getState().profiles.find((p) => !p.url);
+  const groups = getState().profiles.filter((p) => !p.url).length;
   upsertProfile({
-    id: manual?.id ?? newId(),
-    name: manual?.name ?? t('manualProfile'),
+    id: newId(),
+    name: label || t('keysGroup', { n: groups + 1 }),
     updatedAt: Date.now(),
-    servers: [...(manual?.servers ?? []), ...servers],
+    servers,
   });
   return servers.length;
+}
+
+/** Re-downloads one subscription. */
+export async function refreshProfile(id: string): Promise<void> {
+  const profile = getState().profiles.find((p) => p.id === id);
+  if (!profile?.url) return;
+  upsertProfile(await fetchSubscription(profile.url, profile));
 }
 
 export async function refreshAll(): Promise<void> {

@@ -4,15 +4,24 @@ import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Alert, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { Button, Card, Muted, PingBadge } from '@/components/ui';
+import { Button, Card, Muted, PingBadge, Segmented } from '@/components/ui';
 import { protocolLabel, serverAddress } from '@/lib/config';
 import { formatDate, t } from '@/lib/i18n';
 import { lookupIp, useLive } from '@/lib/live';
-import { allServers, isAuto, removeProfile, removeServer, selectServer, selectedServer, useStore } from '@/lib/store';
-import { refreshAll, shareLink } from '@/lib/subscription';
+import {
+  allServers,
+  isAuto,
+  removeProfile,
+  removeServer,
+  selectServer,
+  selectedServer,
+  updateSettings,
+  useStore,
+} from '@/lib/store';
+import { refreshAll, refreshProfile, shareLink } from '@/lib/subscription';
 import { usePalette } from '@/lib/theme';
-import { AUTO_ID, type Server } from '@/lib/types';
-import { applySelection, autoPing, pingAll, useVpnStatus } from '@/lib/vpn';
+import { AUTO_ID, type BalancerStrategy, type Profile, type Server } from '@/lib/types';
+import { applySelection, autoPing, pingAll, reconnectIfActive, useVpnStatus } from '@/lib/vpn';
 
 /** Unknown delays last, timeouts after the answering ones. */
 function byPing(a: number | undefined, b: number | undefined): number {
@@ -28,6 +37,8 @@ export default function Servers() {
   const status = useVpnStatus();
   const livePings = useLive((l) => l.pings);
   const activeId = useLive((l) => l.activeId);
+  const balancer = useStore((s) => s.settings.balancer);
+  const roundRobin = balancer === 'roundRobin';
   const [refreshing, setRefreshing] = useState(false);
   const [pinging, setPinging] = useState(false);
   const [sorted, setSorted] = useState(false);
@@ -36,7 +47,12 @@ export default function Servers() {
   useFocusEffect(useCallback(() => autoPing(), []));
 
   const pingOf = (s: Server) => (on ? (livePings[s.id] ?? s.ping) : s.ping);
-  const active = auto && on ? allServers().find((s) => s.id === activeId) : undefined;
+  const active = auto && on && !roundRobin ? allServers().find((s) => s.id === activeId) : undefined;
+
+  function setBalancer(v: BalancerStrategy) {
+    updateSettings({ balancer: v });
+    if (auto) reconnectIfActive().catch((e) => Alert.alert(t('error'), (e as Error).message));
+  }
 
   async function onRefresh() {
     setRefreshing(true);
@@ -87,6 +103,21 @@ export default function Servers() {
     Alert.alert(t('remove'), t('removeConfirm', { name }), [
       { text: t('cancel'), style: 'cancel' },
       { text: t('remove'), style: 'destructive', onPress: () => removeProfile(id) },
+    ]);
+  }
+
+  function profileActions(profile: Profile) {
+    Alert.alert(profile.name, t('serversCount', { n: profile.servers.length }), [
+      ...(profile.url
+        ? [
+            {
+              text: t('refreshOne'),
+              onPress: () => refreshProfile(profile.id).catch((e) => Alert.alert(t('refresh'), (e as Error).message)),
+            },
+          ]
+        : []),
+      { text: t('removeGroup'), style: 'destructive' as const, onPress: () => confirmRemove(profile.id, profile.name) },
+      { text: t('cancel'), style: 'cancel' as const },
     ]);
   }
 
@@ -144,11 +175,23 @@ export default function Servers() {
               <Ionicons name="flash" size={16} color={p.accent} />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={[styles.name, { color: p.text }]}>{t('auto')}</Text>
-              <Muted numberOfLines={2}>{active ? t('autoNow', { name: active.name }) : t('autoHint')}</Muted>
+              <Text style={[styles.name, { color: p.text }]}>{roundRobin ? t('autoRoundRobin') : t('auto')}</Text>
+              <Muted numberOfLines={2}>
+                {roundRobin ? t('roundRobinHint') : active ? t('autoNow', { name: active.name }) : t('autoHint')}
+              </Muted>
             </View>
             {active ? <PingBadge ping={pingOf(active)} /> : null}
           </Pressable>
+          <View style={{ paddingHorizontal: 14, paddingBottom: 14 }}>
+            <Segmented<BalancerStrategy>
+              value={balancer}
+              onChange={setBalancer}
+              options={[
+                { value: 'leastPing', label: t('balancerLeastPing') },
+                { value: 'roundRobin', label: t('balancerRoundRobin') },
+              ]}
+            />
+          </View>
         </Card>
       )}
 
@@ -158,11 +201,14 @@ export default function Servers() {
           : profile.servers;
         return (
           <View key={profile.id} style={{ marginBottom: 18 }}>
-            <Pressable onLongPress={() => confirmRemove(profile.id, profile.name)} style={styles.header}>
+            <Pressable onPress={() => profileActions(profile)} style={styles.header}>
+              <Ionicons name={profile.url ? 'cloud-outline' : 'key-outline'} size={14} color={p.text2} />
               <Text style={[styles.group, { color: p.text2 }]} numberOfLines={1}>
                 {profile.name}
               </Text>
+              <View style={{ flex: 1 }} />
               {profile.url ? <Muted>{t('updated', { date: formatDate(profile.updatedAt) })}</Muted> : null}
+              <Ionicons name="ellipsis-horizontal" size={18} color={p.text2} />
             </Pressable>
             <Card style={{ padding: 0 }}>
               {servers.map((server, i) => {
@@ -208,7 +254,7 @@ const styles = StyleSheet.create({
   page: { padding: 16, paddingBottom: 32 },
   actions: { flexDirection: 'row', gap: 8, marginBottom: 18, alignItems: 'center' },
   square: { width: 46, height: 46, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
-  header: { flexDirection: 'row', justifyContent: 'space-between', gap: 8, marginBottom: 6, paddingHorizontal: 4 },
+  header: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 6, paddingHorizontal: 4, paddingVertical: 4 },
   group: { flexShrink: 1, fontSize: 13, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.5 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14 },
   icon: { width: 28, height: 28, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },

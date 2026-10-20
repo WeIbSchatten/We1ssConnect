@@ -146,7 +146,8 @@ export function buildVpnConfig(servers: Server[], fallback: Server, settings: Se
         {
           tag: BALANCER,
           selector: [SERVER_PREFIX],
-          strategy: { type: 'leastPing' },
+          // Xray spells the strategies in lower case.
+          strategy: { type: settings.balancer === 'roundRobin' ? 'roundrobin' : 'leastPing' },
           fallbackTag: serverTag(fallback.id),
         },
       ],

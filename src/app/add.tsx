@@ -13,6 +13,7 @@ export default function Add() {
   // we1ssconnect://add?url=… opens this screen with the link filled in.
   const params = useLocalSearchParams<{ url?: string }>();
   const [text, setText] = useState(params.url ?? '');
+  const [name, setName] = useState('');
   const [busy, setBusy] = useState(false);
 
   async function paste() {
@@ -22,7 +23,7 @@ export default function Add() {
   async function submit() {
     setBusy(true);
     try {
-      const n = await addFromText(text);
+      const n = await addFromText(text, name);
       Alert.alert(t('add'), t('added', { n }));
       router.back();
     } catch (e) {
@@ -45,6 +46,13 @@ export default function Add() {
         placeholderTextColor={p.text3}
         style={[styles.input, { color: p.text, backgroundColor: p.surface, borderColor: p.border }]}
       />
+      <TextInput
+        value={name}
+        onChangeText={setName}
+        placeholder={t('groupName')}
+        placeholderTextColor={p.text3}
+        style={[styles.name, { color: p.text, backgroundColor: p.surface, borderColor: p.border }]}
+      />
       <View style={{ gap: 10 }}>
         <View style={{ flexDirection: 'row', gap: 10 }}>
           <View style={{ flex: 1 }}>
@@ -66,6 +74,7 @@ export default function Add() {
 
 const styles = StyleSheet.create({
   page: { padding: 16, gap: 14 },
+  name: { borderRadius: 12, borderWidth: StyleSheet.hairlineWidth, paddingHorizontal: 12, paddingVertical: 10, fontSize: 15 },
   input: {
     minHeight: 140,
     borderRadius: 12,
