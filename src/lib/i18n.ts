@@ -119,6 +119,7 @@ const en = {
   downloading: 'Downloading… {p}%',
   updateFailed: 'Update failed',
   openRelease: 'Open the release page',
+  docs: 'Documentation',
 };
 
 type Dict = typeof en;
@@ -241,6 +242,7 @@ const ru: Dict = {
   downloading: 'Скачиваю… {p}%',
   updateFailed: 'Не удалось обновить',
   openRelease: 'Открыть страницу релиза',
+  docs: 'Документация',
 };
 
 // The app speaks Russian unless English is chosen in the settings; changing it reloads the app.

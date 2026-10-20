@@ -2,7 +2,7 @@ import Constants from 'expo-constants';
 import { router } from 'expo-router';
 import { reloadAppAsync } from 'expo';
 import { useEffect, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Switch, View } from 'react-native';
+import { Alert, Linking, ScrollView, StyleSheet, Switch, View } from 'react-native';
 import XrayVpn from 'xray-vpn';
 
 import { UpdateCard } from '@/components/UpdateCard';
@@ -183,6 +183,14 @@ export default function Settings() {
           We1ssConnect {Constants.expoConfig?.version} · {t('core', { v: core })}
         </Muted>
         <Muted>{t('licenses')}</Muted>
+      </Card>
+      <Card style={[styles.group, { marginTop: 12 }]}>
+        <Row
+          first
+          icon="book-outline"
+          title={t('docs')}
+          onPress={() => void Linking.openURL(`https://weibschatten.github.io/We1ssConnect/#/${lang}/`)}
+        />
       </Card>
       <View style={{ height: 24 }} />
     </ScrollView>
