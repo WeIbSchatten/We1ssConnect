@@ -1,0 +1,44 @@
+# Version history
+
+## 1.0.0 — first stable release
+
+Everything from the test builds, plus:
+
+- **Automatic choice in two modes**: lowest delay and round robin.
+- **Hidden IP**: Home hides the middle of the address; tap to show it in full.
+- **Key groups**: each batch of links is saved as a named group; groups and subscriptions have
+  an update / remove menu.
+- **Russian by default** with an English switch; notifications follow the chosen language.
+- **Themes**: system, light, dark and AMOLED, with the We1ssBoard panel colours.
+- **In-app updates**: checks GitHub releases, downloads the APK for your CPU and installs it.
+- **Tile**: a long press opens the app.
+- Documentation in Russian and English.
+
+## 0.0.2 — test build
+
+- New interface with **Home**, **Servers** and **Settings** tabs.
+- Its own bridge to the core: live ping, automatic choice, speed and traffic, exit IP and
+  country, with no local ports.
+- Delay tests before and during the connection.
+- Per-app routing.
+- "Russian sites directly" and "Block ads" presets.
+- DNS choice, DNS over HTTPS, IPv6, TLS fragmentation, mux.
+- QR code import, copying a server's link.
+- Quick settings tile.
+- Subscription auto-update.
+- Separate ARM64 and ARMv7 APKs instead of one 227 MB file.
+
+## 0.0.1 — first build
+
+- Connections through Xray-core: VLESS, VMess, Trojan, Shadowsocks, Hysteria2.
+- Subscriptions with traffic and expiry, share links, the `we1ssconnect://add` link.
+- The Reality fix for Xray 26.9.8+.
+- A signed APK and an emulator launch check in CI.
+
+## How the app came about
+
+We1ssConnect started on 20 October 2026 as a client for the We1ssBoard panel: one that reads the
+panel's subscriptions, deals with the latest Reality changes and depends on no one else's app.
+It is written from scratch on Xray-core and libXray. The first build connected and read
+subscriptions. The second brought the new interface, automatic server choice, routing and
+anti-blocking tools. Version 1.0.0 put it all together with in-app updates and documentation.

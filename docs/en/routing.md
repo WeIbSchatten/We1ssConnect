@@ -1,0 +1,41 @@
+# Routing
+
+## Per app
+
+**Settings → Per-app routing** decides which apps use the VPN.
+
+| Mode | What happens |
+| --- | --- |
+| All apps | everything goes through the VPN except We1ssConnect itself |
+| Only selected apps | only the ticked apps use the VPN, the rest go direct |
+| All except selected | everything uses the VPN and the ticked apps go direct (banking apps, for example) |
+
+The list has search, icons and a **Show system apps** switch. Changes apply on the next connect.
+
+> We1ssConnect itself always stays outside the tunnel, so the core's connections to the server
+> never loop back into it. Update checks and rule downloads therefore go direct.
+
+## Presets
+
+| Preset | What it does |
+| --- | --- |
+| **Bypass local network** | the router, printers, TVs and other home devices are reached without the VPN |
+| **Russian sites directly** | `.ru`, `.su`, `.рф` domains, sites from the `category-ru` list and Russian IP addresses bypass the VPN; their addresses come from Yandex DNS so they resolve to nearby servers |
+| **Block ads** | ad and tracker domains from `category-ads-all` do not open |
+
+The presets need two rule files. They download on the first connect with a preset on and
+refresh weekly:
+
+- `geoip.dat`: IP ranges by country ([runetfreedom/russia-v2ray-rules-dat](https://github.com/runetfreedom/russia-v2ray-rules-dat));
+- `geosite.dat`: domain lists ([v2fly/domain-list-community](https://github.com/v2fly/domain-list-community)).
+
+**Update routing rules** downloads them again by hand.
+
+## DNS
+
+DNS queries from apps are caught and sent through the VPN to the chosen resolver:
+
+- **Cloudflare** (1.1.1.1), **Google** (8.8.8.8) or **Quad9** (9.9.9.9);
+- **DNS over HTTPS**: the same resolvers with encrypted queries;
+- **IPv6**: resolve and use IPv6 addresses when the site and the server have them. Off by
+  default: many servers lack IPv6, and sites can open more slowly with it.

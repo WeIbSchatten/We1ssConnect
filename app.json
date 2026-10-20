@@ -2,7 +2,7 @@
   "expo": {
     "name": "We1ssConnect",
     "slug": "we1ssconnect",
-    "version": "0.0.1",
+    "version": "1.0.0",
     "scheme": "we1ssconnect",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -30,11 +30,20 @@
         {
           "android": {
             "minSdkVersion": 26,
-            "extraProguardRules": "-keep class libXray.** { *; }\n-keep class go.** { *; }\n-keep class com.we1bschatten.xrayvpn.** { *; }"
+            "extraProguardRules": "-keep class libXray.** { *; }\n-keep class go.** { *; }\n-keep class xraybridge.** { *; }\n-keep class com.we1bschatten.xrayvpn.** { *; }",
+            "usesCleartextTraffic": true
           }
         }
       ],
-      "./plugins/withLibXray"
+      "./plugins/withLibXray",
+      "./plugins/withAbiSplits",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "We1ssConnect uses the camera to scan QR codes with server links.",
+          "recordAudioAndroid": false
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

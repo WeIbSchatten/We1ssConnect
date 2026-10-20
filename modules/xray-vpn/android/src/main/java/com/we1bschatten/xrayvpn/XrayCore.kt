@@ -2,8 +2,11 @@ package com.we1bschatten.xrayvpn
 
 import libXray.LibXray
 import org.json.JSONObject
+import xraybridge.Xraybridge
 
-// Thin wrapper over libXray's JSON "invoke" API (github.com/XTLS/libXray, MIT).
+// The Go core: our xraybridge package (core/) runs Xray and reports on the running
+// instance; libXray's JSON "invoke" API (github.com/XTLS/libXray, MIT) parses links
+// and measures delays while nothing runs.
 object XrayCore {
   private const val API_VERSION = 3
 
@@ -26,16 +29,31 @@ object XrayCore {
   fun convertShareLinks(text: String): String =
     call("convertShareLinksToXrayJson", JSONObject().put("text", text)).toString()
 
-  fun run(xrayJson: String) {
-    call("runXray", JSONObject().put("xrayJson", xrayJson))
-  }
+  /** Xray JSON with outbounds → share links, one per line. */
+  fun shareLinks(xrayJson: String): String =
+    (call("convertXrayJsonToShareLinks", JSONObject().put("xrayJson", xrayJson)) as JSONObject).optString("links")
 
-  fun stop() {
-    call("stopXray")
-  }
+  fun run(xrayJson: String) = Xraybridge.start(xrayJson)
 
-  fun isRunning(): Boolean =
-    (call("getXrayState") as? JSONObject)?.optBoolean("running") ?: false
+  fun stop() = Xraybridge.stop()
+
+  fun isRunning(): Boolean = Xraybridge.isRunning()
+
+  /** JSON [{tag, alive, delay, error}] from the running instance's observatory. */
+  fun observation(): String = Xraybridge.observation()
+
+  fun balancerTarget(balancer: String): String = Xraybridge.balancerTarget(balancer)
+
+  fun setBalancerTarget(balancer: String, target: String) = Xraybridge.setBalancerTarget(balancer, target)
+
+  /** JSON {up, down}: bytes through the servers since the start. */
+  fun traffic(): String = Xraybridge.traffic()
+
+  fun httpGet(url: String, outboundTag: String, timeoutMs: Int): String =
+    Xraybridge.httpGet(url, outboundTag, timeoutMs.toLong())
+
+  fun delay(url: String, outboundTag: String, timeoutMs: Int): Long =
+    Xraybridge.delay(url, outboundTag, timeoutMs.toLong())
 
   /** Measures the delay through each config's outbound; -1 for failures. */
   fun ping(configs: List<String>, url: String, timeoutSeconds: Int): List<Long> {

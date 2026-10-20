@@ -1,3 +1,7 @@
+import type { AppMode } from 'xray-vpn';
+
+import type { StylePreset } from './palettes';
+
 export interface XrayOutbound {
   protocol: string;
   tag?: string;
@@ -37,6 +41,9 @@ export interface Profile {
   servers: Server[];
 }
 
+/** The pseudo-server that lets the balancer pick the fastest one. */
+export const AUTO_ID = 'auto';
+
 export interface Settings {
   /**
    * Reality servers on Xray 26.9.8+ drop clients whose ClientHello lacks X25519MLKEM768,
@@ -45,9 +52,61 @@ export interface Settings {
   forceChromeFingerprint: boolean;
   /** Private networks (LAN, router) stay outside the tunnel. */
   bypassLan: boolean;
+  /** Test every server's delay when the app opens and the VPN is off. */
+  autoPing: boolean;
+  /** Which apps use the VPN. */
+  appMode: AppMode;
+  /** Package names for appMode "include" / "exclude". */
+  apps: string[];
+  /** Russian sites and IPs go direct (geosite:category-ru, geoip:ru). */
+  ruDirect: boolean;
+  /** Ad and tracker domains are dropped (geosite:category-ads-all). */
+  blockAds: boolean;
+  /** Resolver used through the tunnel. */
+  dns: DnsProvider;
+  /** DNS over HTTPS instead of plain UDP to the same resolver. */
+  dnsOverHttps: boolean;
+  /** Resolve and use IPv6 addresses too. */
+  ipv6: boolean;
+  /** Split the TLS ClientHello so DPI cannot read the server name in one packet. */
+  fragment: boolean;
+  /** Carry many connections over one to the server (not for Vision, XHTTP or Hysteria). */
+  mux: boolean;
+  /** Refresh subscriptions older than 12 hours when the app opens. */
+  autoUpdate: boolean;
+  /** How "Auto" picks a server: lowest delay, or every live server in turn. */
+  balancer: BalancerStrategy;
+  theme: ThemeMode;
+  /** Colour preset shared with the We1ssBoard panel. */
+  style: StylePreset;
+  language: Language;
+  /** Show the full exit IP instead of hiding its middle part. */
+  showFullIp: boolean;
 }
+
+export type BalancerStrategy = 'leastPing' | 'roundRobin';
+export type ThemeMode = 'system' | 'light' | 'dark' | 'amoled';
+export type Language = 'ru' | 'en';
+
+export type DnsProvider = 'cloudflare' | 'google' | 'quad9';
 
 export const DEFAULT_SETTINGS: Settings = {
   forceChromeFingerprint: true,
   bypassLan: true,
+  autoPing: true,
+  appMode: 'all',
+  apps: [],
+  ruDirect: false,
+  blockAds: false,
+  dns: 'cloudflare',
+  dnsOverHttps: false,
+  ipv6: false,
+  fragment: false,
+  mux: false,
+  autoUpdate: true,
+  balancer: 'leastPing',
+  theme: 'system',
+  style: 'ocean',
+  language: 'ru',
+  showFullIp: false,
 };

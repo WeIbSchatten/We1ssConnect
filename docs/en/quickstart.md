@@ -1,0 +1,35 @@
+# First connection
+
+## 1. Add servers
+
+Open the **Servers** tab and tap **+**. Any of these works:
+
+- **A subscription link** from We1ssBoard or another panel: `https://…`. The app downloads the
+  server list and keeps it up to date.
+- **Share links**: `vless://`, `vmess://`, `trojan://`, `ss://`, `hysteria2://`, one per line.
+  They are saved as a group of their own, which you can name.
+- **A QR code**: **Scan QR code** opens the camera.
+- **The clipboard**: **Paste from clipboard**.
+
+From the We1ssBoard panel the app can be opened with the subscription filled in through
+`we1ssconnect://add?url=<subscription link>`.
+
+## 2. Pick a server
+
+After adding, the app tests the delay to every server. You can:
+
+- keep **Auto** and let the balancer choose ([more](/en/balancer.md));
+- pick a server from the list.
+
+The number on the right is the delay: green under 300 ms, amber above, red "timeout".
+
+## 3. Connect
+
+On **Home** tap the big button. In a couple of seconds it turns green and shows:
+
+- **Your IP**, the address sites see. Its middle is hidden; tap it to show it in full;
+- the **country** flag and name, city and ISP;
+- download and upload **speed**, session traffic and time;
+- for subscriptions, the traffic used and the expiry date.
+
+Picking another server while connected switches at once, without reconnecting.
