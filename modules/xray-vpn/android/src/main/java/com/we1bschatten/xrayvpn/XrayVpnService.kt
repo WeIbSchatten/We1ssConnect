@@ -13,7 +13,9 @@ import android.os.Build
 import android.os.ParcelFileDescriptor
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import org.json.JSONArray
 import org.json.JSONObject
+import java.io.File
 
 // Owns the TUN interface and the Xray instance. Xray reads packets straight from
 // the TUN through its own "tun" inbound, so there is no separate tun2socks layer.
@@ -45,7 +47,45 @@ class XrayVpnService : VpnService() {
       /** "all", "include" (only [apps] use the VPN) or "exclude" ([apps] bypass it). */
       val appMode: String,
       val apps: List<String>,
-    )
+    ) {
+      fun toJson(title: String): String = JSONObject()
+        .put("config", config)
+        .put("target", target)
+        .put("appMode", appMode)
+        .put("apps", JSONArray(apps))
+        .put("title", title)
+        .toString()
+
+      companion object {
+        fun fromJson(json: String): Pair<Request, String> {
+          val o = JSONObject(json)
+          val apps = o.optJSONArray("apps") ?: JSONArray()
+          val request = Request(
+            o.getString("config"),
+            o.optString("target"),
+            o.optString("appMode", "all"),
+            (0 until apps.length()).map { apps.getString(it) },
+          )
+          return request to o.optString("title", "We1ssConnect")
+        }
+      }
+    }
+
+    private const val PREFS = "we1ssconnect"
+    private const val LAST_REQUEST = "native.lastRequest"
+
+    /** Where geoip.dat and geosite.dat for the routing presets live. */
+    fun geoDir(context: Context): File = File(context.filesDir, "geo")
+
+    /** The last started connection, so the quick settings tile can start it again. */
+    fun lastRequest(context: Context): Pair<Request, String>? {
+      val json = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString(LAST_REQUEST, null) ?: return null
+      return try {
+        Request.fromJson(json)
+      } catch (_: Exception) {
+        null
+      }
+    }
 
     @Volatile var pending: Request? = null
 
@@ -69,6 +109,8 @@ class XrayVpnService : VpnService() {
     }
 
     fun start(context: Context, request: Request, title: String) {
+      context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+        .edit().putString(LAST_REQUEST, request.toJson(title)).apply()
       pending = request
       val intent = Intent(context, XrayVpnService::class.java)
         .setAction(ACTION_START)
@@ -129,6 +171,7 @@ class XrayVpnService : VpnService() {
       val json = JSONObject(request.config)
       val env = json.optJSONObject("env") ?: JSONObject()
       env.put("xray.tun.fd", fd.fd.toString())
+      env.put("xray.location.asset", geoDir(this).absolutePath)
       json.put("env", env)
       XrayCore.run(json.toString())
       if (request.target.isNotEmpty()) XrayCore.setBalancerTarget(BALANCER, request.target)

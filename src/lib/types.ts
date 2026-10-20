@@ -56,7 +56,25 @@ export interface Settings {
   appMode: AppMode;
   /** Package names for appMode "include" / "exclude". */
   apps: string[];
+  /** Russian sites and IPs go direct (geosite:category-ru, geoip:ru). */
+  ruDirect: boolean;
+  /** Ad and tracker domains are dropped (geosite:category-ads-all). */
+  blockAds: boolean;
+  /** Resolver used through the tunnel. */
+  dns: DnsProvider;
+  /** DNS over HTTPS instead of plain UDP to the same resolver. */
+  dnsOverHttps: boolean;
+  /** Resolve and use IPv6 addresses too. */
+  ipv6: boolean;
+  /** Split the TLS ClientHello so DPI cannot read the server name in one packet. */
+  fragment: boolean;
+  /** Carry many connections over one to the server (not for Vision, XHTTP or Hysteria). */
+  mux: boolean;
+  /** Refresh subscriptions older than 12 hours when the app opens. */
+  autoUpdate: boolean;
 }
+
+export type DnsProvider = 'cloudflare' | 'google' | 'quad9';
 
 export const DEFAULT_SETTINGS: Settings = {
   forceChromeFingerprint: true,
@@ -64,4 +82,12 @@ export const DEFAULT_SETTINGS: Settings = {
   autoPing: true,
   appMode: 'all',
   apps: [],
+  ruDirect: false,
+  blockAds: false,
+  dns: 'cloudflare',
+  dnsOverHttps: false,
+  ipv6: false,
+  fragment: false,
+  mux: false,
+  autoUpdate: true,
 };

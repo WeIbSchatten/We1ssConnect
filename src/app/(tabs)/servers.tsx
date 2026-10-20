@@ -1,4 +1,5 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
+import * as Clipboard from 'expo-clipboard';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Alert, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -7,8 +8,8 @@ import { Button, Card, Muted, PingBadge } from '@/components/ui';
 import { protocolLabel, serverAddress } from '@/lib/config';
 import { formatDate, t } from '@/lib/i18n';
 import { lookupIp, useLive } from '@/lib/live';
-import { allServers, isAuto, removeProfile, selectServer, selectedServer, useStore } from '@/lib/store';
-import { refreshAll } from '@/lib/subscription';
+import { allServers, isAuto, removeProfile, removeServer, selectServer, selectedServer, useStore } from '@/lib/store';
+import { refreshAll, shareLink } from '@/lib/subscription';
 import { usePalette } from '@/lib/theme';
 import { AUTO_ID, type Server } from '@/lib/types';
 import { applySelection, autoPing, pingAll, useVpnStatus } from '@/lib/vpn';
@@ -65,6 +66,21 @@ export default function Servers() {
     applySelection()
       .then(() => (on ? lookupIp() : undefined))
       .catch((e) => Alert.alert(t('error'), (e as Error).message));
+  }
+
+  function serverActions(server: Server) {
+    Alert.alert(server.name, `${protocolLabel(server.outbound)} · ${serverAddress(server.outbound)}`, [
+      {
+        text: t('copyLink'),
+        onPress: () =>
+          shareLink(server)
+            .then((link) => Clipboard.setStringAsync(link))
+            .then(() => Alert.alert(t('copied')))
+            .catch((e) => Alert.alert(t('error'), (e as Error).message)),
+      },
+      { text: t('remove'), style: 'destructive', onPress: () => removeServer(server.id) },
+      { text: t('cancel'), style: 'cancel' },
+    ]);
   }
 
   function confirmRemove(id: string, name: string) {
@@ -156,6 +172,7 @@ export default function Servers() {
                   <Pressable
                     key={server.id}
                     onPress={() => choose(server.id)}
+                    onLongPress={() => serverActions(server)}
                     style={({ pressed }) => [
                       styles.row,
                       i > 0 && { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: p.border },

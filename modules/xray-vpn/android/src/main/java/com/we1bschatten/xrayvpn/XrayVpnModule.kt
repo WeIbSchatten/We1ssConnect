@@ -9,6 +9,9 @@ import android.graphics.Canvas
 import android.net.VpnService
 import android.util.Base64
 import java.io.ByteArrayOutputStream
+import java.io.File
+import java.net.HttpURLConnection
+import java.net.URL
 import expo.modules.kotlin.Promise
 import expo.modules.kotlin.exception.CodedException
 import expo.modules.kotlin.modules.Module
@@ -39,6 +42,17 @@ class XrayVpnModule : Module() {
     AsyncFunction("xrayVersion") { XrayCore.version() }
 
     AsyncFunction("convertShareLinks") { text: String -> XrayCore.convertShareLinks(text) }
+
+    AsyncFunction("shareLinks") { xrayJson: String -> XrayCore.shareLinks(xrayJson) }
+
+    // Downloads the rule files for the routing presets; resolves with their time.
+    AsyncFunction("downloadGeo") { files: Map<String, String> ->
+      val dir = XrayVpnService.geoDir(context).apply { mkdirs() }
+      files.forEach { (name, url) -> download(url, File(dir, name)) }
+      geoUpdatedAt()
+    }
+
+    Function("geoUpdatedAt") { geoUpdatedAt() }
 
     AsyncFunction("ping") { configs: List<String>, url: String, timeoutSeconds: Int ->
       XrayCore.ping(configs, url, timeoutSeconds)
@@ -128,6 +142,30 @@ class XrayVpnModule : Module() {
 
     Function("setItem") { key: String, value: String? ->
       prefs().edit().apply { if (value == null) remove(key) else putString(key, value) }.apply()
+    }
+  }
+
+  private fun geoUpdatedAt(): Double {
+    val dir = XrayVpnService.geoDir(context)
+    val files = listOf(File(dir, "geoip.dat"), File(dir, "geosite.dat"))
+    return if (files.all { it.isFile && it.length() > 0 }) files.minOf { it.lastModified() }.toDouble() else 0.0
+  }
+
+  // The app is outside the tunnel, so this goes direct whether or not the VPN runs.
+  private fun download(url: String, target: File) {
+    val tmp = File(target.parentFile, target.name + ".part")
+    val conn = URL(url).openConnection() as HttpURLConnection
+    conn.connectTimeout = 15_000
+    conn.readTimeout = 60_000
+    conn.instanceFollowRedirects = true
+    try {
+      if (conn.responseCode != 200) throw CodedException("ERR_DOWNLOAD", "HTTP ${conn.responseCode} for $url", null)
+      conn.inputStream.use { input -> tmp.outputStream().use { input.copyTo(it) } }
+      if (tmp.length() == 0L) throw CodedException("ERR_DOWNLOAD", "empty file from $url", null)
+      if (!tmp.renameTo(target)) throw CodedException("ERR_DOWNLOAD", "cannot save ${target.name}", null)
+    } finally {
+      conn.disconnect()
+      tmp.delete()
     }
   }
 

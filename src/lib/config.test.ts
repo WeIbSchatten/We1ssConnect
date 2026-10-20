@@ -50,3 +50,34 @@ test('server address reads flat and nested settings', () => {
   expect(serverAddress(reality)).toBe('example.com:443');
   expect(serverAddress({ protocol: 'vmess', settings: { vnext: [{ address: 'a.b', port: 8443 }] } })).toBe('a.b:8443');
 });
+
+test('presets add ad blocking, RU direct and the RU resolver', () => {
+  const settings = { ...DEFAULT_SETTINGS, ruDirect: true, blockAds: true };
+  const config = JSON.parse(buildVpnConfig(servers, servers[0], settings));
+  const tags = config.routing.rules.map((r: { outboundTag?: string }) => r.outboundTag);
+  expect(tags).toEqual(['dns-out', 'direct', 'block', 'direct', 'direct', undefined]);
+  expect(config.routing.domainStrategy).toBe('IPIfNonMatch');
+  expect(config.dns.servers[0]).toMatchObject({ address: '77.88.8.8', skipFallback: true });
+});
+
+test('fragment dials TLS servers through the fragment outbound; mux skips Vision', () => {
+  const vision: XrayOutbound = { ...reality, settings: { ...reality.settings, flow: 'xtls-rprx-vision' } };
+  const trojan: XrayOutbound = {
+    protocol: 'trojan',
+    settings: { address: 't.example', port: 443 },
+    streamSettings: { network: 'ws', security: 'tls' },
+  };
+  const settings = { ...DEFAULT_SETTINGS, fragment: true, mux: true };
+  expect(prepareOutbound(vision, settings, 'x').streamSettings?.sockopt).toEqual({ dialerProxy: 'fragment' });
+  expect(prepareOutbound(vision, settings, 'x').mux).toBeUndefined();
+  expect(prepareOutbound(trojan, settings, 'x').mux).toMatchObject({ enabled: true });
+  const config = JSON.parse(buildVpnConfig(servers, servers[0], settings));
+  expect(config.outbounds.some((o: { tag: string }) => o.tag === 'fragment')).toBe(true);
+});
+
+test('DoH and IPv6 change the resolver', () => {
+  const config = JSON.parse(
+    buildVpnConfig(servers, servers[0], { ...DEFAULT_SETTINGS, dns: 'google', dnsOverHttps: true, ipv6: true }),
+  );
+  expect(config.dns).toEqual({ servers: ['https://8.8.8.8/dns-query'], queryStrategy: 'UseIP' });
+});

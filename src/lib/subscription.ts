@@ -110,3 +110,26 @@ export async function refreshAll(): Promise<void> {
   }
   if (errors.length) throw new Error(errors.join('\n'));
 }
+
+const STALE_MS = 12 * 3600_000;
+
+/** Quietly refreshes subscriptions not updated for 12 hours. */
+export async function refreshStale(): Promise<void> {
+  for (const profile of getState().profiles) {
+    if (!profile.url || Date.now() - profile.updatedAt < STALE_MS) continue;
+    try {
+      upsertProfile(await fetchSubscription(profile.url, profile));
+    } catch {
+      // Tried again on the next start; the old servers keep working.
+    }
+  }
+}
+
+/** A server as a share link (vless://…), for copying or a QR code. */
+export async function shareLink(server: Server): Promise<string> {
+  const outbound = { ...server.outbound, tag: server.name };
+  const links = await XrayVpn.shareLinks(JSON.stringify({ outbounds: [outbound] }));
+  const link = links.split('\n').find((l) => l.trim());
+  if (!link) throw new Error('no link');
+  return link.trim();
+}

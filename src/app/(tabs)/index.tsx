@@ -7,7 +7,8 @@ import { Button, Card, Muted, PingBadge } from '@/components/ui';
 import { protocolLabel, serverAddress } from '@/lib/config';
 import { countryName, formatBytes, formatDate, formatDuration, formatSpeed, t } from '@/lib/i18n';
 import { flag, useLive } from '@/lib/live';
-import { allServers, hasServers, isAuto, selectedServer, useStore } from '@/lib/store';
+import { allServers, getState, hasServers, isAuto, selectedServer, useStore } from '@/lib/store';
+import { refreshStale } from '@/lib/subscription';
 import { usePalette } from '@/lib/theme';
 import { autoPing, connect, disconnect, useVpnStatus } from '@/lib/vpn';
 
@@ -58,7 +59,9 @@ export default function Home() {
   const pulse = usePulse(on || pending);
 
   useEffect(() => {
-    autoPing();
+    // New servers from a refresh get their delays tested right after.
+    const refresh = getState().settings.autoUpdate ? refreshStale() : Promise.resolve();
+    void refresh.finally(autoPing);
   }, []);
 
   const activeId = auto ? live.activeId : server?.id;

@@ -46,7 +46,14 @@ export default function Add() {
         style={[styles.input, { color: p.text, backgroundColor: p.surface, borderColor: p.border }]}
       />
       <View style={{ gap: 10 }}>
-        <Button title={t('paste')} kind="secondary" onPress={paste} />
+        <View style={{ flexDirection: 'row', gap: 10 }}>
+          <View style={{ flex: 1 }}>
+            <Button title={t('paste')} icon="clipboard-outline" kind="secondary" onPress={paste} />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Button title={t('scanQr')} icon="qr-code-outline" kind="secondary" onPress={() => router.push('/scan')} />
+          </View>
+        </View>
         {busy ? (
           <ActivityIndicator color={p.accent} />
         ) : (

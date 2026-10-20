@@ -29,6 +29,10 @@ object XrayCore {
   fun convertShareLinks(text: String): String =
     call("convertShareLinksToXrayJson", JSONObject().put("text", text)).toString()
 
+  /** Xray JSON with outbounds → share links, one per line. */
+  fun shareLinks(xrayJson: String): String =
+    (call("convertXrayJsonToShareLinks", JSONObject().put("xrayJson", xrayJson)) as JSONObject).optString("links")
+
   fun run(xrayJson: String) = Xraybridge.start(xrayJson)
 
   fun stop() = Xraybridge.stop()

@@ -36,7 +36,14 @@
         }
       ],
       "./plugins/withLibXray",
-      "./plugins/withAbiSplits"
+      "./plugins/withAbiSplits",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "We1ssConnect uses the camera to scan QR codes with server links.",
+          "recordAudioAndroid": false
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

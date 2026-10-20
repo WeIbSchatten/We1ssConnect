@@ -35,6 +35,12 @@ interface XrayVpnNative {
   /** Running instance only: GET through the tunnel. */
   httpGet(url: string, timeoutMs: number): Promise<string>;
   delay(url: string, outboundTag: string, timeoutMs: number): Promise<number>;
+  /** Xray JSON with outbounds → share links, one per line. */
+  shareLinks(xrayJson: string): Promise<string>;
+  /** Downloads file name → URL into the rule file folder; resolves with geoUpdatedAt(). */
+  downloadGeo(files: Record<string, string>): Promise<number>;
+  /** When geoip.dat and geosite.dat were saved (ms), or 0 when either is missing. */
+  geoUpdatedAt(): number;
   installedApps(): Promise<InstalledApp[]>;
   appIcon(packageName: string): Promise<string | null>;
   getItem(key: string): string | null;

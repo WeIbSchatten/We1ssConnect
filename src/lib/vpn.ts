@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from 'react';
 import XrayVpn, { type VpnStatus } from 'xray-vpn';
 
+import { ensureGeo } from './geo';
 import { buildPingConfig, buildVpnConfig, PING_URL, serverTag } from './config';
 import { t } from './i18n';
 import { allServers, fastestServer, getState, isAuto, selectedServer, setPings } from './store';
@@ -46,6 +47,11 @@ export async function connect(): Promise<void> {
   const fallback = selectedServer(state) ?? fastestServer(state);
   if (!fallback || servers.length === 0) throw new Error(t('noServers'));
   if (!(await XrayVpn.prepare())) throw new Error(t('vpnDenied'));
+  try {
+    await ensureGeo(state.settings);
+  } catch (e) {
+    throw new Error(t('geoFailed', { error: (e as Error).message }));
+  }
   const title = isAuto(state) ? t('auto') : fallback.name;
   XrayVpn.start(
     buildVpnConfig(servers, fallback, state.settings),

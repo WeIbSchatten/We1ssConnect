@@ -105,6 +105,14 @@ export function removeProfile(id: string) {
   update({ profiles: state.profiles.filter((p) => p.id !== id) });
 }
 
+export function removeServer(id: string) {
+  update({
+    profiles: state.profiles
+      .map((p) => ({ ...p, servers: p.servers.filter((s) => s.id !== id) }))
+      .filter((p) => p.url || p.servers.length > 0),
+  });
+}
+
 export function setPings(pings: Record<string, number>) {
   update({
     profiles: state.profiles.map((p) => ({
