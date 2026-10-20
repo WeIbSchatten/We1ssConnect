@@ -35,6 +35,33 @@ const en = {
   aboutText: 'We1ssConnect is the client app for We1ssBoard.',
   licenses: 'Uses Xray-core (MPL-2.0, github.com/XTLS/Xray-core) and libXray (MIT, github.com/XTLS/libXray).',
   core: 'Xray core {v}',
+  home: 'Home',
+  auto: 'Auto (fastest)',
+  autoHint: 'Picks the server with the lowest delay and switches if it stops answering',
+  autoNow: 'Now: {name}',
+  yourIp: 'Your IP',
+  ipLoading: 'Checking your IP…',
+  ipFailed: 'Could not check the IP',
+  speed: 'Speed',
+  session: 'This session',
+  duration: 'Connected for {time}',
+  ms: '{n} ms',
+  timeout: 'timeout',
+  sortByPing: 'Sort by delay',
+  pinging: 'Testing…',
+  routing: 'Routing',
+  perApp: 'Per-app routing',
+  appModeAll: 'All apps',
+  appModeInclude: 'Only selected apps',
+  appModeExclude: 'All except selected',
+  appsSelected: '{n} selected',
+  searchApps: 'Search apps',
+  showSystem: 'Show system apps',
+  appsHint: 'Changes apply on the next connect.',
+  autoPing: 'Test delays on start',
+  autoPingHint: 'Measures every server when the app opens and the VPN is off.',
+  security: 'Connection',
+  reconnectHint: 'Reconnect to apply.',
 };
 
 type Dict = typeof en;
@@ -76,6 +103,33 @@ const ru: Dict = {
   aboutText: 'We1ssConnect — клиент для панели We1ssBoard.',
   licenses: 'Использует Xray-core (MPL-2.0, github.com/XTLS/Xray-core) и libXray (MIT, github.com/XTLS/libXray).',
   core: 'Ядро Xray {v}',
+  home: 'Главная',
+  auto: 'Авто (самый быстрый)',
+  autoHint: 'Выбирает сервер с наименьшей задержкой и переключается, если он перестал отвечать',
+  autoNow: 'Сейчас: {name}',
+  yourIp: 'Ваш IP',
+  ipLoading: 'Проверяю IP…',
+  ipFailed: 'Не удалось проверить IP',
+  speed: 'Скорость',
+  session: 'За сеанс',
+  duration: 'Подключено {time}',
+  ms: '{n} мс',
+  timeout: 'нет ответа',
+  sortByPing: 'По задержке',
+  pinging: 'Проверяю…',
+  routing: 'Маршрутизация',
+  perApp: 'Маршрутизация по приложениям',
+  appModeAll: 'Все приложения',
+  appModeInclude: 'Только выбранные',
+  appModeExclude: 'Все, кроме выбранных',
+  appsSelected: 'Выбрано: {n}',
+  searchApps: 'Поиск приложений',
+  showSystem: 'Показывать системные',
+  appsHint: 'Изменения применятся при следующем подключении.',
+  autoPing: 'Проверять задержку при запуске',
+  autoPingHint: 'Измеряет все серверы, когда приложение открыто, а VPN выключен.',
+  security: 'Подключение',
+  reconnectHint: 'Переподключитесь, чтобы применить.',
 };
 
 function systemLanguage(): string {
@@ -105,4 +159,31 @@ export function formatBytes(n: number): string {
 
 export function formatDate(ms: number): string {
   return new Date(ms).toLocaleDateString(lang === 'ru' ? 'ru-RU' : 'en-US');
+}
+
+export function formatSpeed(bytesPerSecond: number): string {
+  return `${formatBytes(bytesPerSecond)}/${lang === 'ru' ? 'с' : 's'}`;
+}
+
+export function formatDuration(ms: number): string {
+  const total = Math.floor(ms / 1000);
+  const h = Math.floor(total / 3600);
+  const m = Math.floor((total % 3600) / 60);
+  const sec = total % 60;
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return h > 0 ? `${h}:${pad(m)}:${pad(sec)}` : `${pad(m)}:${pad(sec)}`;
+}
+
+/** Country name in the app language, falling back to what the IP service said. */
+export function countryName(code?: string, fallback?: string): string {
+  if (code) {
+    try {
+      const names = new Intl.DisplayNames([lang], { type: 'region' });
+      const name = names.of(code.toUpperCase());
+      if (name) return name;
+    } catch {
+      // Intl.DisplayNames is missing on some engines.
+    }
+  }
+  return fallback ?? code ?? '';
 }

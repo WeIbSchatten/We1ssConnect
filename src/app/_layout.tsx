@@ -18,10 +18,9 @@ export default function RootLayout() {
           headerShadowVisible: false,
           contentStyle: { backgroundColor: p.bg },
         }}>
-        <Stack.Screen name="index" options={{ title: 'We1ssConnect' }} />
-        <Stack.Screen name="servers" options={{ title: t('servers') }} />
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="add" options={{ title: t('add'), presentation: 'modal' }} />
-        <Stack.Screen name="settings" options={{ title: t('settings') }} />
+        <Stack.Screen name="apps" options={{ title: t('perApp') }} />
       </Stack>
     </>
   );

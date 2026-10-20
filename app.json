@@ -30,11 +30,13 @@
         {
           "android": {
             "minSdkVersion": 26,
-            "extraProguardRules": "-keep class libXray.** { *; }\n-keep class go.** { *; }\n-keep class com.we1bschatten.xrayvpn.** { *; }"
+            "extraProguardRules": "-keep class libXray.** { *; }\n-keep class go.** { *; }\n-keep class xraybridge.** { *; }\n-keep class com.we1bschatten.xrayvpn.** { *; }",
+            "usesCleartextTraffic": true
           }
         }
       ],
-      "./plugins/withLibXray"
+      "./plugins/withLibXray",
+      "./plugins/withAbiSplits"
     ],
     "experiments": {
       "typedRoutes": true

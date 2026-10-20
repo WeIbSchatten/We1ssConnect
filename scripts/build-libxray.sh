@@ -1,23 +1,31 @@
 #!/usr/bin/env bash
-# Builds libXray.aar (Xray-core for Android, via gomobile) into a file-based Maven
-# repository inside the xray-vpn module, as com.we1bschatten:libxray:1.0.
-# Needs Go, the Android SDK and NDK (ANDROID_HOME / ANDROID_NDK_HOME).
+# Builds the Go core (core/: our xraybridge package plus libXray, both on Xray-core)
+# with gomobile into a file-based Maven repository inside the xray-vpn module, as
+# com.we1bschatten:libxray:1.0. Needs Go, the Android SDK and NDK (ANDROID_HOME /
+# ANDROID_NDK_HOME). ABIS picks the Android ABIs (default: arm64, armv7, x86_64).
 set -euo pipefail
 
-LIBXRAY_VERSION="${LIBXRAY_VERSION:-v26.10.17}"
+ABIS="${ABIS:-android/arm64,android/arm,android/amd64}"
 root="$(cd "$(dirname "$0")/.." && pwd)"
 out="$root/modules/xray-vpn/android/libs"
 repo="$out/maven/com/we1bschatten/libxray/1.0"
+
+cd "$root/core"
+mobile="$(go list -m -f '{{.Version}}' golang.org/x/mobile)"
+go install "golang.org/x/mobile/cmd/gomobile@$mobile" "golang.org/x/mobile/cmd/gobind@$mobile"
+export PATH="$(go env GOPATH)/bin:$PATH"
+gomobile init
+
 work="$(mktemp -d)"
 trap 'rm -rf "$work"' EXIT
-
-git clone --quiet --depth 1 --branch "$LIBXRAY_VERSION" https://github.com/XTLS/libXray "$work/libXray"
-cd "$work/libXray"
-python3 build/main.py android
+# The same flags libXray's own build uses.
+gomobile bind -target "$ABIS" -androidapi 21 -trimpath \
+  -ldflags="-checklinkname=0 -s -w -buildid= -extldflags=-Wl,-z,max-page-size=16384" \
+  -o "$work/libxray.aar" . github.com/xtls/libxray
 
 rm -rf "$out"
 mkdir -p "$repo"
-cp libXray.aar "$repo/libxray-1.0.aar"
+cp "$work/libxray.aar" "$repo/libxray-1.0.aar"
 cat > "$repo/libxray-1.0.pom" <<POM
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0">
@@ -26,7 +34,6 @@ cat > "$repo/libxray-1.0.pom" <<POM
   <artifactId>libxray</artifactId>
   <version>1.0</version>
   <packaging>aar</packaging>
-  <description>libXray $LIBXRAY_VERSION</description>
 </project>
 POM
-echo "libXray $LIBXRAY_VERSION → $repo"
+echo "core ($(go list -m -f '{{.Version}}' github.com/xtls/libxray)) → $repo"

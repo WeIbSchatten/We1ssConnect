@@ -4,7 +4,7 @@
 set -uo pipefail
 pkg=com.we1bschatten.we1ssconnect
 mkdir -p smoke
-adb install -r apk/*.apk || exit 1
+adb install -r apk/*-x86_64.apk || exit 1
 adb logcat -c
 adb shell monkey -p "$pkg" -c android.intent.category.LAUNCHER 1
 sleep 20

@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from 'react';
 import XrayVpn from 'xray-vpn';
 
-import { DEFAULT_SETTINGS, type Profile, type Server, type Settings } from './types';
+import { AUTO_ID, DEFAULT_SETTINGS, type Profile, type Server, type Settings } from './types';
 
 interface State {
   profiles: Profile[];
@@ -59,9 +59,33 @@ export function allServers(s: State = state): Server[] {
   return s.profiles.flatMap((p) => p.servers);
 }
 
+export function isAuto(s: State = state): boolean {
+  return s.selectedId === AUTO_ID;
+}
+
+/** The chosen server; undefined in automatic mode or when there are no servers. */
 export function selectedServer(s: State = state): Server | undefined {
-  const servers = allServers(s);
-  return servers.find((x) => x.id === s.selectedId) ?? servers[0];
+  if (s.selectedId === AUTO_ID) return undefined;
+  for (const p of s.profiles) {
+    const found = p.servers.find((x) => x.id === s.selectedId);
+    if (found) return found;
+  }
+  return s.profiles[0]?.servers[0];
+}
+
+/** The server with the lowest known delay, else the first one. */
+export function fastestServer(s: State = state): Server | undefined {
+  let best: Server | undefined;
+  for (const p of s.profiles) {
+    for (const x of p.servers) {
+      if (x.ping !== undefined && x.ping >= 0 && (!best || best.ping === undefined || x.ping < best.ping)) best = x;
+    }
+  }
+  return best ?? s.profiles[0]?.servers[0];
+}
+
+export function hasServers(s: State = state): boolean {
+  return s.profiles.some((p) => p.servers.length > 0);
 }
 
 export function selectServer(id: string) {

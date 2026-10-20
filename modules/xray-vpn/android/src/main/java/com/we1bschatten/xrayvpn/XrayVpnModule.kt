@@ -2,7 +2,13 @@ package com.we1bschatten.xrayvpn
 
 import android.app.Activity
 import android.content.Context
+import android.content.pm.ApplicationInfo
+import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.net.VpnService
+import android.util.Base64
+import java.io.ByteArrayOutputStream
 import expo.modules.kotlin.Promise
 import expo.modules.kotlin.exception.CodedException
 import expo.modules.kotlin.modules.Module
@@ -61,8 +67,54 @@ class XrayVpnModule : Module() {
       permissionPromise = null
     }
 
-    Function("start") { config: String, title: String ->
-      XrayVpnService.start(context, config, title)
+    Function("start") { config: String, title: String, target: String, appMode: String, apps: List<String> ->
+      XrayVpnService.start(context, XrayVpnService.Request(config, target, appMode, apps), title)
+    }
+
+    // Live data from the running instance; each throws when nothing runs.
+    AsyncFunction("observation") { XrayCore.observation() }
+    AsyncFunction("balancerTarget") { XrayCore.balancerTarget(XrayVpnService.BALANCER) }
+    AsyncFunction("setTarget") { target: String -> XrayCore.setBalancerTarget(XrayVpnService.BALANCER, target) }
+    AsyncFunction("traffic") { XrayCore.traffic() }
+    AsyncFunction("httpGet") { url: String, timeoutMs: Int -> XrayCore.httpGet(url, "", timeoutMs) }
+    AsyncFunction("delay") { url: String, outboundTag: String, timeoutMs: Int ->
+      XrayCore.delay(url, outboundTag, timeoutMs)
+    }
+
+    // Apps that can be routed one by one: everything with a launcher entry or INTERNET.
+    AsyncFunction("installedApps") {
+      val pm = context.packageManager
+      pm.getInstalledApplications(PackageManager.GET_META_DATA)
+        .filter { it.packageName != context.packageName }
+        .filter {
+          pm.getLaunchIntentForPackage(it.packageName) != null ||
+            pm.checkPermission(android.Manifest.permission.INTERNET, it.packageName) == PackageManager.PERMISSION_GRANTED
+        }
+        .map {
+          mapOf(
+            "id" to it.packageName,
+            "name" to pm.getApplicationLabel(it).toString(),
+            "system" to ((it.flags and ApplicationInfo.FLAG_SYSTEM) != 0),
+          )
+        }
+        .sortedBy { (it["name"] as String).lowercase() }
+    }
+
+    // A small PNG data URI of the app's icon, or null.
+    AsyncFunction("appIcon") { packageName: String ->
+      try {
+        val drawable = context.packageManager.getApplicationIcon(packageName)
+        val size = 96
+        val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+        drawable.setBounds(0, 0, size, size)
+        drawable.draw(canvas)
+        val out = ByteArrayOutputStream()
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
+        "data:image/png;base64," + Base64.encodeToString(out.toByteArray(), Base64.NO_WRAP)
+      } catch (_: Exception) {
+        null
+      }
     }
 
     Function("stop") {

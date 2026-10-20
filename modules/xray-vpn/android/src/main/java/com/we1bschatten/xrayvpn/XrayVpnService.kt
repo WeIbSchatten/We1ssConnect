@@ -34,8 +34,20 @@ class XrayVpnService : VpnService() {
     private const val DNS_ADDRESS = "172.19.0.2"
     private const val MTU = 1500
 
-    /** Config waiting to be started; set right before ACTION_START. */
-    @Volatile var pendingConfig: String? = null
+    /** Balancer the config routes through; servers are pinned on it without a restart. */
+    const val BALANCER = "main"
+
+    /** What to start next; set right before ACTION_START. */
+    class Request(
+      val config: String,
+      /** Server outbound tag to pin, or "" to let the balancer pick by delay. */
+      val target: String,
+      /** "all", "include" (only [apps] use the VPN) or "exclude" ([apps] bypass it). */
+      val appMode: String,
+      val apps: List<String>,
+    )
+
+    @Volatile var pending: Request? = null
 
     @Volatile var state: State = State.DISCONNECTED
       private set
@@ -56,8 +68,8 @@ class XrayVpnService : VpnService() {
       snapshot.forEach { it(next, error) }
     }
 
-    fun start(context: Context, config: String, title: String) {
-      pendingConfig = config
+    fun start(context: Context, request: Request, title: String) {
+      pending = request
       val intent = Intent(context, XrayVpnService::class.java)
         .setAction(ACTION_START)
         .putExtra(EXTRA_TITLE, title)
@@ -81,13 +93,13 @@ class XrayVpnService : VpnService() {
       ACTION_START -> {
         title = intent.getStringExtra(EXTRA_TITLE)
         showNotification()
-        val config = pendingConfig
-        pendingConfig = null
-        if (config == null) {
+        val request = pending
+        pending = null
+        if (request == null) {
           fail("no config to start")
         } else {
           // Starting Xray resolves and dials, so keep it off the main thread.
-          Thread({ connect(config) }, "xray-start").start()
+          Thread({ connect(request) }, "xray-start").start()
         }
       }
     }
@@ -95,7 +107,7 @@ class XrayVpnService : VpnService() {
   }
 
   @Synchronized
-  private fun connect(config: String) {
+  private fun connect(request: Request) {
     publish(State.CONNECTING)
     try {
       // Switching servers while connected restarts the core on a fresh TUN.
@@ -109,22 +121,52 @@ class XrayVpnService : VpnService() {
         .addAddress(TUN_ADDRESS6, 126)
         .addRoute("::", 0)
         .addDnsServer(DNS_ADDRESS)
-        // Xray's own sockets bypass the tunnel, so its traffic to the server never loops.
-        .addDisallowedApplication(packageName)
+      applyAppRules(builder, request)
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) builder.setMetered(false)
       val fd = builder.establish() ?: throw IllegalStateException("VPN permission was revoked")
       tun = fd
 
-      val json = JSONObject(config)
+      val json = JSONObject(request.config)
       val env = json.optJSONObject("env") ?: JSONObject()
       env.put("xray.tun.fd", fd.fd.toString())
       json.put("env", env)
       XrayCore.run(json.toString())
+      if (request.target.isNotEmpty()) XrayCore.setBalancerTarget(BALANCER, request.target)
       publish(State.CONNECTED)
       showNotification()
     } catch (e: Exception) {
       Log.e(TAG, "connect failed", e)
       fail(e.message ?: e.toString())
+    }
+  }
+
+  // Xray's own sockets must bypass the tunnel so its traffic to the server never
+  // loops: the app is left out in every mode.
+  private fun applyAppRules(builder: Builder, request: Request) {
+    val apps = request.apps.filter { it != packageName }
+    when (request.appMode) {
+      "include" -> {
+        var added = 0
+        apps.forEach {
+          try {
+            builder.addAllowedApplication(it)
+            added++
+          } catch (_: Exception) {
+            // Uninstalled since it was chosen.
+          }
+        }
+        if (added == 0) builder.addDisallowedApplication(packageName)
+      }
+      "exclude" -> {
+        builder.addDisallowedApplication(packageName)
+        apps.forEach {
+          try {
+            builder.addDisallowedApplication(it)
+          } catch (_: Exception) {
+          }
+        }
+      }
+      else -> builder.addDisallowedApplication(packageName)
     }
   }
 

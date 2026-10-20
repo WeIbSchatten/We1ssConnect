@@ -1,3 +1,5 @@
+import type { AppMode } from 'xray-vpn';
+
 export interface XrayOutbound {
   protocol: string;
   tag?: string;
@@ -37,6 +39,9 @@ export interface Profile {
   servers: Server[];
 }
 
+/** The pseudo-server that lets the balancer pick the fastest one. */
+export const AUTO_ID = 'auto';
+
 export interface Settings {
   /**
    * Reality servers on Xray 26.9.8+ drop clients whose ClientHello lacks X25519MLKEM768,
@@ -45,9 +50,18 @@ export interface Settings {
   forceChromeFingerprint: boolean;
   /** Private networks (LAN, router) stay outside the tunnel. */
   bypassLan: boolean;
+  /** Test every server's delay when the app opens and the VPN is off. */
+  autoPing: boolean;
+  /** Which apps use the VPN. */
+  appMode: AppMode;
+  /** Package names for appMode "include" / "exclude". */
+  apps: string[];
 }
 
 export const DEFAULT_SETTINGS: Settings = {
   forceChromeFingerprint: true,
   bypassLan: true,
+  autoPing: true,
+  appMode: 'all',
+  apps: [],
 };

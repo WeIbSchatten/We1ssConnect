@@ -1,6 +1,17 @@
-import type { Settings, XrayOutbound } from './types';
+import type { Server, Settings, XrayOutbound } from './types';
 
-export const PROXY_TAG = 'proxy';
+/** Server outbounds are tagged "s-<id>"; the observatory and balancer select them by prefix. */
+export const SERVER_PREFIX = 's-';
+export const BALANCER = 'main';
+export const PING_URL = 'https://www.gstatic.com/generate_204';
+
+export function serverTag(id: string): string {
+  return SERVER_PREFIX + id;
+}
+
+export function serverIdFromTag(tag: string): string | undefined {
+  return tag.startsWith(SERVER_PREFIX) ? tag.slice(SERVER_PREFIX.length) : undefined;
+}
 
 const PRIVATE_IPS = [
   '10.0.0.0/8',
@@ -14,10 +25,10 @@ const PRIVATE_IPS = [
   '::1/128',
 ];
 
-/** The outbound as it will run: tagged "proxy" and with the Reality fingerprint fixed. */
-export function prepareOutbound(outbound: XrayOutbound, settings: Settings): XrayOutbound {
+/** The outbound as it will run: tagged and with the Reality fingerprint fixed. */
+export function prepareOutbound(outbound: XrayOutbound, settings: Settings, tag: string): XrayOutbound {
   const out: XrayOutbound = JSON.parse(JSON.stringify(outbound));
-  out.tag = PROXY_TAG;
+  out.tag = tag;
   const reality = out.streamSettings?.realitySettings;
   if (settings.forceChromeFingerprint && out.streamSettings?.security === 'reality' && reality) {
     reality.fingerprint = 'chrome';
@@ -25,15 +36,24 @@ export function prepareOutbound(outbound: XrayOutbound, settings: Settings): Xra
   return out;
 }
 
-/** Full Xray config for the VPN: TUN in, the server out, DNS answered through the server. */
-export function buildVpnConfig(outbound: XrayOutbound, settings: Settings): string {
+/**
+ * Full Xray config for the VPN: TUN in, every server out behind one balancer.
+ * The observatory keeps measuring all servers, so delays stay live while connected,
+ * the balancer can pick the fastest one, and the app can pin any server without a restart.
+ * fallback is the server used until the first measurements arrive.
+ */
+export function buildVpnConfig(servers: Server[], fallback: Server, settings: Settings): string {
   const rules: Record<string, unknown>[] = [
     { type: 'field', inboundTag: ['tun-in'], port: '53', outboundTag: 'dns-out' },
   ];
   if (settings.bypassLan) rules.push({ type: 'field', ip: PRIVATE_IPS, outboundTag: 'direct' });
+  // Everything else, including Xray's own DNS queries, goes through the balancer.
+  rules.push({ type: 'field', network: 'tcp,udp', balancerTag: BALANCER });
 
   const config = {
     log: { loglevel: 'warning' },
+    stats: {},
+    policy: { system: { statsOutboundUplink: true, statsOutboundDownlink: true } },
     dns: {
       servers: ['1.1.1.1', '8.8.8.8'],
       queryStrategy: 'UseIPv4',
@@ -47,19 +67,36 @@ export function buildVpnConfig(outbound: XrayOutbound, settings: Settings): stri
       },
     ],
     outbounds: [
-      prepareOutbound(outbound, settings),
+      ...servers.map((s) => prepareOutbound(s.outbound, settings, serverTag(s.id))),
       { tag: 'direct', protocol: 'freedom' },
       { tag: 'block', protocol: 'blackhole' },
       { tag: 'dns-out', protocol: 'dns' },
     ],
-    routing: { domainStrategy: 'AsIs', rules },
+    observatory: {
+      subjectSelector: [SERVER_PREFIX],
+      probeUrl: PING_URL,
+      probeInterval: '30s',
+      enableConcurrency: true,
+    },
+    routing: {
+      domainStrategy: 'AsIs',
+      balancers: [
+        {
+          tag: BALANCER,
+          selector: [SERVER_PREFIX],
+          strategy: { type: 'leastPing' },
+          fallbackTag: serverTag(fallback.id),
+        },
+      ],
+      rules,
+    },
   };
   return JSON.stringify(config);
 }
 
 /** Minimal config pingBatch needs: just the outbound to measure. */
 export function buildPingConfig(outbound: XrayOutbound, settings: Settings): string {
-  return JSON.stringify({ outbounds: [prepareOutbound(outbound, settings)] });
+  return JSON.stringify({ outbounds: [prepareOutbound(outbound, settings, 'proxy')] });
 }
 
 export function serverAddress(outbound: XrayOutbound): string {
