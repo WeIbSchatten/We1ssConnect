@@ -18,7 +18,6 @@ permissions:
   contents: write
 
 env:
-  LIBXRAY_VERSION: v26.10.17
   RELEASE_VERSION: ${{ inputs.version || (startsWith(github.ref, 'refs/tags/v') && github.ref_name) || '' }}
 
 jobs:
@@ -34,6 +33,13 @@ jobs:
       - run: npx tsc --noEmit
       - run: npx expo lint
       - run: npx jest --ci
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: core/go.mod
+          cache-dependency-path: core/go.sum
+      - name: Test the Go core
+        working-directory: core
+        run: go vet ./... && go test ./...
 
   android:
     runs-on: ubuntu-latest
@@ -52,15 +58,15 @@ jobs:
 
       - uses: actions/setup-go@v7
         with:
-          go-version: stable
-          cache: false
+          go-version-file: core/go.mod
+          cache-dependency-path: core/go.sum
 
-      - name: Cache libXray
+      - name: Cache the Go core
         id: libxray
         uses: actions/cache@v5
         with:
           path: modules/xray-vpn/android/libs/maven
-          key: libxray-maven-${{ env.LIBXRAY_VERSION }}
+          key: core-${{ hashFiles('core/**', 'scripts/build-libxray.sh') }}
 
       - name: Set up the Android NDK
         if: steps.libxray.outputs.cache-hit != 'true'
@@ -69,7 +75,7 @@ jobs:
         with:
           ndk-version: r30
 
-      - name: Build libXray
+      - name: Build the Go core
         if: steps.libxray.outputs.cache-hit != 'true'
         env:
           ANDROID_NDK_HOME: ${{ steps.ndk.outputs.ndk-path }}
@@ -104,40 +110,44 @@ jobs:
           KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
         run: |
           apksigner="$(ls -d "$ANDROID_HOME"/build-tools/*/ | sort -V | tail -1)apksigner"
-          out="we1ssconnect-android-${APP_VERSION}.apk"
-          cp android/app/build/outputs/apk/release/app-release.apk "$out"
           if [[ -n "$KEYSTORE_B64" ]]; then
             echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/release.p12"
-            "$apksigner" sign --ks "$RUNNER_TEMP/release.p12" --ks-type PKCS12 \
-              --ks-pass env:KEYSTORE_PASSWORD "$out"
-            rm -f "$RUNNER_TEMP/release.p12"
+            sign() { "$apksigner" sign --ks "$RUNNER_TEMP/release.p12" --ks-type PKCS12 --ks-pass env:KEYSTORE_PASSWORD "$1"; }
           elif [[ -n "$RELEASE_VERSION" ]]; then
             echo "ANDROID_KEYSTORE_B64 secret is missing; a release must be signed with the real key"; exit 1
           else
             # Test builds without the secret get a throwaway key: installable, not updatable.
-            keytool -genkeypair -keystore "$RUNNER_TEMP/test.p12" -storetype PKCS12 -storepass testtest \
+            keytool -genkeypair -keystore "$RUNNER_TEMP/release.p12" -storetype PKCS12 -storepass testtest \
               -alias test -keyalg RSA -keysize 2048 -validity 365 -dname "CN=We1ssConnect test"
-            "$apksigner" sign --ks "$RUNNER_TEMP/test.p12" --ks-pass pass:testtest "$out"
+            sign() { "$apksigner" sign --ks "$RUNNER_TEMP/release.p12" --ks-pass pass:testtest "$1"; }
             echo "::warning::Signed with a throwaway test key (ANDROID_KEYSTORE_B64 is not set)"
           fi
+          # One APK per ABI (app/build.gradle splits, see plugins/withAbiSplits.js).
+          mkdir -p dist
+          for f in android/app/build/outputs/apk/release/app-*-release*.apk; do
+            abi="$(basename "$f" | sed -E 's/^app-(.*)-release.*\.apk$/\1/')"
+            out="dist/we1ssconnect-android-${APP_VERSION}-${abi}.apk"
+            cp "$f" "$out"
+            sign "$out"
+            ls -l "$out"
+          done
+          rm -f "$RUNNER_TEMP/release.p12"
           "$apksigner" verify --print-certs "$out" | grep -i "certificate DN"
-          sha256sum "$out" > "$out.sha256"
-          echo "APK=$out" >> "$GITHUB_ENV"
+          (cd dist && sha256sum *.apk > SHA256SUMS)
 
       - uses: actions/upload-artifact@v7
         with:
           name: we1ssconnect-android
-          path: |
-            ${{ env.APK }}
-            ${{ env.APK }}.sha256
+          path: dist/
 
       - name: Publish the release
         if: env.RELEASE_VERSION != ''
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "v$APP_VERSION" "$APK" "$APK.sha256" --target "$GITHUB_SHA" \
-            --title "We1ssConnect $APP_VERSION" --generate-notes
+          # Phones are ARM; the x86_64 build is only for the emulator test.
+          gh release create "v$APP_VERSION" dist/*-arm64-v8a.apk dist/*-armeabi-v7a.apk dist/SHA256SUMS \
+            --target "$GITHUB_SHA" --title "We1ssConnect $APP_VERSION" --generate-notes
 
   # Installs the APK on an emulator and checks that it starts and the core loads.
   smoke:

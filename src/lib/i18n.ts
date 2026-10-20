@@ -1,3 +1,6 @@
+import { getState } from './store';
+import type { Language } from './types';
+
 const en = {
   connect: 'Connect',
   disconnect: 'Disconnect',
@@ -12,7 +15,7 @@ const en = {
   settings: 'Settings',
   add: 'Add',
   addTitle: 'Add a subscription or links',
-  addHint: 'Subscription URL (https://…) or one link per line',
+  addHint: 'Subscription URL (https://…) or one link per line. Links are saved as a group of their own.',
   paste: 'Paste from clipboard',
   added: 'Added servers: {n}',
   refresh: 'Update subscriptions',
@@ -25,7 +28,6 @@ const en = {
   trafficUnlimited: 'Used {used}',
   expires: 'Until {date}',
   updated: 'Updated {date}',
-  manualProfile: 'Added manually',
   vpnDenied: 'VPN permission was not granted',
   forceChrome: 'Chrome fingerprint for Reality',
   forceChromeHint: 'Fixes connecting to Reality servers on Xray 26.9.8 and newer.',
@@ -35,6 +37,89 @@ const en = {
   aboutText: 'We1ssConnect is the client app for We1ssBoard.',
   licenses: 'Uses Xray-core (MPL-2.0, github.com/XTLS/Xray-core) and libXray (MIT, github.com/XTLS/libXray).',
   core: 'Xray core {v}',
+  home: 'Home',
+  auto: 'Auto (fastest)',
+  autoHint: 'Picks the server with the lowest delay and switches if it stops answering',
+  autoNow: 'Now: {name}',
+  yourIp: 'Your IP',
+  ipLoading: 'Checking your IP…',
+  ipFailed: 'Could not check the IP',
+  speed: 'Speed',
+  session: 'This session',
+  duration: 'Connected for {time}',
+  ms: '{n} ms',
+  timeout: 'timeout',
+  sortByPing: 'Sort by delay',
+  pinging: 'Testing…',
+  routing: 'Routing',
+  perApp: 'Per-app routing',
+  appModeAll: 'All apps',
+  appModeInclude: 'Only selected apps',
+  appModeExclude: 'All except selected',
+  appsSelected: '{n} selected',
+  searchApps: 'Search apps',
+  showSystem: 'Show system apps',
+  appsHint: 'Changes apply on the next connect.',
+  autoPing: 'Test delays on start',
+  autoPingHint: 'Measures every server when the app opens and the VPN is off.',
+  security: 'Connection',
+  reconnectHint: 'Reconnect to apply.',
+  geoFailed: 'Could not download the routing rules: {error}',
+  ruDirect: 'Russian sites directly',
+  ruDirectHint: 'Russian domains and IP addresses bypass the VPN.',
+  blockAds: 'Block ads',
+  blockAdsHint: 'Ad and tracker domains are dropped.',
+  geoUpdate: 'Update routing rules',
+  geoUpdated: 'Downloaded {date}',
+  geoMissing: 'Downloaded on the first connect with a preset on',
+  dns: 'DNS',
+  doh: 'DNS over HTTPS',
+  dohHint: 'Encrypted queries to the same resolver.',
+  ipv6: 'IPv6',
+  ipv6Hint: 'Use IPv6 addresses when the site and server have them.',
+  fragment: 'TLS fragmentation',
+  fragmentHint: 'Splits the TLS handshake so DPI cannot read the server name. Helps when a TLS server is blocked.',
+  mux: 'Multiplexing (mux)',
+  muxHint: 'Many connections over one. Skipped for Vision, XHTTP and Hysteria.',
+  autoUpdate: 'Update subscriptions on start',
+  autoUpdateHint: 'Subscriptions older than 12 hours are refreshed when the app opens.',
+  scanQr: 'Scan QR code',
+  cameraDenied: 'Camera access is needed to scan a QR code',
+  copyLink: 'Copy link',
+  copied: 'Link copied',
+  tileHint: 'A We1ssConnect tile can be added to quick settings to connect from the notification shade.',
+  keysGroup: 'Keys {n}',
+  serversCount: 'Servers: {n}',
+  refreshOne: 'Update subscription',
+  removeGroup: 'Remove group',
+  groupName: 'Group name (optional)',
+  autoRoundRobin: 'Auto (round robin)',
+  roundRobinHint: 'New connections take the live servers in turn',
+  balancerLeastPing: 'Lowest delay',
+  balancerRoundRobin: 'Round robin',
+  appearance: 'Appearance',
+  theme: 'Theme',
+  themeSystem: 'System',
+  themeLight: 'Light',
+  themeDark: 'Dark',
+  colors: 'Colours',
+  styleOcean: 'Ocean',
+  styleEmerald: 'Emerald',
+  stylePastel: 'Pastel',
+  styleMono: 'Mono',
+  language: 'Language',
+  restartHint: 'Restart the app to switch the language.',
+  updates: 'Updates',
+  checkUpdates: 'Check for updates',
+  checking: 'Checking…',
+  versionNow: 'Installed: {v}',
+  upToDate: 'You have the latest version.',
+  updateAvailable: 'Version {v} is available',
+  updateInstall: 'Download and install ({size})',
+  downloading: 'Downloading… {p}%',
+  updateFailed: 'Update failed',
+  openRelease: 'Open the release page',
+  docs: 'Documentation',
 };
 
 type Dict = typeof en;
@@ -53,7 +138,7 @@ const ru: Dict = {
   settings: 'Настройки',
   add: 'Добавить',
   addTitle: 'Подписка или ссылки',
-  addHint: 'Ссылка на подписку (https://…) или по ссылке на строку',
+  addHint: 'Ссылка на подписку (https://…) или по ссылке на строку. Ссылки сохраняются отдельной группой.',
   paste: 'Вставить из буфера',
   added: 'Добавлено серверов: {n}',
   refresh: 'Обновить подписки',
@@ -66,7 +151,6 @@ const ru: Dict = {
   trafficUnlimited: 'Использовано {used}',
   expires: 'До {date}',
   updated: 'Обновлено {date}',
-  manualProfile: 'Добавлены вручную',
   vpnDenied: 'Разрешение на VPN не выдано',
   forceChrome: 'Отпечаток Chrome для Reality',
   forceChromeHint: 'Чинит подключение к Reality-серверам на Xray 26.9.8 и новее.',
@@ -76,17 +160,93 @@ const ru: Dict = {
   aboutText: 'We1ssConnect — клиент для панели We1ssBoard.',
   licenses: 'Использует Xray-core (MPL-2.0, github.com/XTLS/Xray-core) и libXray (MIT, github.com/XTLS/libXray).',
   core: 'Ядро Xray {v}',
+  home: 'Главная',
+  auto: 'Авто (самый быстрый)',
+  autoHint: 'Выбирает сервер с наименьшей задержкой и переключается, если он перестал отвечать',
+  autoNow: 'Сейчас: {name}',
+  yourIp: 'Ваш IP',
+  ipLoading: 'Проверяю IP…',
+  ipFailed: 'Не удалось проверить IP',
+  speed: 'Скорость',
+  session: 'За сеанс',
+  duration: 'Подключено {time}',
+  ms: '{n} мс',
+  timeout: 'нет ответа',
+  sortByPing: 'По задержке',
+  pinging: 'Проверяю…',
+  routing: 'Маршрутизация',
+  perApp: 'Маршрутизация по приложениям',
+  appModeAll: 'Все приложения',
+  appModeInclude: 'Только выбранные',
+  appModeExclude: 'Все, кроме выбранных',
+  appsSelected: 'Выбрано: {n}',
+  searchApps: 'Поиск приложений',
+  showSystem: 'Показывать системные',
+  appsHint: 'Изменения применятся при следующем подключении.',
+  autoPing: 'Проверять задержку при запуске',
+  autoPingHint: 'Измеряет все серверы, когда приложение открыто, а VPN выключен.',
+  security: 'Подключение',
+  reconnectHint: 'Переподключитесь, чтобы применить.',
+  geoFailed: 'Не удалось скачать правила маршрутизации: {error}',
+  ruDirect: 'Российские сайты напрямую',
+  ruDirectHint: 'Российские домены и IP-адреса идут мимо VPN.',
+  blockAds: 'Блокировать рекламу',
+  blockAdsHint: 'Рекламные и следящие домены отбрасываются.',
+  geoUpdate: 'Обновить правила маршрутизации',
+  geoUpdated: 'Скачаны {date}',
+  geoMissing: 'Скачаются при первом подключении с включённым пресетом',
+  dns: 'DNS',
+  doh: 'DNS через HTTPS',
+  dohHint: 'Зашифрованные запросы к тому же резолверу.',
+  ipv6: 'IPv6',
+  ipv6Hint: 'Использовать IPv6, если он есть у сайта и сервера.',
+  fragment: 'Фрагментация TLS',
+  fragmentHint: 'Дробит TLS-рукопожатие, чтобы DPI не прочитал имя сервера. Помогает, если TLS-сервер блокируют.',
+  mux: 'Мультиплексирование (mux)',
+  muxHint: 'Много соединений через одно. Не применяется к Vision, XHTTP и Hysteria.',
+  autoUpdate: 'Обновлять подписки при запуске',
+  autoUpdateHint: 'Подписки старше 12 часов обновляются при открытии приложения.',
+  scanQr: 'Сканировать QR-код',
+  cameraDenied: 'Чтобы сканировать QR-код, нужен доступ к камере',
+  copyLink: 'Скопировать ссылку',
+  copied: 'Ссылка скопирована',
+  tileHint: 'Плитку We1ssConnect можно добавить в быстрые настройки и подключаться из шторки.',
+  keysGroup: 'Ключи {n}',
+  serversCount: 'Серверов: {n}',
+  refreshOne: 'Обновить подписку',
+  removeGroup: 'Удалить группу',
+  groupName: 'Название группы (необязательно)',
+  autoRoundRobin: 'Авто (по кругу)',
+  roundRobinHint: 'Новые соединения по очереди идут через живые серверы',
+  balancerLeastPing: 'По задержке',
+  balancerRoundRobin: 'По кругу',
+  appearance: 'Оформление',
+  theme: 'Тема',
+  themeSystem: 'Система',
+  themeLight: 'Светлая',
+  themeDark: 'Тёмная',
+  colors: 'Цвета',
+  styleOcean: 'Океан',
+  styleEmerald: 'Изумруд',
+  stylePastel: 'Пастель',
+  styleMono: 'Моно',
+  language: 'Язык',
+  restartHint: 'Перезапустите приложение, чтобы сменить язык.',
+  updates: 'Обновления',
+  checkUpdates: 'Проверить обновления',
+  checking: 'Проверяю…',
+  versionNow: 'Установлена: {v}',
+  upToDate: 'У вас последняя версия.',
+  updateAvailable: 'Доступна версия {v}',
+  updateInstall: 'Скачать и установить ({size})',
+  downloading: 'Скачиваю… {p}%',
+  updateFailed: 'Не удалось обновить',
+  openRelease: 'Открыть страницу релиза',
+  docs: 'Документация',
 };
 
-function systemLanguage(): string {
-  try {
-    return Intl.DateTimeFormat().resolvedOptions().locale.slice(0, 2).toLowerCase();
-  } catch {
-    return 'en';
-  }
-}
-
-export const lang = systemLanguage() === 'ru' ? 'ru' : 'en';
+// The app speaks Russian unless English is chosen in the settings; changing it reloads the app.
+export const lang: Language = getState().settings.language === 'en' ? 'en' : 'ru';
 const dict: Dict = lang === 'ru' ? ru : en;
 
 export function t(key: keyof Dict, vars: Record<string, string | number> = {}): string {
@@ -105,4 +265,31 @@ export function formatBytes(n: number): string {
 
 export function formatDate(ms: number): string {
   return new Date(ms).toLocaleDateString(lang === 'ru' ? 'ru-RU' : 'en-US');
+}
+
+export function formatSpeed(bytesPerSecond: number): string {
+  return `${formatBytes(bytesPerSecond)}/${lang === 'ru' ? 'с' : 's'}`;
+}
+
+export function formatDuration(ms: number): string {
+  const total = Math.floor(ms / 1000);
+  const h = Math.floor(total / 3600);
+  const m = Math.floor((total % 3600) / 60);
+  const sec = total % 60;
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return h > 0 ? `${h}:${pad(m)}:${pad(sec)}` : `${pad(m)}:${pad(sec)}`;
+}
+
+/** Country name in the app language, falling back to what the IP service said. */
+export function countryName(code?: string, fallback?: string): string {
+  if (code) {
+    try {
+      const names = new Intl.DisplayNames([lang], { type: 'region' });
+      const name = names.of(code.toUpperCase());
+      if (name) return name;
+    } catch {
+      // Intl.DisplayNames is missing on some engines.
+    }
+  }
+  return fallback ?? code ?? '';
 }

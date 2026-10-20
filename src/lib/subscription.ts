@@ -69,7 +69,8 @@ export async function fetchSubscription(url: string, existing?: Profile): Promis
   })();
   return {
     id: existing?.id ?? newId(),
-    name: parseTitle(res.headers.get('profile-title')) ?? existing?.name ?? host,
+    // A name the user gave (or the first title) stays across refreshes.
+    name: existing?.name ?? parseTitle(res.headers.get('profile-title')) ?? host,
     url: url.trim(),
     updatedAt: Date.now(),
     userInfo: parseUserInfo(res.headers.get('subscription-userinfo')),
@@ -77,25 +78,37 @@ export async function fetchSubscription(url: string, existing?: Profile): Promis
   };
 }
 
-/** Adds a subscription URL or one or more share links; returns how many servers were added. */
-export async function addFromText(text: string): Promise<number> {
+/**
+ * Adds a subscription URL, or share links as a group of their own; returns how many servers were added.
+ * name labels the group (a subscription's own title is used when it has one).
+ */
+export async function addFromText(text: string, name?: string): Promise<number> {
   const trimmed = text.trim();
+  const label = name?.trim();
   if (!trimmed) throw new Error('empty');
   if (isUrl(trimmed) && !trimmed.includes('\n')) {
-    const profile = await fetchSubscription(trimmed);
-    upsertProfile(profile);
+    const existing = getState().profiles.find((p) => p.url === trimmed);
+    const profile = await fetchSubscription(trimmed, existing);
+    upsertProfile(label ? { ...profile, name: label } : profile);
     return profile.servers.length;
   }
   const servers = await toServers(trimmed);
   if (servers.length === 0) throw new Error('no servers found');
-  const manual = getState().profiles.find((p) => !p.url);
+  const groups = getState().profiles.filter((p) => !p.url).length;
   upsertProfile({
-    id: manual?.id ?? newId(),
-    name: manual?.name ?? t('manualProfile'),
+    id: newId(),
+    name: label || t('keysGroup', { n: groups + 1 }),
     updatedAt: Date.now(),
-    servers: [...(manual?.servers ?? []), ...servers],
+    servers,
   });
   return servers.length;
+}
+
+/** Re-downloads one subscription. */
+export async function refreshProfile(id: string): Promise<void> {
+  const profile = getState().profiles.find((p) => p.id === id);
+  if (!profile?.url) return;
+  upsertProfile(await fetchSubscription(profile.url, profile));
 }
 
 export async function refreshAll(): Promise<void> {
@@ -109,4 +122,27 @@ export async function refreshAll(): Promise<void> {
     }
   }
   if (errors.length) throw new Error(errors.join('\n'));
+}
+
+const STALE_MS = 12 * 3600_000;
+
+/** Quietly refreshes subscriptions not updated for 12 hours. */
+export async function refreshStale(): Promise<void> {
+  for (const profile of getState().profiles) {
+    if (!profile.url || Date.now() - profile.updatedAt < STALE_MS) continue;
+    try {
+      upsertProfile(await fetchSubscription(profile.url, profile));
+    } catch {
+      // Tried again on the next start; the old servers keep working.
+    }
+  }
+}
+
+/** A server as a share link (vless://…), for copying or a QR code. */
+export async function shareLink(server: Server): Promise<string> {
+  const outbound = { ...server.outbound, tag: server.name };
+  const links = await XrayVpn.shareLinks(JSON.stringify({ outbounds: [outbound] }));
+  const link = links.split('\n').find((l) => l.trim());
+  if (!link) throw new Error('no link');
+  return link.trim();
 }

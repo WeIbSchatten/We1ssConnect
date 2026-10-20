@@ -1,39 +1,49 @@
-# We1ssConnect
+<p align="center"><img src="docs/assets/logo.svg" width="96" alt="We1ssConnect"></p>
 
-VPN client for [We1ssBoard](https://github.com/WeIbSchatten/We1ssBoard) panels, built on Xray-core.
+<h1 align="center">We1ssConnect</h1>
 
-Status: early development, Android first.
+<p align="center">VPN-клиент для Android на ядре Xray · Android VPN client on the Xray core</p>
 
-## How it works
+<p align="center">
+  <a href="https://github.com/WeIbSchatten/We1ssConnect/releases/latest">Скачать / Download</a> ·
+  <a href="https://weibschatten.github.io/We1ssConnect/#/ru/">Документация</a> ·
+  <a href="https://weibschatten.github.io/We1ssConnect/#/en/">Documentation</a>
+</p>
 
-- **UI**: React Native + Expo (`src/`), the same stack and palettes as the We1ssBoard mobile app.
-- **Tunnel**: `modules/xray-vpn` is a local Expo module. Its `XrayVpnService` opens an Android
-  `VpnService` TUN and hands the descriptor to Xray's own `tun` inbound, so all traffic goes
-  through Xray-core with no separate tun2socks layer. The app itself is excluded from the tunnel,
-  which keeps Xray's connections to the server out of it.
-- **Core**: [libXray](https://github.com/XTLS/libXray) (`libXray.aar`, built by
-  `scripts/build-libxray.sh`) wraps Xray-core for Android. It also parses share links and
-  subscriptions and measures server delay.
-- **Servers**: a subscription URL (base64 or plain links; `subscription-userinfo` and
-  `profile-title` headers are shown) or vless/vmess/trojan/ss/hysteria2 share links.
-  `we1ssconnect://add?url=<subscription>` opens the add screen with the link filled in.
-- **Reality fix**: Reality servers on Xray 26.9.8+ drop clients whose ClientHello has no
-  X25519MLKEM768. Xray's chrome fingerprint sends it, so the client switches Reality
-  outbounds to `chrome` by default (Settings).
+## Возможности
 
-## Building
+- Xray-core внутри приложения: VLESS (Reality, Vision, XHTTP), VMess, Trojan, Shadowsocks, Hysteria2.
+- Подписки панели [We1ssBoard](https://github.com/WeIbSchatten/We1ssBoard) и других, ссылки на ключи, QR-коды; группы ключей.
+- Пинг до и во время подключения, автовыбор сервера по задержке или по кругу.
+- Внешний IP (середина скрыта), страна, город, провайдер, скорость и трафик за сеанс.
+- Маршрутизация по приложениям, пресеты «Российские сайты напрямую» и «Блокировать рекламу».
+- DNS (Cloudflare, Google, Quad9, DoH), IPv6, фрагментация TLS, mux, исправление Reality для Xray 26.9.8+.
+- Плитка в шторке, автообновление подписок, обновление приложения из него самого.
+- Тёмная, светлая и AMOLED-темы, русский и английский язык.
+
+## Features
+
+- Xray-core inside the app: VLESS (Reality, Vision, XHTTP), VMess, Trojan, Shadowsocks, Hysteria2.
+- [We1ssBoard](https://github.com/WeIbSchatten/We1ssBoard) and other subscriptions, share links, QR codes; key groups.
+- Ping before and during the connection, automatic server choice by lowest delay or round robin.
+- Exit IP (middle hidden), country, city, ISP, speed and session traffic.
+- Per-app routing, "Russian sites directly" and "Block ads" presets.
+- DNS (Cloudflare, Google, Quad9, DoH), IPv6, TLS fragmentation, mux, the Reality fix for Xray 26.9.8+.
+- Quick settings tile, subscription auto-update, in-app updates.
+- Dark, light and AMOLED themes, Russian and English.
+
+## Сборка · Building
 
 ```bash
 npm ci
-scripts/build-libxray.sh            # needs Go, Android SDK + NDK
+scripts/build-libxray.sh             # Go, Android SDK + NDK
 npx expo prebuild --platform android
 cd android && ./gradlew assembleRelease
 ```
 
-CI (`.github/workflows/android.yml`) does the same, runs the app on an emulator, and on a
-`v*.*.*` tag, or a manual run of the workflow with a version, publishes the APK signed with
-the `ANDROID_KEYSTORE_B64` / `ANDROID_KEYSTORE_PASSWORD` secrets as a GitHub release.
+Подробности: [для разработчиков](https://weibschatten.github.io/We1ssConnect/#/ru/develop) ·
+details: [for developers](https://weibschatten.github.io/We1ssConnect/#/en/develop).
 
-## Third-party software
+## Лицензии · Third-party software
 
-See [NOTICE.md](NOTICE.md).
+[NOTICE.md](NOTICE.md): Xray-core (MPL-2.0), libXray (MIT).
