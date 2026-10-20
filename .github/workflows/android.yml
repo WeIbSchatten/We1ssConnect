@@ -1,9 +1,14 @@
 name: Android
 
-# Pull requests build the APK as a downloadable artifact; a v*.*.* tag builds the
-# signed APK and publishes it as a GitHub release.
+# Pull requests build the APK as a downloadable artifact. A v*.*.* tag, or a manual
+# run with a version, builds the signed APK and publishes it as a GitHub release
+# (a manual run creates the v<version> tag on the commit it built).
 on:
   workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version, e.g. 0.0.1 (empty: build only)"
+        required: false
   pull_request:
   push:
     branches: [main]
@@ -14,6 +19,7 @@ permissions:
 
 env:
   LIBXRAY_VERSION: v26.10.17
+  RELEASE_VERSION: ${{ inputs.version || (startsWith(github.ref, 'refs/tags/v') && github.ref_name) || '' }}
 
 jobs:
   check:
@@ -73,8 +79,8 @@ jobs:
 
       - name: Stamp the version
         run: |
-          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
-            version="${GITHUB_REF_NAME#v}"
+          if [[ -n "$RELEASE_VERSION" ]]; then
+            version="${RELEASE_VERSION#v}"
           else
             version="$(jq -r .expo.version app.json)"
           fi
@@ -105,7 +111,7 @@ jobs:
             "$apksigner" sign --ks "$RUNNER_TEMP/release.p12" --ks-type PKCS12 \
               --ks-pass env:KEYSTORE_PASSWORD "$out"
             rm -f "$RUNNER_TEMP/release.p12"
-          elif [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+          elif [[ -n "$RELEASE_VERSION" ]]; then
             echo "ANDROID_KEYSTORE_B64 secret is missing; a release must be signed with the real key"; exit 1
           else
             # Test builds without the secret get a throwaway key: installable, not updatable.
@@ -126,11 +132,11 @@ jobs:
             ${{ env.APK }}.sha256
 
       - name: Publish the release
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: env.RELEASE_VERSION != ''
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "$GITHUB_REF_NAME" "$APK" "$APK.sha256" \
+          gh release create "v$APP_VERSION" "$APK" "$APK.sha256" --target "$GITHUB_SHA" \
             --title "We1ssConnect $APP_VERSION" --generate-notes
 
   # Installs the APK on an emulator and checks that it starts and the core loads.
