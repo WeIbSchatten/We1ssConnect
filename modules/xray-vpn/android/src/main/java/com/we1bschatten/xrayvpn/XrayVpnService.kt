@@ -22,6 +22,38 @@ import java.io.File
 class XrayVpnService : VpnService() {
   enum class State { DISCONNECTED, CONNECTING, CONNECTED, ERROR }
 
+  /** What to start; handed over in [pending] right before ACTION_START. */
+  class Request(
+    val config: String,
+    /** Server outbound tag to pin, or "" to let the balancer pick by delay. */
+    val target: String,
+    /** "all", "include" (only [apps] use the VPN) or "exclude" ([apps] bypass it). */
+    val appMode: String,
+    val apps: List<String>,
+  ) {
+    fun toJson(title: String): String = JSONObject()
+      .put("config", config)
+      .put("target", target)
+      .put("appMode", appMode)
+      .put("apps", JSONArray(apps))
+      .put("title", title)
+      .toString()
+
+    companion object {
+      fun fromJson(json: String): Pair<Request, String> {
+        val o = JSONObject(json)
+        val apps = o.optJSONArray("apps") ?: JSONArray()
+        val request = Request(
+          o.getString("config"),
+          o.optString("target"),
+          o.optString("appMode", "all"),
+          (0 until apps.length()).map { apps.getString(it) },
+        )
+        return request to o.optString("title", "We1ssConnect")
+      }
+    }
+  }
+
   companion object {
     private const val TAG = "We1ssConnect"
     private const val CHANNEL_ID = "vpn"
@@ -38,38 +70,6 @@ class XrayVpnService : VpnService() {
 
     /** Balancer the config routes through; servers are pinned on it without a restart. */
     const val BALANCER = "main"
-
-    /** What to start next; set right before ACTION_START. */
-    class Request(
-      val config: String,
-      /** Server outbound tag to pin, or "" to let the balancer pick by delay. */
-      val target: String,
-      /** "all", "include" (only [apps] use the VPN) or "exclude" ([apps] bypass it). */
-      val appMode: String,
-      val apps: List<String>,
-    ) {
-      fun toJson(title: String): String = JSONObject()
-        .put("config", config)
-        .put("target", target)
-        .put("appMode", appMode)
-        .put("apps", JSONArray(apps))
-        .put("title", title)
-        .toString()
-
-      companion object {
-        fun fromJson(json: String): Pair<Request, String> {
-          val o = JSONObject(json)
-          val apps = o.optJSONArray("apps") ?: JSONArray()
-          val request = Request(
-            o.getString("config"),
-            o.optString("target"),
-            o.optString("appMode", "all"),
-            (0 until apps.length()).map { apps.getString(it) },
-          )
-          return request to o.optString("title", "We1ssConnect")
-        }
-      }
-    }
 
     private const val PREFS = "we1ssconnect"
     private const val LAST_REQUEST = "native.lastRequest"
