@@ -53,8 +53,8 @@ jobs:
         id: libxray
         uses: actions/cache@v5
         with:
-          path: modules/xray-vpn/android/libs/libXray.aar
-          key: libxray-${{ env.LIBXRAY_VERSION }}
+          path: modules/xray-vpn/android/libs/maven
+          key: libxray-maven-${{ env.LIBXRAY_VERSION }}
 
       - name: Set up the Android NDK
         if: steps.libxray.outputs.cache-hit != 'true'

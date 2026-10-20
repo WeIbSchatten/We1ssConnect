@@ -33,7 +33,8 @@
             "extraProguardRules": "-keep class libXray.** { *; }\n-keep class go.** { *; }\n-keep class com.we1bschatten.xrayvpn.** { *; }"
           }
         }
-      ]
+      ],
+      "./plugins/withLibXray"
     ],
     "experiments": {
       "typedRoutes": true
