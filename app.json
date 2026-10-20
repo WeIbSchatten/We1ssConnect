@@ -1,0 +1,42 @@
+{
+  "expo": {
+    "name": "We1ssConnect",
+    "slug": "we1ssconnect",
+    "version": "0.1.0",
+    "scheme": "we1ssconnect",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "backgroundColor": "#0a0a0a",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0a0a0a"
+    },
+    "android": {
+      "package": "com.we1bschatten.we1ssconnect",
+      "versionCode": 100,
+      "adaptiveIcon": {
+        "backgroundColor": "#0b0b0c",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "minSdkVersion": 26,
+            "extraProguardRules": "-keep class libXray.** { *; }\n-keep class go.** { *; }\n-keep class com.we1bschatten.xrayvpn.** { *; }"
+          }
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
