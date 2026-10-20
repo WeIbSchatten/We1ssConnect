@@ -1,0 +1,11 @@
+node_modules/
+.expo/
+dist/
+/android/
+/ios/
+*.apk
+*.aar
+*.jar
+modules/xray-vpn/android/libs/
+expo-env.d.ts
+.DS_Store

@@ -1,0 +1,22 @@
+plugins {
+  id 'com.android.library'
+  id 'expo-module-gradle-plugin'
+}
+
+group = 'com.we1bschatten.xrayvpn'
+version = '0.1.0'
+
+android {
+  namespace "com.we1bschatten.xrayvpn"
+}
+
+// libXray.aar (Xray-core for Android) is built by scripts/build-libxray.sh into a
+// file-based Maven repository; the app gets the same repository from plugins/withLibXray.js.
+repositories {
+  maven { url = uri("${projectDir}/libs/maven") }
+}
+
+dependencies {
+  implementation "com.we1bschatten:libxray:1.0"
+  implementation "androidx.core:core-ktx:1.17.0"
+}

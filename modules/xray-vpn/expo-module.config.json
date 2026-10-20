@@ -1,0 +1,6 @@
+{
+  "platforms": ["android"],
+  "android": {
+    "modules": ["com.we1bschatten.xrayvpn.XrayVpnModule"]
+  }
+}
