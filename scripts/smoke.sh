@@ -12,6 +12,10 @@ adb exec-out screencap -p > smoke/home.png
 # Settings shows the Xray version, which needs the native core.
 adb shell am start -a android.intent.action.VIEW -d "we1ssconnect://settings" "$pkg"
 sleep 8
+# The About card is at the bottom of a long list; uiautomator only sees what is on screen.
+size="$(adb shell wm size | grep -oE '[0-9]+x[0-9]+' | tail -1)"
+w="${size%x*}"; h="${size#*x}"
+for _ in 1 2 3 4 5; do adb shell input swipe $((w / 2)) $((h * 8 / 10)) $((w / 2)) $((h * 2 / 10)) 300; sleep 1; done
 adb exec-out screencap -p > smoke/settings.png
 adb shell uiautomator dump /sdcard/ui.xml >/dev/null && adb pull /sdcard/ui.xml smoke/settings.xml >/dev/null
 adb logcat -d > smoke/logcat.txt
