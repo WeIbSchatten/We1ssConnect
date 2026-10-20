@@ -31,8 +31,8 @@ cd android && ./gradlew assembleRelease
 ```
 
 CI (`.github/workflows/android.yml`) does the same, runs the app on an emulator, and on a
-`v*.*.*` tag publishes the APK signed with the `ANDROID_KEYSTORE_B64` /
-`ANDROID_KEYSTORE_PASSWORD` secrets as a GitHub release.
+`v*.*.*` tag, or a manual run of the workflow with a version, publishes the APK signed with
+the `ANDROID_KEYSTORE_B64` / `ANDROID_KEYSTORE_PASSWORD` secrets as a GitHub release.
 
 ## Third-party software
 
