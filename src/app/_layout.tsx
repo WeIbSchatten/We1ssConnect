@@ -3,6 +3,7 @@ import { StatusBar } from 'expo-status-bar';
 import XrayVpn from 'xray-vpn';
 
 import { DialogHost } from '@/components/dialog';
+import '@/lib/desktopStyle';
 import { lang, t } from '@/lib/i18n';
 import { useIsLight, usePalette } from '@/lib/theme';
 
@@ -25,6 +26,7 @@ export default function RootLayout() {
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="add" options={{ title: t('add'), presentation: 'modal' }} />
         <Stack.Screen name="apps" options={{ title: t('perApp') }} />
+        <Stack.Screen name="profile" options={{ title: t('subscription') }} />
         <Stack.Screen name="scan" options={{ title: t('scanQr') }} />
       </Stack>
       <DialogHost />

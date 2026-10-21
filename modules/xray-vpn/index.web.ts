@@ -27,6 +27,7 @@ interface Bridge {
   LoadStore(): Promise<Record<string, string>>;
   SaveItem(key: string, value: string | null): Promise<void>;
   Platform(): Promise<string>;
+  OpenURL(url: string): Promise<void>;
 }
 
 declare global {
@@ -78,6 +79,7 @@ const XrayVpn = {
   traffic: () => bridge().Traffic(),
   httpGet: (url: string, timeoutMs: number) => bridge().HTTPGet(url, timeoutMs),
   fetch: (url: string, userAgent: string) => bridge().Fetch(url, userAgent),
+  openUrl: (url: string) => bridge().OpenURL(url),
   delay: async () => -1,
   downloadGeo: async (files: Record<string, string>) => (geoAt = await bridge().DownloadGeo(files)),
   geoUpdatedAt: () => geoAt,

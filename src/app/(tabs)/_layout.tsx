@@ -1,6 +1,6 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Tabs } from 'expo-router';
-import { Text, View, type ColorValue } from 'react-native';
+import { Platform, Text, View, type ColorValue } from 'react-native';
 
 import { BrandMark } from '@/components/BrandMark';
 import type { IconName } from '@/components/ui';
@@ -23,9 +23,13 @@ export default function TabsLayout() {
         headerTintColor: p.text,
         headerShadowVisible: false,
         headerTitleStyle: { fontWeight: '700' },
-        tabBarLabelStyle: { fontSize: 11, fontWeight: '600' },
+        tabBarLabelStyle: { fontSize: 11, lineHeight: 14, fontWeight: '600' },
         sceneStyle: { backgroundColor: p.bg },
-        tabBarStyle: { backgroundColor: p.surface, borderTopColor: p.border },
+        // The desktop window has no safe-area inset, and the default 49 px cut the labels off.
+        tabBarStyle: [
+          { backgroundColor: p.surface, borderTopColor: p.border },
+          Platform.OS === 'web' && { height: 68 },
+        ],
         tabBarActiveTintColor: p.accent,
         tabBarInactiveTintColor: p.text3,
       }}>

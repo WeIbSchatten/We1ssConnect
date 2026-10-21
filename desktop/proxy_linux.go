@@ -102,3 +102,5 @@ func copyFile(from, to string, mode os.FileMode) error {
 	}
 	return out.Close()
 }
+
+func openExternal(url string) error { return exec.Command("xdg-open", url).Start() }

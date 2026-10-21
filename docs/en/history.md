@@ -1,5 +1,11 @@
 # Version history
 
+## 1.2.0
+
+- **Subscription screen**: traffic, expiry, the panel's subscription page, copy link, refresh and the server list. It opens from the group header or the home traffic card.
+- **Telegram proxies** from the subscription (Web Proxy and MTProto): one tap and Telegram offers to add it.
+- Windows: country flags instead of the letters FI, DE; tab labels are no longer cut off.
+
 ## 1.1.0
 
 - **We1ssConnect for Windows and Linux.** The same screens as on the phone: servers, subscriptions, auto select, routing, ping. Instead of a VPN it turns on the system proxy, and SOCKS5 `127.0.0.1:10808` is there for programs that ignore it. It updates itself from the app.

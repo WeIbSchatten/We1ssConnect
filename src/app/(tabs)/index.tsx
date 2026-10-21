@@ -221,27 +221,29 @@ export default function Home() {
       ) : null}
 
       {profile && info ? (
-        <Card style={{ marginTop: 12 }}>
-          <Text style={[styles.name, { color: p.text, marginBottom: 4 }]}>{profile.name}</Text>
-          <Muted>
-            {info.total > 0
-              ? t('traffic', { used: formatBytes(used), total: formatBytes(info.total) })
-              : t('trafficUnlimited', { used: formatBytes(used) })}
-          </Muted>
-          {info.expire > 0 ? <Muted>{t('expires', { date: formatDate(info.expire * 1000) })}</Muted> : null}
-          {info.total > 0 ? (
-            <View style={[styles.bar, { backgroundColor: p.surface2 }]}>
-              <View
-                style={{
-                  width: `${Math.min(100, (used / info.total) * 100)}%`,
-                  backgroundColor: used / info.total > 0.9 ? p.warning : p.accent,
-                  height: '100%',
-                  borderRadius: 3,
-                }}
-              />
-            </View>
-          ) : null}
-        </Card>
+        <Pressable onPress={() => router.push({ pathname: '/profile', params: { id: profile.id } })}>
+          <Card style={{ marginTop: 12 }}>
+            <Text style={[styles.name, { color: p.text, marginBottom: 4 }]}>{profile.name}</Text>
+            <Muted>
+              {info.total > 0
+                ? t('traffic', { used: formatBytes(used), total: formatBytes(info.total) })
+                : t('trafficUnlimited', { used: formatBytes(used) })}
+            </Muted>
+            {info.expire > 0 ? <Muted>{t('expires', { date: formatDate(info.expire * 1000) })}</Muted> : null}
+            {info.total > 0 ? (
+              <View style={[styles.bar, { backgroundColor: p.surface2 }]}>
+                <View
+                  style={{
+                    width: `${Math.min(100, (used / info.total) * 100)}%`,
+                    backgroundColor: used / info.total > 0.9 ? p.warning : p.accent,
+                    height: '100%',
+                    borderRadius: 3,
+                  }}
+                />
+              </View>
+            ) : null}
+          </Card>
+        </Pressable>
       ) : null}
     </ScrollView>
   );

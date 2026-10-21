@@ -8,9 +8,16 @@ Servers are kept in groups:
 - a **key group** (key icon) holds links added by hand or by QR code. Every addition makes a
   new group, so keys from different people never mix.
 
-Tap a group's header for its menu:
+Tap a group's header (or the traffic card on the home screen) to open its screen:
 
+- traffic, what is left of the limit and when the subscription ends;
+- **Open subscription page**: the panel's page in the browser, with traffic and setup guides;
+- **Copy subscription link**, to add it on another device;
 - **Update subscription** downloads the list again (subscriptions only);
+- **Proxies for Telegram**: a Web Proxy or MTProto proxy the panel gave you shows up here. Tap it
+  and Telegram offers to add it; the icon on the right copies the link. Such a proxy works on its
+  own, without the VPN;
+- the group's servers;
 - **Remove group** removes the subscription or key group with its servers.
 
 ## Server actions
