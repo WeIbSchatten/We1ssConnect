@@ -4,6 +4,11 @@ The full history with details is in the documentation:
 [русский](https://weibschatten.github.io/We1ssConnect/#/ru/history) ·
 [English](https://weibschatten.github.io/We1ssConnect/#/en/history).
 
+## 1.1.0
+
+- Desktop apps for Windows (installer) and Linux: the same screens, connected through the system proxy (SOCKS5 127.0.0.1:10808, HTTP 127.0.0.1:10809), in-app updates.
+- One release now carries the APKs and the desktop builds.
+
 ## 1.0.1
 
 - Delay measured to the server itself by default (TCP, ICMP for Hysteria2), also while connected; the full test through the server stays as an option.

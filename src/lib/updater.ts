@@ -1,5 +1,6 @@
 import Constants from 'expo-constants';
 import { useSyncExternalStore } from 'react';
+import { Platform } from 'react-native';
 import XrayVpn from 'xray-vpn';
 
 /** Releases of the app on GitHub; the APK for each ABI is attached to them. */
@@ -75,9 +76,12 @@ export async function checkForUpdate(): Promise<Update | undefined> {
     let update: Update | undefined;
     if (compareVersions(version, currentVersion()) > 0) {
       const abi = XrayVpn.abi();
+      // Desktop builds report the whole asset suffix (windows-amd64-setup.exe, linux-amd64).
       const asset =
-        release.assets.find((a) => a.name.endsWith(`-${abi}.apk`)) ??
-        release.assets.find((a) => a.name.endsWith('-arm64-v8a.apk'));
+        Platform.OS === 'web'
+          ? release.assets.find((a) => a.name.endsWith(`-${abi}`))
+          : (release.assets.find((a) => a.name.endsWith(`-${abi}.apk`)) ??
+            release.assets.find((a) => a.name.endsWith('-arm64-v8a.apk')));
       if (asset) {
         update = {
           version,

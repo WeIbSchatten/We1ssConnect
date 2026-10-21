@@ -2,7 +2,7 @@
 
 <h1 align="center">We1ssConnect</h1>
 
-<p align="center">VPN-клиент для Android на ядре Xray · Android VPN client on the Xray core</p>
+<p align="center">VPN-клиент для Android, Windows и Linux на ядре Xray · VPN client for Android, Windows and Linux on the Xray core</p>
 
 <p align="center">
   <a href="https://github.com/WeIbSchatten/We1ssConnect/releases/latest">Скачать / Download</a> ·
@@ -39,6 +39,10 @@ npm ci
 scripts/build-libxray.sh             # Go, Android SDK + NDK
 npx expo prebuild --platform android
 cd android && ./gradlew assembleRelease
+
+# Windows / Linux (Go, Wails CLI v2.17.0; on Linux libwebkit2gtk-4.1-dev)
+npm run desktop:web
+cd desktop && wails build -s            # Linux: add -tags webkit2_41
 ```
 
 Подробности: [для разработчиков](https://weibschatten.github.io/We1ssConnect/#/ru/develop) ·
@@ -46,4 +50,4 @@ details: [for developers](https://weibschatten.github.io/We1ssConnect/#/en/devel
 
 ## Лицензии · Third-party software
 
-[NOTICE.md](NOTICE.md): Xray-core (MPL-2.0), libXray (MIT).
+[NOTICE.md](NOTICE.md): Xray-core (MPL-2.0), libXray (MIT), Wails (MIT).

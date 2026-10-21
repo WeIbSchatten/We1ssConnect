@@ -1,7 +1,7 @@
 <div class="hero">
   <img src="assets/logo.svg" alt="We1ssConnect">
   <h1>We1ssConnect</h1>
-  <p>A fast, tidy VPN client for Android on the Xray core</p>
+  <p>A fast, tidy VPN client for Android, Windows and Linux on the Xray core</p>
   <a class="btn" href="https://github.com/WeIbSchatten/We1ssConnect/releases/latest">Download APK</a>
   <a class="btn ghost" href="#/en/quickstart">First connection</a>
 </div>
@@ -34,6 +34,7 @@ lets you decide which apps use the VPN.
 | | |
 | --- | --- |
 | Android | 8.0 or newer |
+| Computer | Windows 10/11 or Linux with WebKitGTK 4.1, 64-bit ([details](/en/desktop.md)) |
 | CPU | ARM64 (nearly all phones) or ARMv7 (older models) |
 | Storage | up to 100 MB |
 | Permissions | VPN, notifications; camera only for QR codes |
