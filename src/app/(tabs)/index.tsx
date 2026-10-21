@@ -1,10 +1,11 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, Animated, Easing, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Animated, Easing, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { alert } from '@/components/dialog';
 import { UpdateCard } from '@/components/UpdateCard';
-import { Button, Card, Muted, PingBadge } from '@/components/ui';
+import { Button, Card, Muted, PingBadge, Stats } from '@/components/ui';
 import { protocolLabel, serverAddress } from '@/lib/config';
 import { countryName, formatBytes, formatDate, formatDuration, formatSpeed, t } from '@/lib/i18n';
 import { flag, maskIp, useLive } from '@/lib/live';
@@ -94,7 +95,7 @@ export default function Home() {
     try {
       await connect();
     } catch (e) {
-      Alert.alert(t('error'), (e as Error).message);
+      alert(t('error'), (e as Error).message);
     } finally {
       setBusy(false);
     }
@@ -208,13 +209,15 @@ export default function Home() {
       ) : null}
 
       {on ? (
-        <Card style={{ marginTop: 12 }}>
-          <View style={styles.speeds}>
-            <Speed icon="arrow-down" color={p.success} value={formatSpeed(live.downSpeed)} total={live.downTotal} />
-            <View style={{ width: StyleSheet.hairlineWidth, backgroundColor: p.border }} />
-            <Speed icon="arrow-up" color={p.info} value={formatSpeed(live.upSpeed)} total={live.upTotal} />
-          </View>
-        </Card>
+        <View style={{ marginTop: 12 }}>
+          <Stats
+            items={[
+              { label: `↓ ${t('download')}`, value: formatSpeed(live.downSpeed), color: p.success },
+              { label: `↑ ${t('upload')}`, value: formatSpeed(live.upSpeed), color: p.info },
+              { label: t('session'), value: formatBytes(live.downTotal + live.upTotal) },
+            ]}
+          />
+        </View>
       ) : null}
 
       {profile && info ? (
@@ -244,29 +247,6 @@ export default function Home() {
   );
 }
 
-function Speed({
-  icon,
-  color,
-  value,
-  total,
-}: {
-  icon: 'arrow-down' | 'arrow-up';
-  color: string;
-  value: string;
-  total: number;
-}) {
-  const p = usePalette();
-  return (
-    <View style={{ flex: 1, alignItems: 'center', gap: 2 }}>
-      <Ionicons name={icon} size={18} color={color} />
-      <Text style={{ color: p.text, fontSize: 17, fontWeight: '600', fontVariant: ['tabular-nums'] }}>{value}</Text>
-      <Muted>
-        {t('session')}: {formatBytes(total)}
-      </Muted>
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
   page: { padding: 16, paddingBottom: 32 },
   center: { alignItems: 'center', marginTop: 28, marginBottom: 32, gap: 10 },
@@ -288,6 +268,5 @@ const styles = StyleSheet.create({
   flag: { fontSize: 36 },
   ipRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 2 },
   ip: { fontSize: 18, fontWeight: '700', fontVariant: ['tabular-nums'] },
-  speeds: { flexDirection: 'row', alignItems: 'stretch' },
   bar: { height: 6, borderRadius: 3, marginTop: 10, overflow: 'hidden' },
 });

@@ -53,6 +53,30 @@ export function Muted({ children, numberOfLines }: { children: ReactNode; number
   );
 }
 
+/** A row of figures like the panel's summary strip: small muted caption, big value. */
+export function Stats({ items }: { items: { label: string; value: string; color?: string }[] }) {
+  const p = usePalette();
+  return (
+    <View style={[styles.card, styles.stats, { backgroundColor: p.surface, borderColor: p.border }]}>
+      {items.map((item, i) => (
+        <View
+          key={item.label}
+          style={[styles.stat, i > 0 && { borderLeftWidth: 1, borderLeftColor: p.border }]}>
+          <Text style={{ color: p.text3, fontSize: 12, fontWeight: '500', letterSpacing: 0.2 }} numberOfLines={1}>
+            {item.label}
+          </Text>
+          <Text
+            style={{ color: item.color ?? p.text, fontSize: 18, fontWeight: '700', fontVariant: ['tabular-nums'] }}
+            numberOfLines={1}
+            adjustsFontSizeToFit>
+            {item.value}
+          </Text>
+        </View>
+      ))}
+    </View>
+  );
+}
+
 export function SectionTitle({ children }: { children: ReactNode }) {
   const p = usePalette();
   return <Text style={[styles.section, { color: p.text3 }]}>{children}</Text>;
@@ -145,7 +169,17 @@ export function Segmented<T extends string>({
 }
 
 const styles = StyleSheet.create({
-  card: { borderRadius: 18, borderWidth: StyleSheet.hairlineWidth, padding: 16 },
+  // As the panel's cards: 16 px corners, a 1 px border and a soft shadow.
+  card: {
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOpacity: 0.18,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 2,
+  },
   button: {
     borderRadius: 14,
     paddingVertical: 13,
@@ -168,6 +202,8 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12, paddingHorizontal: 14 },
   rowIcon: { width: 32, height: 32, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
   badge: { borderWidth: 1, borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2 },
+  stats: { flexDirection: 'row', padding: 4 },
+  stat: { flex: 1, paddingVertical: 10, paddingHorizontal: 10, gap: 4 },
   segmented: { flexDirection: 'row', borderRadius: 12, padding: 3, gap: 3 },
   segment: {
     flex: 1,

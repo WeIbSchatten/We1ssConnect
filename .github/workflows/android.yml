@@ -146,8 +146,11 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           # Phones are ARM; the x86_64 build is only for the emulator test.
+          # Hand-written notes live in docs/release-notes/<version>.md; otherwise GitHub writes them.
+          notes=(--generate-notes)
+          [[ -f "docs/release-notes/$APP_VERSION.md" ]] && notes=(--notes-file "docs/release-notes/$APP_VERSION.md")
           gh release create "v$APP_VERSION" dist/*-arm64-v8a.apk dist/*-armeabi-v7a.apk dist/SHA256SUMS \
-            --target "$GITHUB_SHA" --title "We1ssConnect $APP_VERSION" --generate-notes
+            --target "$GITHUB_SHA" --title "We1ssConnect $APP_VERSION" "${notes[@]}"
 
   # Installs the APK on an emulator and checks that it starts and the core loads.
   smoke:

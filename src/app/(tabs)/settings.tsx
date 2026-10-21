@@ -2,9 +2,10 @@ import Constants from 'expo-constants';
 import { router } from 'expo-router';
 import { reloadAppAsync } from 'expo';
 import { useEffect, useState } from 'react';
-import { Alert, Linking, ScrollView, StyleSheet, Switch, View } from 'react-native';
+import { Linking, ScrollView, StyleSheet, Switch, View } from 'react-native';
 import XrayVpn from 'xray-vpn';
 
+import { alert } from '@/components/dialog';
 import { UpdateCard } from '@/components/UpdateCard';
 import { Card, Muted, Row, SectionTitle, Segmented, type IconName } from '@/components/ui';
 import { updateGeo } from '@/lib/geo';
@@ -12,7 +13,7 @@ import { formatDate, lang, t } from '@/lib/i18n';
 import type { StylePreset } from '@/lib/palettes';
 import { updateSettings, useStore } from '@/lib/store';
 import { usePalette } from '@/lib/theme';
-import type { DnsProvider, Language, Settings as SettingsType, ThemeMode } from '@/lib/types';
+import type { DnsProvider, Language, PingMode, Settings as SettingsType, ThemeMode } from '@/lib/types';
 import { checkForUpdate, useUpdater } from '@/lib/updater';
 import { reconnectIfActive } from '@/lib/vpn';
 
@@ -31,18 +32,18 @@ export default function Settings() {
     updateSettings({ language: v });
     XrayVpn.setItem('native.language', v);
     // Every screen reads the language once, so the app starts over in the new one.
-    reloadAppAsync().catch(() => Alert.alert(t('language'), t('restartHint')));
+    reloadAppAsync().catch(() => alert(t('language'), t('restartHint')));
   }
 
   function onCheck() {
     checkForUpdate()
-      .then((u) => (u ? undefined : Alert.alert(t('updates'), t('upToDate'))))
-      .catch((e) => Alert.alert(t('updates'), (e as Error).message));
+      .then((u) => (u ? undefined : alert(t('updates'), t('upToDate'))))
+      .catch((e) => alert(t('updates'), (e as Error).message));
   }
 
   function change(patch: Partial<SettingsType>) {
     updateSettings(patch);
-    reconnectIfActive().catch((e) => Alert.alert(t('error'), (e as Error).message));
+    reconnectIfActive().catch((e) => alert(t('error'), (e as Error).message));
   }
 
   async function onGeo() {
@@ -51,7 +52,7 @@ export default function Settings() {
       setGeoAt(await updateGeo());
       await reconnectIfActive();
     } catch (e) {
-      Alert.alert(t('geoUpdate'), (e as Error).message);
+      alert(t('geoUpdate'), (e as Error).message);
     } finally {
       setGeoBusy(false);
     }
@@ -124,6 +125,18 @@ export default function Settings() {
         {toggle('forceChromeFingerprint', 'finger-print-outline', t('forceChrome'), t('forceChromeHint'), true, true)}
         {toggle('fragment', 'cut-outline', t('fragment'), t('fragmentHint'), true)}
         {toggle('mux', 'git-merge-outline', t('mux'), t('muxHint'), true)}
+        <View style={styles.inset}>
+          <Muted>{t('pingMode')}</Muted>
+          <Segmented<PingMode>
+            value={settings.pingMode}
+            onChange={(v) => updateSettings({ pingMode: v })}
+            options={[
+              { value: 'server', label: t('pingServer') },
+              { value: 'full', label: t('pingFull') },
+            ]}
+          />
+          <Muted>{settings.pingMode === 'full' ? t('pingFullHint') : t('pingServerHint')}</Muted>
+        </View>
         {toggle('autoPing', 'speedometer-outline', t('autoPing'), t('autoPingHint'), false)}
         {toggle('autoUpdate', 'refresh-outline', t('autoUpdate'), t('autoUpdateHint'), false)}
       </Card>
@@ -198,6 +211,13 @@ export default function Settings() {
 }
 
 const styles = StyleSheet.create({
+  inset: {
+    gap: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: 'rgba(127, 127, 127, 0.25)',
+  },
   page: { paddingHorizontal: 16, paddingBottom: 16 },
   group: { padding: 0, overflow: 'hidden' },
 });
