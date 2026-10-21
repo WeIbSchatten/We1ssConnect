@@ -35,6 +35,37 @@ export function parseTitle(header: string | null): string | undefined {
   }
 }
 
+const TELEGRAM = /^(tg:\/\/(proxy|socks)|https:\/\/t\.me\/(proxy|socks|webproxy))\?/i;
+
+/** Telegram proxy links in a subscription body, which may be plain or base64 text. */
+export function telegramLinks(body: string): string[] {
+  let text = body.trim();
+  if (!text.includes('://')) {
+    try {
+      const b64 = text.replace(/\s+/g, '').replace(/-/g, '+').replace(/_/g, '/');
+      const bytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+      text = new TextDecoder().decode(bytes);
+    } catch {
+      return [];
+    }
+  }
+  const links = text
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => TELEGRAM.test(line));
+  return [...new Set(links)];
+}
+
+/** "Web Proxy" or "MTProto" with the server it points to. */
+export function telegramLabel(link: string): { kind: string; server: string } {
+  const query = new URLSearchParams(link.slice(link.indexOf('?') + 1));
+  const server = query.get('server') ?? '';
+  const port = query.get('port');
+  if (/t\.me\/webproxy/i.test(link)) return { kind: 'Web Proxy', server };
+  if (/socks/i.test(link)) return { kind: 'SOCKS5', server: port ? `${server}:${port}` : server };
+  return { kind: 'MTProto', server: port ? `${server}:${port}` : server };
+}
+
 async function toServers(text: string, previous: Server[] = []): Promise<Server[]> {
   const json = JSON.parse(await XrayVpn.convertShareLinks(text)) as { outbounds?: XrayOutbound[] };
   const taken = new Set<string>();
@@ -73,7 +104,8 @@ export async function fetchSubscription(url: string, existing?: Profile): Promis
   if (res.status < 200 || res.status >= 300) throw new Error(`HTTP ${res.status}`);
   const body = res.body;
   const servers = await toServers(body, existing?.servers);
-  if (servers.length === 0) throw new Error('no servers in the subscription');
+  const telegram = telegramLinks(body);
+  if (servers.length === 0 && telegram.length === 0) throw new Error('no servers in the subscription');
   const host = (() => {
     try {
       return new URL(url).host;
@@ -89,6 +121,7 @@ export async function fetchSubscription(url: string, existing?: Profile): Promis
     updatedAt: Date.now(),
     userInfo: parseUserInfo(res.header('subscription-userinfo')),
     servers,
+    telegram,
   };
 }
 

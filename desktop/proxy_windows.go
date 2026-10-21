@@ -59,3 +59,9 @@ func launchInstaller(path string) error {
 	cmd := exec.Command(path)
 	return cmd.Start()
 }
+
+func openExternal(url string) error {
+	cmd := exec.Command("rundll32", "url.dll,FileProtocolHandler", url)
+	hideWindow(cmd)
+	return cmd.Start()
+}

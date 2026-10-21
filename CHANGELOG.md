@@ -4,6 +4,12 @@ The full history with details is in the documentation:
 [русский](https://weibschatten.github.io/We1ssConnect/#/ru/history) ·
 [English](https://weibschatten.github.io/We1ssConnect/#/en/history).
 
+## 1.2.0
+
+- Subscription screen: traffic, expiry, the panel page, copy link, refresh, servers.
+- Telegram proxies from the subscription (Web Proxy, MTProto) open in Telegram from the app.
+- Windows: country flags instead of letters; tab labels no longer cut off on the desktop.
+
 ## 1.1.0
 
 - Desktop apps for Windows (installer) and Linux: the same screens, connected through the system proxy (SOCKS5 127.0.0.1:10808, HTTP 127.0.0.1:10809), in-app updates.

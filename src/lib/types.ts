@@ -39,6 +39,8 @@ export interface Profile {
   updatedAt: number;
   userInfo?: UserInfo;
   servers: Server[];
+  /** Telegram proxy links from the subscription: MTProto (tg://proxy) and Web Proxy (t.me/webproxy). */
+  telegram?: string[];
 }
 
 /** The pseudo-server that lets the balancer pick the fastest one. */

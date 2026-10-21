@@ -279,6 +279,14 @@ func (a *App) InstallUpdate(url string) error {
 	return nil
 }
 
+// OpenURL hands a link to the system, so tg:// links reach the Telegram app.
+func (a *App) OpenURL(url string) error {
+	if !strings.HasPrefix(url, "https://") && !strings.HasPrefix(url, "http://") && !strings.HasPrefix(url, "tg://") {
+		return fmt.Errorf("not opening %q", url)
+	}
+	return openExternal(url)
+}
+
 func (a *App) LoadStore() map[string]string { return a.store.all() }
 
 func (a *App) SaveItem(key string, value *string) error {
