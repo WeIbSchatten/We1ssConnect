@@ -1,7 +1,8 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Tabs } from 'expo-router';
-import type { ColorValue } from 'react-native';
+import { Text, View, type ColorValue } from 'react-native';
 
+import { BrandMark } from '@/components/BrandMark';
 import type { IconName } from '@/components/ui';
 import { t } from '@/lib/i18n';
 import { usePalette } from '@/lib/theme';
@@ -21,6 +22,8 @@ export default function TabsLayout() {
         headerStyle: { backgroundColor: p.bg },
         headerTintColor: p.text,
         headerShadowVisible: false,
+        headerTitleStyle: { fontWeight: '700' },
+        tabBarLabelStyle: { fontSize: 11, fontWeight: '600' },
         sceneStyle: { backgroundColor: p.bg },
         tabBarStyle: { backgroundColor: p.surface, borderTopColor: p.border },
         tabBarActiveTintColor: p.accent,
@@ -28,7 +31,17 @@ export default function TabsLayout() {
       }}>
       <Tabs.Screen
         name="index"
-        options={{ title: 'We1ssConnect', tabBarLabel: t('home'), tabBarIcon: icon('shield-outline', 'shield-checkmark') }}
+        options={{
+          title: 'We1ssConnect',
+          headerTitle: () => (
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+              <BrandMark size={28} />
+              <Text style={{ color: p.text, fontSize: 18, fontWeight: '700' }}>We1ssConnect</Text>
+            </View>
+          ),
+          tabBarLabel: t('home'),
+          tabBarIcon: icon('shield-outline', 'shield-checkmark'),
+        }}
       />
       <Tabs.Screen
         name="servers"

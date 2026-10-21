@@ -120,6 +120,13 @@ const en = {
   updateFailed: 'Update failed',
   openRelease: 'Open the release page',
   docs: 'Documentation',
+  pingMode: 'Delay test',
+  download: 'Download',
+  upload: 'Upload',
+  pingServer: 'To the server',
+  pingFull: 'Through the server',
+  pingServerHint: 'Time to reach the server itself (TCP connect, ICMP for Hysteria2). Works with the VPN on.',
+  pingFullHint: 'A full request through the server to the internet: slower, includes the route beyond the server. Needs the VPN off.',
 };
 
 type Dict = typeof en;
@@ -243,6 +250,13 @@ const ru: Dict = {
   updateFailed: 'Не удалось обновить',
   openRelease: 'Открыть страницу релиза',
   docs: 'Документация',
+  pingMode: 'Проверка задержки',
+  download: 'Загрузка',
+  upload: 'Отдача',
+  pingServer: 'До сервера',
+  pingFull: 'Через сервер',
+  pingServerHint: 'Время до самого сервера (TCP-соединение, ICMP для Hysteria2). Работает и с включённым VPN.',
+  pingFullHint: 'Полный запрос через сервер в интернет: выше, учитывает маршрут самого сервера. Нужно выключить VPN.',
 };
 
 // The app speaks Russian unless English is chosen in the settings; changing it reloads the app.

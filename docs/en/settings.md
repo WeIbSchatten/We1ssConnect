@@ -27,6 +27,7 @@ Settings marked ⟳ change the core's config: with the VPN on, the app reconnect
 | Chrome fingerprint for Reality ⟳ | on | see below |
 | TLS fragmentation ⟳ | off | see below |
 | Multiplexing (mux) ⟳ | off | see below |
+| Delay test | to the server | "To the server" is the time to reach the server itself (TCP, ICMP for Hysteria2) and works with the VPN on; "Through the server" is a full request to the internet through it |
 | Test delays on start | on | measures every server when the app opens and the VPN is off |
 | Update subscriptions on start | on | subscriptions older than 12 hours refresh on open |
 

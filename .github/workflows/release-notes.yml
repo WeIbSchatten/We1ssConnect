@@ -1,0 +1,22 @@
+name: Release notes
+
+# Replaces a published release's text with docs/release-notes/<version>.md.
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version, such as 1.0.0
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  notes:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ inputs.version }}
+        run: gh release edit "v$VERSION" --notes-file "docs/release-notes/$VERSION.md"

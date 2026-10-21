@@ -2,6 +2,7 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import XrayVpn from 'xray-vpn';
 
+import { DialogHost } from '@/components/dialog';
 import { lang, t } from '@/lib/i18n';
 import { useIsLight, usePalette } from '@/lib/theme';
 
@@ -26,6 +27,7 @@ export default function RootLayout() {
         <Stack.Screen name="apps" options={{ title: t('perApp') }} />
         <Stack.Screen name="scan" options={{ title: t('scanQr') }} />
       </Stack>
+      <DialogHost />
     </>
   );
 }

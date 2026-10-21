@@ -82,7 +82,11 @@ export interface Settings {
   language: Language;
   /** Show the full exit IP instead of hiding its middle part. */
   showFullIp: boolean;
+  /** "server": round trip to the server's own address; "full": a request through the server. */
+  pingMode: PingMode;
 }
+
+export type PingMode = 'server' | 'full';
 
 export type BalancerStrategy = 'leastPing' | 'roundRobin';
 export type ThemeMode = 'system' | 'light' | 'dark' | 'amoled';
@@ -109,4 +113,5 @@ export const DEFAULT_SETTINGS: Settings = {
   style: 'ocean',
   language: 'ru',
   showFullIp: false,
+  pingMode: 'server',
 };

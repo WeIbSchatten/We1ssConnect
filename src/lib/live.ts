@@ -2,7 +2,8 @@ import { useSyncExternalStore } from 'react';
 import XrayVpn from 'xray-vpn';
 
 import { serverIdFromTag } from './config';
-import { getVpnStatus, subscribeVpnStatus } from './vpn';
+import { allServers, getState } from './store';
+import { getVpnStatus, serverPings, subscribeVpnStatus } from './vpn';
 
 export interface IpInfo {
   ip: string;
@@ -77,7 +78,8 @@ async function pollServers() {
     if (id) pings[id] = s.alive ? s.delay : -1;
   }
   const activeId = serverIdFromTag(await XrayVpn.balancerTarget().catch(() => ''));
-  set({ pings, activeId });
+  // In "to the server" mode the list shows direct delays (below); the observatory still picks the server.
+  set(getState().settings.pingMode === 'full' ? { pings, activeId } : { activeId });
   // The exit IP depends on the server, so look it up again when the balancer moves.
   // A pinned server never moves here; picking one calls lookupIp itself.
   if (ipFor === undefined || (activeId && activeId !== ipFor)) {
@@ -134,7 +136,13 @@ function start() {
     if (getVpnStatus().state !== 'connected') return;
     pollTraffic().catch(() => undefined);
     // Delays change slowly; the observatory probes every 30 s.
-    if (ticks++ % 3 === 0) pollServers().catch(() => undefined);
+    if (ticks % 3 === 0) pollServers().catch(() => undefined);
+    if (ticks % 15 === 0 && getState().settings.pingMode !== 'full') {
+      serverPings(allServers())
+        .then((pings) => set({ pings }))
+        .catch(() => undefined);
+    }
+    ticks++;
   };
   tick();
   timer = setInterval(tick, POLL_MS);

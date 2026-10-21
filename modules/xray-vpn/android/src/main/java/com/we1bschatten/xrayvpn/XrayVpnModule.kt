@@ -73,6 +73,10 @@ class XrayVpnModule : Module() {
       context.startActivity(intent)
     }
 
+    // Delay to the server itself: TCP connect time, or ICMP echo for UDP-only servers
+    // (Hysteria2). Runs outside the tunnel, so it works whether or not the VPN is on.
+    AsyncFunction("serverPing") { targetsJson: String, timeoutMs: Int -> ServerPing.measure(targetsJson, timeoutMs) }
+
     AsyncFunction("ping") { configs: List<String>, url: String, timeoutSeconds: Int ->
       XrayCore.ping(configs, url, timeoutSeconds)
     }

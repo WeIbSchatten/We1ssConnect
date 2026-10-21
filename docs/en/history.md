@@ -1,5 +1,12 @@
 # Version history
 
+## 1.0.1
+
+- Delay is measured to the server itself by default instead of a full request through it, so the numbers are honest and no longer add hundreds of milliseconds. The old way is still in the settings.
+- The delay test works with the VPN on too.
+- Dialogs and menus are drawn in the app's own style instead of the system's.
+- The design is closer to the We1ssBoard panel: the W mark in the header, bordered cards with a soft shadow, a speed and traffic strip.
+
 ## 1.0.0 — first stable release
 
 Everything from the test builds, plus:

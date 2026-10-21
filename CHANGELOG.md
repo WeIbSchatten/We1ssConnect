@@ -4,6 +4,12 @@ The full history with details is in the documentation:
 [русский](https://weibschatten.github.io/We1ssConnect/#/ru/history) ·
 [English](https://weibschatten.github.io/We1ssConnect/#/en/history).
 
+## 1.0.1
+
+- Delay measured to the server itself by default (TCP, ICMP for Hysteria2), also while connected; the full test through the server stays as an option.
+- Dialogs and menus in the app's own style.
+- Design closer to the panel: W mark, bordered cards, stats strip.
+
 ## 1.0.0
 
 - Automatic server choice by lowest delay or round robin.

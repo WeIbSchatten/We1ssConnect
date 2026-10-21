@@ -1,4 +1,4 @@
-import { buildVpnConfig, prepareOutbound, serverAddress } from './config';
+import { buildVpnConfig, prepareOutbound, serverAddress, serverEndpoint } from './config';
 import { DEFAULT_SETTINGS, type Server, type XrayOutbound } from './types';
 
 const reality: XrayOutbound = {
@@ -80,4 +80,13 @@ test('DoH and IPv6 change the resolver', () => {
     buildVpnConfig(servers, servers[0], { ...DEFAULT_SETTINGS, dns: 'google', dnsOverHttps: true, ipv6: true }),
   );
   expect(config.dns).toEqual({ servers: ['https://8.8.8.8/dns-query'], queryStrategy: 'UseIP' });
+});
+
+test('server endpoint marks UDP-only servers for ICMP', () => {
+  expect(serverEndpoint(reality)).toEqual({ host: 'example.com', port: 443, udp: false });
+  expect(serverEndpoint({ protocol: 'hysteria', settings: { address: 'h.example', port: '8443' } })).toEqual({
+    host: 'h.example',
+    port: 8443,
+    udp: true,
+  });
 });
