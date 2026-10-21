@@ -1,8 +1,9 @@
 import * as Clipboard from 'expo-clipboard';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, Alert, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 
+import { alert } from '@/components/dialog';
 import { Button, Muted } from '@/components/ui';
 import { t } from '@/lib/i18n';
 import { addFromText } from '@/lib/subscription';
@@ -24,10 +25,10 @@ export default function Add() {
     setBusy(true);
     try {
       const n = await addFromText(text, name);
-      Alert.alert(t('add'), t('added', { n }));
+      alert(t('add'), t('added', { n }));
       router.back();
     } catch (e) {
-      Alert.alert(t('error'), (e as Error).message);
+      alert(t('error'), (e as Error).message);
     } finally {
       setBusy(false);
     }

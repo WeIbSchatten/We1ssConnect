@@ -35,6 +35,8 @@ interface XrayVpnNative {
   /** Running instance only: GET through the tunnel. */
   httpGet(url: string, timeoutMs: number): Promise<string>;
   delay(url: string, outboundTag: string, timeoutMs: number): Promise<number>;
+  /** JSON [{host, port, udp}] → delay to each server's address in ms, -1 when unreachable. */
+  serverPing(targetsJson: string, timeoutMs: number): Promise<number[]>;
   /** Xray JSON with outbounds → share links, one per line. */
   shareLinks(xrayJson: string): Promise<string>;
   /** Downloads file name → URL into the rule file folder; resolves with geoUpdatedAt(). */

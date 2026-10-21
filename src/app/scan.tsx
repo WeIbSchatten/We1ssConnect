@@ -1,8 +1,9 @@
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { router } from 'expo-router';
 import { useRef } from 'react';
-import { ActivityIndicator, Alert, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
+import { alert } from '@/components/dialog';
 import { Button, Muted } from '@/components/ui';
 import { t } from '@/lib/i18n';
 import { addFromText } from '@/lib/subscription';
@@ -19,10 +20,10 @@ export default function Scan() {
     done.current = true;
     try {
       const n = await addFromText(data);
-      Alert.alert(t('add'), t('added', { n }));
+      alert(t('add'), t('added', { n }));
       router.dismissTo('/servers');
     } catch (e) {
-      Alert.alert(t('error'), (e as Error).message, [{ text: 'OK', onPress: () => (done.current = false) }]);
+      alert(t('error'), (e as Error).message, [{ text: 'OK', onPress: () => (done.current = false) }]);
     }
   }
 

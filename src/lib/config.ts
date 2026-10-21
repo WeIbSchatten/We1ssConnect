@@ -164,16 +164,35 @@ export function buildPingConfig(outbound: XrayOutbound, settings: Settings): str
   });
 }
 
-export function serverAddress(outbound: XrayOutbound): string {
+export interface Endpoint {
+  host: string;
+  port: number;
+  /** Reached over UDP only (Hysteria2, mKCP), so it is pinged with ICMP instead of a TCP connect. */
+  udp: boolean;
+}
+
+export function serverEndpoint(outbound: XrayOutbound): Endpoint | undefined {
   const s = outbound.settings ?? {};
   const pick = (v: unknown) => (v && typeof v === 'object' ? (v as Record<string, unknown>) : undefined);
-  const flat = s as { address?: string; port?: number };
+  const flat = s as { address?: string; port?: number | string };
   const nested =
     pick((s.vnext as unknown[] | undefined)?.[0]) ?? pick((s.servers as unknown[] | undefined)?.[0]);
-  const address = flat.address ?? (nested?.address as string | undefined);
-  const port = flat.port ?? (nested?.port as number | undefined);
-  if (!address) return '';
-  return port ? `${address}:${port}` : address;
+  const host = flat.address ?? (nested?.address as string | undefined);
+  if (!host) return undefined;
+  const port = Number(flat.port ?? nested?.port);
+  const network = outbound.streamSettings?.network as string | undefined;
+  return {
+    host,
+    port: Number.isFinite(port) && port > 0 ? port : 443,
+    udp: outbound.protocol === 'hysteria' || network === 'kcp' || network === 'mkcp',
+  };
+}
+
+export function serverAddress(outbound: XrayOutbound): string {
+  const e = serverEndpoint(outbound);
+  if (!e) return '';
+  const host = e.host.includes(':') ? `[${e.host}]` : e.host;
+  return `${host}:${e.port}`;
 }
 
 export function protocolLabel(outbound: XrayOutbound): string {

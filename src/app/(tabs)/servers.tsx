@@ -2,8 +2,9 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Clipboard from 'expo-clipboard';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Alert, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { alert } from '@/components/dialog';
 import { Button, Card, Muted, PingBadge, Segmented } from '@/components/ui';
 import { protocolLabel, serverAddress } from '@/lib/config';
 import { formatDate, t } from '@/lib/i18n';
@@ -39,6 +40,8 @@ export default function Servers() {
   const activeId = useLive((l) => l.activeId);
   const balancer = useStore((s) => s.settings.balancer);
   const roundRobin = balancer === 'roundRobin';
+  // A test through the servers needs the tunnel down; a direct one does not.
+  const fullPing = useStore((s) => s.settings.pingMode === 'full');
   const [refreshing, setRefreshing] = useState(false);
   const [pinging, setPinging] = useState(false);
   const [sorted, setSorted] = useState(false);
@@ -51,7 +54,7 @@ export default function Servers() {
 
   function setBalancer(v: BalancerStrategy) {
     updateSettings({ balancer: v });
-    if (auto) reconnectIfActive().catch((e) => Alert.alert(t('error'), (e as Error).message));
+    if (auto) reconnectIfActive().catch((e) => alert(t('error'), (e as Error).message));
   }
 
   async function onRefresh() {
@@ -59,7 +62,7 @@ export default function Servers() {
     try {
       await refreshAll();
     } catch (e) {
-      Alert.alert(t('refresh'), (e as Error).message);
+      alert(t('refresh'), (e as Error).message);
     } finally {
       setRefreshing(false);
     }
@@ -70,7 +73,7 @@ export default function Servers() {
     try {
       await pingAll();
     } catch (e) {
-      Alert.alert(t('ping'), (e as Error).message);
+      alert(t('ping'), (e as Error).message);
     } finally {
       setPinging(false);
     }
@@ -81,18 +84,18 @@ export default function Servers() {
     // The running tunnel already has every server; only the balancer target moves.
     applySelection()
       .then(() => (on ? lookupIp() : undefined))
-      .catch((e) => Alert.alert(t('error'), (e as Error).message));
+      .catch((e) => alert(t('error'), (e as Error).message));
   }
 
   function serverActions(server: Server) {
-    Alert.alert(server.name, `${protocolLabel(server.outbound)} · ${serverAddress(server.outbound)}`, [
+    alert(server.name, `${protocolLabel(server.outbound)} · ${serverAddress(server.outbound)}`, [
       {
         text: t('copyLink'),
         onPress: () =>
           shareLink(server)
             .then((link) => Clipboard.setStringAsync(link))
-            .then(() => Alert.alert(t('copied')))
-            .catch((e) => Alert.alert(t('error'), (e as Error).message)),
+            .then(() => alert(t('copied')))
+            .catch((e) => alert(t('error'), (e as Error).message)),
       },
       { text: t('remove'), style: 'destructive', onPress: () => removeServer(server.id) },
       { text: t('cancel'), style: 'cancel' },
@@ -100,19 +103,19 @@ export default function Servers() {
   }
 
   function confirmRemove(id: string, name: string) {
-    Alert.alert(t('remove'), t('removeConfirm', { name }), [
+    alert(t('remove'), t('removeConfirm', { name }), [
       { text: t('cancel'), style: 'cancel' },
       { text: t('remove'), style: 'destructive', onPress: () => removeProfile(id) },
     ]);
   }
 
   function profileActions(profile: Profile) {
-    Alert.alert(profile.name, t('serversCount', { n: profile.servers.length }), [
+    alert(profile.name, t('serversCount', { n: profile.servers.length }), [
       ...(profile.url
         ? [
             {
               text: t('refreshOne'),
-              onPress: () => refreshProfile(profile.id).catch((e) => Alert.alert(t('refresh'), (e as Error).message)),
+              onPress: () => refreshProfile(profile.id).catch((e) => alert(t('refresh'), (e as Error).message)),
             },
           ]
         : []),
@@ -132,7 +135,7 @@ export default function Servers() {
             icon="speedometer-outline"
             kind="secondary"
             onPress={onPing}
-            disabled={pinging || on}
+            disabled={pinging || (on && fullPing)}
           />
         </View>
         <Pressable

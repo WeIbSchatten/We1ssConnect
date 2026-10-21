@@ -1,5 +1,6 @@
-import { ActivityIndicator, Alert, Linking, Text, View, type ViewStyle } from 'react-native';
+import { ActivityIndicator, Linking, Text, View, type ViewStyle } from 'react-native';
 
+import { alert } from '@/components/dialog';
 import { Button, Card, Muted } from '@/components/ui';
 import { formatBytes, t } from '@/lib/i18n';
 import { usePalette } from '@/lib/theme';
@@ -13,7 +14,7 @@ export function UpdateCard({ notes = false, style }: { notes?: boolean; style?: 
 
   function install() {
     installUpdate(update!).catch((e) =>
-      Alert.alert(t('updateFailed'), (e as Error).message, [
+      alert(t('updateFailed'), (e as Error).message, [
         { text: t('openRelease'), onPress: () => void Linking.openURL(update!.page) },
         { text: 'OK' },
       ]),
