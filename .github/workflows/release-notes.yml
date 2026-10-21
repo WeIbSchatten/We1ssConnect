@@ -1,6 +1,7 @@
 name: Release notes
 
-# Replaces a published release's text with docs/release-notes/<version>.md.
+# Replaces a published release's text with docs/release-notes/<version>.md and removes
+# the .idsig files apksigner leaves next to APKs.
 on:
   workflow_dispatch:
     inputs:
@@ -20,3 +21,10 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ inputs.version }}
         run: gh release edit "v$VERSION" --notes-file "docs/release-notes/$VERSION.md"
+      - name: Remove stray signature files
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ inputs.version }}
+        run: |
+          gh release view "v$VERSION" --json assets --jq '.assets[].name | select(endswith(".idsig"))' |
+            xargs -r -n1 gh release delete-asset "v$VERSION" -y
