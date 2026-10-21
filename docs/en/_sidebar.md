@@ -6,6 +6,7 @@
 - [Routing](/en/routing.md)
 - [All settings](/en/settings.md)
 - [Quick settings tile](/en/tile.md)
+- [Windows and Linux](/en/desktop.md)
 - [Questions and problems](/en/faq.md)
 - [Version history](/en/history.md)
 - [For developers](/en/develop.md)

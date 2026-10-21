@@ -1,5 +1,10 @@
 # Version history
 
+## 1.1.0
+
+- **We1ssConnect for Windows and Linux.** The same screens as on the phone: servers, subscriptions, auto select, routing, ping. Instead of a VPN it turns on the system proxy, and SOCKS5 `127.0.0.1:10808` is there for programs that ignore it. It updates itself from the app.
+- One release carries both the APKs and the desktop builds.
+
 ## 1.0.1
 
 - Delay is measured to the server itself by default instead of a full request through it, so the numbers are honest and no longer add hundreds of milliseconds. The old way is still in the settings.
