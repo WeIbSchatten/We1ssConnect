@@ -229,7 +229,7 @@ jobs:
           version="${RELEASE_VERSION#v}"
           cd dist
           # Phones are ARM; the x86_64 build is only for the emulator test.
-          rm -f *-x86_64.apk *-x86.apk
+          rm -f *-x86_64.apk *-x86.apk *.idsig
           sha256sum * > SHA256SUMS
           cd ..
           # Hand-written notes live in docs/release-notes/<version>.md; otherwise GitHub writes them.
