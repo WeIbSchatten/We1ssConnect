@@ -168,6 +168,10 @@ jobs:
           go-version-file: desktop/go.mod
           cache-dependency-path: desktop/go.sum
 
+      - name: Install NSIS
+        if: runner.os == 'Windows'
+        run: choco install nsis -y --no-progress
+
       - name: Install WebKitGTK
         if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev
