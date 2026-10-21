@@ -88,6 +88,8 @@ const en = {
   copyLink: 'Copy link',
   copied: 'Link copied',
   tileHint: 'A We1ssConnect tile can be added to quick settings to connect from the notification shade.',
+  desktopHint:
+    'When connected, the app turns on the system proxy. Programs that ignore it can use SOCKS5 127.0.0.1:10808 or HTTP 127.0.0.1:10809.',
   keysGroup: 'Keys {n}',
   serversCount: 'Servers: {n}',
   refreshOne: 'Update subscription',
@@ -218,6 +220,8 @@ const ru: Dict = {
   copyLink: 'Скопировать ссылку',
   copied: 'Ссылка скопирована',
   tileHint: 'Плитку We1ssConnect можно добавить в быстрые настройки и подключаться из шторки.',
+  desktopHint:
+    'При подключении приложение включает системный прокси. Программы, которые его не видят, можно направить на SOCKS5 127.0.0.1:10808 или HTTP 127.0.0.1:10809.',
   keysGroup: 'Ключи {n}',
   serversCount: 'Серверов: {n}',
   refreshOne: 'Обновить подписку',

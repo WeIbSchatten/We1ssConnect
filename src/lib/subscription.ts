@@ -51,13 +51,27 @@ export function isUrl(text: string): boolean {
   return /^https?:\/\//i.test(text.trim());
 }
 
+interface Fetched {
+  status: number;
+  body: string;
+  header(name: string): string | null;
+}
+
+// The desktop webview cannot read most subscription servers (CORS), so Go downloads them there.
+async function download(url: string, userAgent: string): Promise<Fetched> {
+  if (XrayVpn.fetch) {
+    const r = await XrayVpn.fetch(url, userAgent);
+    return { status: r.status, body: r.body, header: (name) => r.headers[name.toLowerCase()] ?? null };
+  }
+  const res = await fetch(url, { headers: { 'User-Agent': userAgent, Accept: '*/*' } });
+  return { status: res.status, body: await res.text(), header: (name) => res.headers.get(name) };
+}
+
 export async function fetchSubscription(url: string, existing?: Profile): Promise<Profile> {
   const version = Constants.expoConfig?.version ?? '0';
-  const res = await fetch(url.trim(), {
-    headers: { 'User-Agent': `We1ssConnect/${version}`, Accept: '*/*' },
-  });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const body = await res.text();
+  const res = await download(url.trim(), `We1ssConnect/${version}`);
+  if (res.status < 200 || res.status >= 300) throw new Error(`HTTP ${res.status}`);
+  const body = res.body;
   const servers = await toServers(body, existing?.servers);
   if (servers.length === 0) throw new Error('no servers in the subscription');
   const host = (() => {
@@ -70,10 +84,10 @@ export async function fetchSubscription(url: string, existing?: Profile): Promis
   return {
     id: existing?.id ?? newId(),
     // A name the user gave (or the first title) stays across refreshes.
-    name: existing?.name ?? parseTitle(res.headers.get('profile-title')) ?? host,
+    name: existing?.name ?? parseTitle(res.header('profile-title')) ?? host,
     url: url.trim(),
     updatedAt: Date.now(),
-    userInfo: parseUserInfo(res.headers.get('subscription-userinfo')),
+    userInfo: parseUserInfo(res.header('subscription-userinfo')),
     servers,
   };
 }

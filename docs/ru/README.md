@@ -1,7 +1,7 @@
 <div class="hero">
   <img src="assets/logo.svg" alt="We1ssConnect">
   <h1>We1ssConnect</h1>
-  <p>Быстрый и аккуратный VPN-клиент для Android на ядре Xray</p>
+  <p>Быстрый и аккуратный VPN-клиент для Android, Windows и Linux на ядре Xray</p>
   <a class="btn" href="https://github.com/WeIbSchatten/We1ssConnect/releases/latest">Скачать APK</a>
   <a class="btn ghost" href="#/ru/quickstart">Первое подключение</a>
 </div>
@@ -34,6 +34,7 @@ We1ssConnect — клиент для серверов на Xray-core и, в пе
 | | |
 | --- | --- |
 | Android | 8.0 и новее |
+| Компьютер | Windows 10/11 или Linux с WebKitGTK 4.1, 64 бит ([подробнее](/ru/desktop.md)) |
 | Процессор | ARM64 (почти все телефоны) или ARMv7 (старые модели) |
 | Место | до 100 МБ |
 | Разрешения | VPN, уведомления; камера только для QR-кода |

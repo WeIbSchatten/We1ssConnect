@@ -1,0 +1,18 @@
+{
+  "$schema": "https://wails.io/schemas/config.v2.json",
+  "name": "We1ssConnect",
+  "outputfilename": "we1ssconnect",
+  "frontend:dir": "frontend",
+  "frontend:install": "",
+  "frontend:build": "",
+  "author": {
+    "name": "WeIbSchatten"
+  },
+  "info": {
+    "companyName": "WeIbSchatten",
+    "productName": "We1ssConnect",
+    "productVersion": "1.1.0",
+    "copyright": "© WeIbSchatten",
+    "comments": "VPN client on Xray-core"
+  }
+}

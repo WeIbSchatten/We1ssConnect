@@ -1,7 +1,7 @@
 import * as Clipboard from 'expo-clipboard';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { ActivityIndicator, Platform, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 
 import { alert } from '@/components/dialog';
 import { Button, Muted } from '@/components/ui';
@@ -59,9 +59,11 @@ export default function Add() {
           <View style={{ flex: 1 }}>
             <Button title={t('paste')} icon="clipboard-outline" kind="secondary" onPress={paste} />
           </View>
-          <View style={{ flex: 1 }}>
-            <Button title={t('scanQr')} icon="qr-code-outline" kind="secondary" onPress={() => router.push('/scan')} />
-          </View>
+          {Platform.OS !== 'web' && (
+            <View style={{ flex: 1 }}>
+              <Button title={t('scanQr')} icon="qr-code-outline" kind="secondary" onPress={() => router.push('/scan')} />
+            </View>
+          )}
         </View>
         {busy ? (
           <ActivityIndicator color={p.accent} />

@@ -9,3 +9,6 @@ dist/
 modules/xray-vpn/android/libs/
 expo-env.d.ts
 .DS_Store
+desktop/build/bin/
+desktop/build/windows/
+desktop/build/darwin/

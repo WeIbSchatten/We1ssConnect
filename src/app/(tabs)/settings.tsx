@@ -2,7 +2,7 @@ import Constants from 'expo-constants';
 import { router } from 'expo-router';
 import { reloadAppAsync } from 'expo';
 import { useEffect, useState } from 'react';
-import { Linking, ScrollView, StyleSheet, Switch, View } from 'react-native';
+import { Linking, Platform, ScrollView, StyleSheet, Switch, View } from 'react-native';
 import XrayVpn from 'xray-vpn';
 
 import { alert } from '@/components/dialog';
@@ -91,8 +91,11 @@ export default function Settings() {
     <ScrollView contentContainerStyle={styles.page}>
       <SectionTitle>{t('routing')}</SectionTitle>
       <Card style={styles.group}>
-        <Row first icon="apps-outline" title={t('perApp')} subtitle={mode + count} onPress={() => router.push('/apps')} />
-        {toggle('bypassLan', 'home-outline', t('bypassLan'), t('bypassLanHint'), true)}
+        {/* The desktop routes through the system proxy, which cannot tell programs apart. */}
+        {Platform.OS !== 'web' && (
+          <Row first icon="apps-outline" title={t('perApp')} subtitle={mode + count} onPress={() => router.push('/apps')} />
+        )}
+        {toggle('bypassLan', 'home-outline', t('bypassLan'), t('bypassLanHint'), true, Platform.OS === 'web')}
         {toggle('ruDirect', 'flag-outline', t('ruDirect'), t('ruDirectHint'), true)}
         {toggle('blockAds', 'ban-outline', t('blockAds'), t('blockAdsHint'), true)}
         <Row
@@ -191,7 +194,7 @@ export default function Settings() {
       <SectionTitle>{t('about')}</SectionTitle>
       <Card style={{ gap: 6 }}>
         <Muted>{t('aboutText')}</Muted>
-        <Muted>{t('tileHint')}</Muted>
+        <Muted>{Platform.OS === 'web' ? t('desktopHint') : t('tileHint')}</Muted>
         <Muted>
           We1ssConnect {Constants.expoConfig?.version} · {t('core', { v: core })}
         </Muted>
