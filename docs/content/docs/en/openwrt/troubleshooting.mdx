@@ -1,0 +1,38 @@
+---
+title: Troubleshooting
+description: What to do when listed sites do not open, the tunnel does not come up or subscriptions do not refresh.
+---
+
+Start with **Diagnostics**: it checks sing-box, the config, the interception rules, dnsmasq, DNS and
+a request through the tunnel step by step, with the log below.
+
+## "sing-box rejected the config"
+
+Usually a server with a broken key is to blame. Such keys are flagged on import, but if one slipped
+through, remove the suspect server or refresh the subscription. The full error is on the overview
+and in `we1ssconnect status`.
+
+## A listed site does not open
+
+- Check that the rule is on and sits above direct rules that could catch it first.
+- The device may have its own DNS (8.8.8.8 in its network settings, DNS over HTTPS in the browser).
+  Capturing device DNS is on by default, but browser DNS over HTTPS (Chrome, Firefox) gets around
+  it — turn off "Secure DNS" in the browser.
+- After changing the mode or the rules, devices remember old DNS answers for a while. Reconnect the
+  device's Wi-Fi.
+
+## Nothing opens after connecting
+
+- **Diagnostics → Request through the tunnel** fails — the server is unreachable. Press **Test
+  delay** on the servers page and pick one that answers.
+- Check the router's clock: TLS and Reality fail when it is wrong.
+
+## Lists or subscriptions do not refresh
+
+GitHub or the subscription server may be blocked for direct access. Turn on **Download lists through
+the tunnel**; test the subscription from the router with `curl -I '<link>'`.
+
+## Next to podkop, Passwall, https-dns-proxy
+
+They capture traffic and DNS the same way, so they do not work together. Diagnostics names the
+conflicting package — remove it or We1ssConnect.

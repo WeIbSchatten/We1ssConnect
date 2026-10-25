@@ -1,0 +1,46 @@
+---
+title: "Install and update"
+description: "The latest release page has two APKs:"
+---
+
+## Which file to download
+
+The [latest release page](https://github.com/WeIbSchatten/We1ssConnect/releases/latest) has two
+APKs:
+
+| File | For |
+| --- | --- |
+| `we1ssconnect-android-<version>-arm64-v8a.apk` | nearly every phone from recent years |
+| `we1ssconnect-android-<version>-armeabi-v7a.apk` | older and budget 32-bit phones |
+| `SHA256SUMS` | checksums to verify the file |
+
+If you are not sure, take `arm64-v8a`. If the phone says the app is not compatible, install
+`armeabi-v7a`.
+
+## Installing
+
+1. Download the APK on the phone.
+2. Open it. Android asks to allow installs from that source (the browser or file manager):
+   allow it.
+3. On the first connection the app asks for the VPN permission. Tap OK: Android does not let
+   any app create a tunnel without it.
+4. On Android 13+ allow notifications. They show that the VPN is on and let you disconnect.
+
+## Updating
+
+The app checks for new versions by itself, at most every six hours. When one is out, a
+"Version … is available" card appears on Home and in **Settings → Updates**.
+
+1. Tap **Download and install**. The app downloads the APK for your phone's CPU.
+2. The system installer opens. If Android asks, allow We1ssConnect to install apps; this is
+   needed once.
+3. Confirm. Servers, subscriptions and settings are kept.
+
+**Check for updates** in the settings checks right away.
+
+> Every version is signed with the same key, so a new one installs over the old one. A test
+> build from CI signed with another key has to be removed before installing a release.
+
+## Removing
+
+Uninstall as usual. Servers, subscriptions and downloaded rules go with it.

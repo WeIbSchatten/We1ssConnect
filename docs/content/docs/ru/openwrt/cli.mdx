@@ -1,0 +1,34 @@
+---
+title: Команда we1ssconnect
+description: Управление клиентом по SSH и из скриптов — серверы, подписки, выбор сервера, диагностика.
+---
+
+Все команды выводят JSON, поэтому их удобно разбирать в скриптах (`jsonfilter`, `jq`).
+
+| Команда | Что делает |
+| --- | --- |
+| `we1ssconnect status` | состояние, текущий сервер, трафик и предупреждения |
+| `we1ssconnect servers` | серверы, подписки и группы |
+| `we1ssconnect import '<ссылка>'` | добавить ключи; `-` читает их из stdin |
+| `we1ssconnect rm <id>` | удалить сервер |
+| `we1ssconnect select <id\|auto>` | закрепить сервер или вернуть «Авто», без перезапуска |
+| `we1ssconnect ping` | задержка до всех серверов |
+| `we1ssconnect sub-add <url> [название]` | добавить подписку и скачать её |
+| `we1ssconnect sub-update [id\|all]` | обновить подписки |
+| `we1ssconnect sub-rm <id>` | удалить подписку и её серверы |
+| `we1ssconnect ip` | внешний IP через туннель |
+| `we1ssconnect speedtest` | скорость загрузки через туннель |
+| `we1ssconnect diag` | диагностика |
+| `we1ssconnect log [строк]` | журнал sing-box |
+| `we1ssconnect update-check` / `update` | проверить и установить обновление |
+
+Служба управляется как обычно: `/etc/init.d/we1ssconnect start|stop|restart`. Включить её
+при загрузке — `uci set we1ssconnect.main.enabled=1 && uci commit we1ssconnect`.
+
+Пример: добавить подписку и закрепить первый сервер из неё.
+
+```sh
+we1ssconnect sub-add 'https://panel.example.com/sub/abc' 'Моя подписка'
+id=$(we1ssconnect servers | jsonfilter -e '@.servers[0].id')
+we1ssconnect select "$id"
+```

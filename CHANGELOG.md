@@ -1,8 +1,8 @@
 # Changelog
 
 The full history with details is in the documentation:
-[русский](https://weibschatten.github.io/We1ssConnect/#/ru/history) ·
-[English](https://weibschatten.github.io/We1ssConnect/#/en/history).
+[русский](https://weibschatten.github.io/We1ssConnect/ru/docs/help/history/) ·
+[English](https://weibschatten.github.io/We1ssConnect/docs/help/history/).
 
 ## Unreleased
 

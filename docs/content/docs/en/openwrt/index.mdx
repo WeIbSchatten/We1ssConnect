@@ -1,0 +1,57 @@
+---
+title: We1ssConnect for OpenWrt
+description: A client for routers on OpenWrt 24.10 and 25.12 — one tunnel for every device at home, with automatic server choice, routing by lists and LuCI pages.
+---
+
+The router package does what the phone app does, for every device on the network at once: TVs,
+set-top boxes, laptops, smart speakers. Nothing needs installing on each device.
+
+## What it does
+
+- **We1ssBoard subscriptions and keys**: VLESS (Reality, Vision, TLS, WebSocket, gRPC,
+  HTTPUpgrade), VMess, Trojan, Shadowsocks, Hysteria2, TUIC, WireGuard, SOCKS, AnyTLS. Subscription
+  traffic and expiry are shown on the servers page.
+- **Auto**: the balancer picks the lowest-delay server and moves on by itself when a server stops
+  answering. Pinning a server takes one click and does not restart the tunnel.
+- **Four modes that combine**:
+  - **by lists** — only the sites and services you choose go through the tunnel, the rest direct;
+  - **all traffic** — everything goes through the tunnel except direct rules;
+  - **per device** — a device goes entirely through the tunnel, or entirely around it;
+  - **through router interfaces** — some traffic goes through a WireGuard, AmneziaWG or OpenVPN
+    you already have on the router.
+- **Ready-made lists**: YouTube, Telegram, Discord, Meta, X, "Blocked in Russia" and other
+  community lists, "Russian sites and IPs" and "Ads and trackers" presets, your own domains,
+  subnets and remote lists.
+- **DNS**: DNS over HTTPS or TLS, a separate DNS for direct sites, and capture of devices that have
+  a DNS server set by hand.
+- **Overview in LuCI**: state, current server, exit IP with country and ISP, traffic, speed test,
+  diagnostics and the log.
+- **The `we1ssconnect` command** for SSH and scripts.
+
+## Requirements
+
+| | |
+| --- | --- |
+| OpenWrt | 24.10 (`.ipk` packages) or 25.12 (`.apk` packages) |
+| Flash | about 25 MB free: that is what sing-box takes |
+| RAM | 128 MB or more, 256 MB is comfortable |
+| CPU | any that OpenWrt builds the `sing-box` package for |
+
+sing-box does not fit on routers with 16 MB of flash.
+
+## How it differs from the app
+
+The router runs the **sing-box** package from OpenWrt, not Xray. That brings two limits:
+
+- keys with the **XHTTP** transport are imported but marked "not supported" and stay out of the
+  tunnel;
+- Auto has only the **lowest delay** mode; there is no round robin.
+
+Everything else works as on the phone.
+
+## How it differs from podkop
+
+If you have used [podkop](https://podkop.net), this will feel familiar: podkop's sections are
+routing rules here, and the community lists are the same. On top of that there are subscriptions
+with traffic and expiry, Auto with pinning without a restart, an all-traffic mode, per-device rules,
+a speed test and the exit IP. It does not install next to podkop: both capture traffic the same way.

@@ -1,0 +1,62 @@
+---
+title: "Windows and Linux"
+description: "The desktop version has the same screens as the phone: servers, subscriptions, auto select, routing, ping and updates. The one difference is that it turns on the system proxy…"
+---
+
+The desktop version has the same screens as the phone: servers, subscriptions, auto select,
+routing, ping and updates. The one difference is that it turns on the system proxy instead of a
+VPN tunnel.
+
+## Which file to download
+
+| File | For |
+| --- | --- |
+| `we1ssconnect-desktop-<version>-windows-amd64-setup.exe` | installer for Windows 10 and 11 (64-bit) |
+| `we1ssconnect-desktop-<version>-linux-amd64` | the Linux program (64-bit) |
+
+## Windows
+
+1. Run the installer. Windows may say "Windows protected your PC": click
+   **More info → Run anyway** (the installer has no paid signature yet).
+2. WebView2 is needed. Windows 11 has it; on Windows 10 the installer downloads it.
+3. Start We1ssConnect from the Start menu.
+
+## Linux
+
+GTK 3 and WebKitGTK 4.1 are needed. On Ubuntu 22.04+ and Debian 12+:
+
+```bash
+sudo apt install libgtk-3-0 libwebkit2gtk-4.1-0
+chmod +x we1ssconnect-desktop-*-linux-amd64
+./we1ssconnect-desktop-*-linux-amd64
+```
+
+The system proxy is set on GNOME (via `gsettings`) and KDE (via `kwriteconfig`). Elsewhere, set
+the proxy in the program or browser by hand.
+
+## How the connection works
+
+While connected, Xray listens on two ports on this computer only:
+
+| Proxy | Address |
+| --- | --- |
+| SOCKS5 (TCP and UDP) | `127.0.0.1:10808` |
+| HTTP | `127.0.0.1:10809` |
+
+The app sets them as the system proxy and removes it when you disconnect or close the window.
+If the app crashed, the proxy is removed on the next start.
+
+Browsers and most programs use the system proxy on their own. Games, Telegram and programs that
+ignore it can be pointed at SOCKS5 `127.0.0.1:10808` in their settings.
+
+## Not in the desktop version
+
+- Per-app routing: the system proxy cannot tell programs apart.
+- QR scanning: paste the link from the clipboard instead.
+- The quick settings tile.
+
+## Updating
+
+As on the phone: an "Update available" card on the home screen and in settings. On Windows the
+app downloads and starts the new installer; on Linux it replaces its own file and restarts.
+Settings live separately (`%APPDATA%\We1ssConnect` or `~/.config/We1ssConnect`) and are kept.

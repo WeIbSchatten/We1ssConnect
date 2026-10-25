@@ -1,0 +1,20 @@
+@import 'tailwindcss';
+@import 'fumadocs-ui/css/neutral.css';
+@import 'fumadocs-ui/css/preset.css';
+
+/* Monochrome, the same ink/paper pair as the panel and the apps' default palette. */
+:root {
+  --color-fd-primary: hsl(240, 4%, 7%);
+  --color-fd-primary-foreground: hsl(0, 0%, 100%);
+  --color-fd-ring: hsl(240, 4%, 7%);
+}
+
+.dark {
+  --color-fd-primary: hsl(0, 0%, 100%);
+  --color-fd-primary-foreground: hsl(240, 4%, 7%);
+  --color-fd-ring: hsl(0, 0%, 100%);
+}
+
+html {
+  scrollbar-gutter: stable;
+}

@@ -1,0 +1,71 @@
+---
+title: Установка и обновление
+description: Установка We1ssConnect на OpenWrt одной командой по SSH или вручную из пакетов релиза; обновление и удаление.
+---
+
+## Одной командой
+
+Подключитесь к роутеру по SSH под `root` и выполните:
+
+```sh
+wget -qO- https://raw.githubusercontent.com/WeIbSchatten/We1ssConnect/main/openwrt/install.sh | sh
+```
+
+Скрипт сам определит менеджер пакетов (`opkg` на 24.10, `apk` на 25.12), проверит свободное
+место, скачает из последнего релиза три пакета и поставит их вместе с sing-box из репозитория
+OpenWrt:
+
+| Пакет | Что внутри |
+| --- | --- |
+| `we1ssconnect-openwrt` | служба, команда `we1ssconnect`, сборка конфигурации sing-box |
+| `luci-app-we1ssconnect` | страницы в LuCI: **Службы → We1ssConnect** |
+| `luci-i18n-we1ssconnect-ru` | русский перевод страниц |
+
+## Вручную
+
+1. Скачайте со [страницы релиза](https://github.com/WeIbSchatten/We1ssConnect/releases/latest)
+   три файла для своей версии OpenWrt: `.ipk` для 24.10 или `.apk` для 25.12.
+2. Загрузите их на роутер, например в `/tmp`, через `scp` или **Система → Программное
+   обеспечение → Загрузить пакет**.
+3. Установите:
+
+<Tabs items={['OpenWrt 24.10', 'OpenWrt 25.12']}>
+<Tab value="OpenWrt 24.10">
+
+```sh
+opkg update
+opkg install /tmp/*we1ssconnect*.ipk
+```
+
+</Tab>
+<Tab value="OpenWrt 25.12">
+
+```sh
+apk update
+apk add --allow-untrusted /tmp/*we1ssconnect*.apk
+```
+
+</Tab>
+</Tabs>
+
+После установки обновите страницу LuCI: появится раздел **Службы → We1ssConnect**. Туннель
+выключен, пока вы не нажмёте **Подключить** на странице обзора.
+
+## Обновление
+
+- В LuCI: **Диагностика → Проверить обновления → Обновить**, или кнопка **Обновить** на обзоре,
+  когда выходит новая версия.
+- По SSH: та же команда установки или `we1ssconnect update`.
+
+Серверы (`/etc/we1ssconnect/`) и настройки (`/etc/config/we1ssconnect`) сохраняются при
+обновлении пакета и при обновлении прошивки через sysupgrade.
+
+## Удаление
+
+```sh
+opkg remove luci-i18n-we1ssconnect-ru luci-app-we1ssconnect we1ssconnect   # 24.10
+apk del luci-i18n-we1ssconnect-ru luci-app-we1ssconnect we1ssconnect       # 25.12
+```
+
+Перед удалением служба останавливается, правила перехвата убираются, а настройки dnsmasq
+возвращаются к прежним.

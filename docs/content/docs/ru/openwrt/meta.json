@@ -1,0 +1,14 @@
+{
+  "title": "Роутеры OpenWrt",
+  "icon": "Router",
+  "pages": [
+    "index",
+    "install",
+    "setup",
+    "routing",
+    "devices",
+    "settings",
+    "cli",
+    "troubleshooting"
+  ]
+}

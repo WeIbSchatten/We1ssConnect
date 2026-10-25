@@ -1,0 +1,72 @@
+---
+title: Install and update
+description: Install We1ssConnect on OpenWrt with one SSH command or by hand from the release packages; update and remove it.
+---
+
+## One command
+
+Connect to the router over SSH as `root` and run:
+
+```sh
+wget -qO- https://raw.githubusercontent.com/WeIbSchatten/We1ssConnect/main/openwrt/install.sh | sh
+```
+
+The script works out the package manager (`opkg` on 24.10, `apk` on 25.12), checks free space,
+downloads three packages from the latest release and installs them together with sing-box from the
+OpenWrt repository:
+
+| Package | Contents |
+| --- | --- |
+| `we1ssconnect-openwrt` | the service, the `we1ssconnect` command, the sing-box config builder |
+| `luci-app-we1ssconnect` | LuCI pages: **Services → We1ssConnect** |
+| `luci-i18n-we1ssconnect-ru` | Russian translation of the pages |
+
+## By hand
+
+1. Download the three files for your OpenWrt version from the
+   [release page](https://github.com/WeIbSchatten/We1ssConnect/releases/latest): `.ipk` for 24.10
+   or `.apk` for 25.12.
+2. Copy them to the router, for example to `/tmp`, with `scp` or **System → Software → Upload
+   Package**.
+3. Install:
+
+<Tabs items={['OpenWrt 24.10', 'OpenWrt 25.12']}>
+<Tab value="OpenWrt 24.10">
+
+```sh
+opkg update
+opkg install /tmp/*we1ssconnect*.ipk
+```
+
+</Tab>
+<Tab value="OpenWrt 25.12">
+
+```sh
+apk update
+apk add --allow-untrusted /tmp/*we1ssconnect*.apk
+```
+
+</Tab>
+</Tabs>
+
+Reload LuCI afterwards: **Services → We1ssConnect** appears. The tunnel stays off until you press
+**Connect** on the overview page.
+
+## Update
+
+- In LuCI: **Diagnostics → Check for updates → Update**, or the **Update** button on the overview
+  when a new version is out.
+- Over SSH: the same install command, or `we1ssconnect update`.
+
+Servers (`/etc/we1ssconnect/`) and settings (`/etc/config/we1ssconnect`) survive package updates
+and firmware upgrades with sysupgrade.
+
+## Remove
+
+```sh
+opkg remove luci-i18n-we1ssconnect-ru luci-app-we1ssconnect we1ssconnect   # 24.10
+apk del luci-i18n-we1ssconnect-ru luci-app-we1ssconnect we1ssconnect       # 25.12
+```
+
+Before removal the service stops, the interception rules go away and dnsmasq gets its previous
+settings back.
