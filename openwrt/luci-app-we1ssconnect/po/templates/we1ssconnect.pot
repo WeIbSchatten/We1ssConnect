@@ -541,6 +541,18 @@ msgstr ""
 msgid "ms"
 msgstr ""
 
+msgid "%s transport is not supported by sing-box"
+msgstr ""
+
+msgid "Shadowsocks plugin %s is not supported by sing-box"
+msgstr ""
+
+msgid "Missing: %s"
+msgstr ""
+
+msgid "Unknown link type: %s"
+msgstr ""
+
 msgid "Failed"
 msgstr ""
 

@@ -26,9 +26,9 @@ return view.extend({
 		const d = this.data;
 		const selected = d.selected == s.id;
 		if (!s.ok)
-			return E('div', { class: 'w1-row w1-disabled', title: s.reason }, [
+			return E('div', { class: 'w1-row w1-disabled', title: w1.reason(s.reason) }, [
 				E('span', { class: 'w1-name' }, s.name), E('span', { class: 'w1-tag' }, _('not supported')),
-				E('span', { class: 'w1-muted', style: 'font-size:12px' }, s.reason)
+				E('span', { class: 'w1-muted', style: 'font-size:12px' }, w1.reason(s.reason))
 			]);
 		const delay = this.delays[s.id] != null ? this.delays[s.id] : s.delay;
 		const now = d.now == 's-' + s.id;
@@ -118,7 +118,7 @@ return view.extend({
 				E('button', { class: 'cbi-button', click: ui.hideModal }, _('Cancel')), ' ',
 				E('button', { class: 'cbi-button cbi-button-positive', click: ui.createHandlerFn(this, () => w1.importLinks(ta.value).then((r) => {
 					ui.hideModal();
-					const skipped = (r.skipped || []).map((x) => E('li', {}, x.name + ': ' + x.reason));
+					const skipped = (r.skipped || []).map((x) => E('li', {}, x.name + ': ' + w1.reason(x.reason)));
 					ui.addNotification(null, [ E('p', {}, _('Added: %d').format(r.added || 0)), skipped.length ? E('ul', {}, skipped) : '' ], skipped.length ? 'warning' : 'info');
 					return this.refresh();
 				})) }, _('Add'))

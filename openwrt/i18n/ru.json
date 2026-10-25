@@ -182,5 +182,9 @@
  "Failed": "Не удалось",
  "Overview": "Обзор",
  "Routing": "Маршрутизация",
- "Settings": "Настройки"
+ "Settings": "Настройки",
+ "%s transport is not supported by sing-box": "транспорт %s не поддерживается sing-box",
+ "Shadowsocks plugin %s is not supported by sing-box": "плагин Shadowsocks %s не поддерживается sing-box",
+ "Missing: %s": "не хватает: %s",
+ "Unknown link type: %s": "неизвестный тип ссылки: %s"
 }

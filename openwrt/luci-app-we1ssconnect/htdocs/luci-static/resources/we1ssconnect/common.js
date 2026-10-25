@@ -158,6 +158,22 @@ return baseclass.extend({
 		return (i ? n.toFixed(n < 10 ? 2 : 1) : n) + ' ' + u[i];
 	},
 
+	// Import reasons come from the backend in English; known ones are shown translated.
+	reason: function(text) {
+		let m;
+		if (!text)
+			return '';
+		if ((m = text.match(/^(\S+) transport is not supported by sing-box$/)))
+			return _('%s transport is not supported by sing-box').format(m[1]);
+		if ((m = text.match(/^shadowsocks plugin (\S+) is not supported by sing-box$/)))
+			return _('Shadowsocks plugin %s is not supported by sing-box').format(m[1]);
+		if ((m = text.match(/^missing (.+)$/)))
+			return _('Missing: %s').format(m[1]);
+		if ((m = text.match(/^unknown link type (\S+)$/)))
+			return _('Unknown link type: %s').format(m[1]);
+		return text;
+	},
+
 	// A release newer than the running one; dev builds (0.x from CI) never offer one.
 	updateAvailable: function(u) {
 		if (!u || !u.latest || !u.current || /^0\./.test(u.current))

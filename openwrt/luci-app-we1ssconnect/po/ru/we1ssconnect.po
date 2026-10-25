@@ -542,6 +542,18 @@ msgstr "нет ответа"
 msgid "ms"
 msgstr "мс"
 
+msgid "%s transport is not supported by sing-box"
+msgstr "транспорт %s не поддерживается sing-box"
+
+msgid "Shadowsocks plugin %s is not supported by sing-box"
+msgstr "плагин Shadowsocks %s не поддерживается sing-box"
+
+msgid "Missing: %s"
+msgstr "не хватает: %s"
+
+msgid "Unknown link type: %s"
+msgstr "неизвестный тип ссылки: %s"
+
 msgid "Failed"
 msgstr "Не удалось"
 
