@@ -153,10 +153,15 @@ function parse_ss(link, u) {
 		const decoded = b64decode(pctdecode(body));
 		if (!decoded || index(decoded, '@') < 0)
 			return fail(u.fragment || link, 'shadowsocks link is not readable');
-		const inner = parse_url('ss://' + decoded);
-		if (!inner || inner.userinfo == null)
+		// The decoded text is not URL-encoded, so the password may hold "?" or "#".
+		const at = rindex(decoded, '@');
+		const addr = match(substr(decoded, at + 1), /^\[?([^\]]*)\]?:([0-9]+)$/);
+		if (!addr)
 			return fail(u.fragment || link, 'shadowsocks link is not readable');
-		return parse_ss(link, { ...inner, fragment: u.fragment });
+		const pair = split_pair(substr(decoded, 0, at));
+		const host = addr[1], port = int(addr[2]);
+		return { ok: true, name: u.fragment || default_name('shadowsocks', host, port),
+			outbound: { type: 'shadowsocks', server: host, server_port: port, method: pair[0], password: pair[1] } };
 	}
 	const name = u.fragment || default_name('shadowsocks', u.host, u.port);
 	const bad = need_address(u, name);
