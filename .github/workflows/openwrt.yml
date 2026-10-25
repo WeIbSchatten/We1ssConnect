@@ -59,6 +59,7 @@ jobs:
       - name: Version
         run: |
           version="${{ inputs.version }}"
+          version="${version#v}"
           echo "VERSION=${version:-0.0.${{ github.run_number }}}" >> "$GITHUB_ENV"
       - name: Build with the OpenWrt ${{ matrix.sdk }} SDK
         run: |

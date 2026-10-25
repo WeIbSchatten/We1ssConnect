@@ -23,8 +23,8 @@ an app of its own.
 
 ## Packages and files
 
-`we1ssconnect` (depends on `sing-box`, `kmod-nft-tproxy`, `dnsmasq-full`, `ca-bundle`,
-`ucode-mod-fs`, `ucode-mod-uci`, `ucode-mod-ubus`, `ucode-mod-uloop`):
+`we1ssconnect` (depends on `sing-box`, `kmod-nft-tproxy`, `nftables`, `curl`, `ca-bundle`, `ucode`,
+`ucode-mod-fs`, `ucode-mod-uci`; the stock dnsmasq is enough, FakeIP needs no nftset):
 
 | Path | Role |
 | --- | --- |
@@ -44,7 +44,7 @@ an app of its own.
 - `settings main`: `enabled`, `mode` (`selective`/`global`), `selected` (`auto` or a server id),
   `urltest_url`, `urltest_interval`, `urltest_tolerance`, `dns_type` (`doh`/`dot`/`udp`),
   `dns_server`, `bootstrap_dns`, `direct_dns`, `source_iface` (list, default `br-lan`),
-  `ipv6`, `lan_proxy` + `lan_proxy_port`, `block_quic`, `exclude_ntp`, `fragment`, `mux`,
+  `ipv6`, `lan_proxy` + `lan_proxy_port`, `block_quic`, `exclude_ntp`, `intercept_dns`, `fragment`,
   `force_chrome_fp`, `list_update_interval`, `lists_via_tunnel`, `sub_update_interval`,
   `manage_dnsmasq`, `log_level`.
 - `subscription`: `name`, `url`, `enabled`, `filter` (regex on names), `user_agent`.
@@ -62,7 +62,9 @@ an app of its own.
 1. dnsmasq forwards every query to the sing-box DNS inbound (`127.0.0.42:53`); the original
    dnsmasq settings are saved and restored on stop (`manage_dnsmasq=0` leaves dnsmasq alone).
 2. sing-box DNS: block rules → reject; direct rules → `direct_dns`; proxy/vpn rules →
-   FakeIP (`198.18.0.0/15`); everything else → `dns_server` (through the tunnel in global mode).
+   FakeIP (`198.18.0.0/15`) in selective mode; everything else → `dns_server` (through the tunnel
+   in global mode). The FakeIP server and its cache stay in global mode too, so addresses that
+   clients cached before a mode switch still map back to their domains.
 3. nft table `inet we1ssconnect`, prerouting on `source_iface`:
    private and reserved destinations return; `bypass` devices only have the FakeIP range
    intercepted; `tunnel` devices and global mode intercept all TCP/UDP; selective mode
@@ -86,6 +88,9 @@ The Clash API listens on `127.0.0.1:9090` with a random secret in `/var/run/we1s
 The rpcd object proxies it: per-server delay, current server, traffic rate, connections.
 An internal mixed inbound (`127.0.0.1:2081`) routed to the selected group serves the exit IP
 check (ip-api, middle of the IP hidden like the other clients) and the speed test.
+
+No multiplex option: sing-box's sing-mux does not speak Xray's mux.cool, and the panel's servers
+run Xray.
 
 ## Import
 

@@ -16,6 +16,13 @@ make package/we1ssconnect/compile package/luci-app-we1ssconnect/compile WE1SS_VE
 	exit 1
 }
 mkdir -p "$out"
-find bin/packages -type f \( -name 'we1ssconnect*' -o -name 'luci-app-we1ssconnect*' -o -name 'luci-i18n-we1ssconnect*' \) \
-	\( -name '*.ipk' -o -name '*.apk' \) -exec cp {} "$out/" \;
+# Release names say "openwrt" so the router packages are not mistaken for the Android APKs.
+for f in $(find bin/packages -type f \( -name '*.ipk' -o -name '*.apk' \)); do
+	ext="${f##*.}"
+	case "$(basename "$f")" in
+	we1ssconnect[-_]*) cp "$f" "$out/we1ssconnect-openwrt-$version.$ext" ;;
+	luci-app-we1ssconnect[-_]*) cp "$f" "$out/luci-app-we1ssconnect-$version.$ext" ;;
+	luci-i18n-we1ssconnect-ru[-_]*) cp "$f" "$out/luci-i18n-we1ssconnect-ru-$version.$ext" ;;
+	esac
+done
 ls -l "$out"

@@ -264,7 +264,29 @@ function parse_anytls(u) {
 	return { ok: true, name, outbound: out };
 }
 
+// sing-box refuses the whole config over one outbound without its credentials, so such
+// servers are rejected here with a reason instead.
+const REQUIRED = {
+	vless: ['uuid'], vmess: ['uuid'], trojan: ['password'], shadowsocks: ['method', 'password'],
+	hysteria2: ['password'], tuic: ['uuid'], anytls: ['password'], wireguard: ['private_key'],
+};
+
+function validate(r) {
+	if (!r.ok)
+		return r;
+	for (let k in REQUIRED[r.outbound.type] ?? [])
+		if (r.outbound[k] == null || r.outbound[k] == '')
+			return fail(r.name, `missing ${k == 'private_key' ? 'private key' : k}`);
+	if (r.outbound.type == 'wireguard' && r.outbound.peers[0].public_key == '')
+		return fail(r.name, 'missing public key');
+	return r;
+}
+
 export function parse(link) {
+	return validate(parse_link(link));
+};
+
+function parse_link(link) {
 	link = trim(link ?? '');
 	const shown = length(link) > 60 ? substr(link, 0, 60) + '…' : link;
 	if (match(link, /^vmess:\/\//i))
@@ -286,7 +308,7 @@ export function parse(link) {
 	case 'anytls': return parse_anytls(u);
 	}
 	return fail(u.fragment || shown, `unknown link type ${u.scheme}`);
-};
+}
 
 // A subscription body or pasted text: one link per line, plain or base64 as a whole.
 export function parse_all(body) {

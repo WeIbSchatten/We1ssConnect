@@ -121,6 +121,16 @@ test('names fall back to type and address; bad links explain why', () => {
 	eq(parse('https://t.me/proxy?server=x').reason, 'unknown link type https');
 });
 
+test('servers without credentials are rejected before they can break the config', () => {
+	eq(parse('ss://@127.0.0.1:8388#empty').reason, 'missing method');
+	eq(parse('ss://' + b64enc('aes-128-gcm:') + '@h:1#nopw').reason, 'missing password');
+	eq(parse('vless://@h:443#nouuid').reason, 'missing uuid');
+	eq(parse('trojan://@h:443#nopw').reason, 'missing password');
+	eq(parse('wireguard://@h:51820?publickey=P#nokey').reason, 'missing private key');
+	eq(parse('wireguard://K@h:51820#nopub').reason, 'missing public key');
+	eq(parse('vmess://' + b64enc('{"add":"h","port":"1","id":"","ps":"v"}')).reason, 'missing uuid');
+});
+
 test('parse_all reads plain and base64 bodies and skips blank lines', () => {
 	const body = 'trojan://pw@a:1#one\r\n\r\nvless://u@b:2?type=xhttp#two\nnot a link\n';
 	const plain = parse_all(body);

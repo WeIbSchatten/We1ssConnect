@@ -27,7 +27,8 @@ configure)
 {"log":{"level":"warn"},"inbounds":[{"type":"shadowsocks","listen":"127.0.0.1","listen_port":8388,"method":"aes-128-gcm","password":"testpw"}],"outbounds":[{"type":"direct"}]}
 EOF
 	start-stop-daemon -S -b -x /usr/bin/sing-box -- run -c /tmp/server.json
-	we1ssconnect import "ss://$(echo -n 'aes-128-gcm:testpw' | base64)@127.0.0.1:8388#Нидерланды
+	# base64 of "aes-128-gcm:testpw": the booted image has no base64 tool.
+	we1ssconnect import "ss://YWVzLTEyOC1nY206dGVzdHB3@127.0.0.1:8388#Нидерланды
 vless://u@h:443?type=xhttp&security=reality&pbk=k#Финляндия XHTTP
 trojan://pw@192.0.2.10:443#Германия" > /dev/null
 	uci set we1ssconnect.r_youtube.enabled=1
