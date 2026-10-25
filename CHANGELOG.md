@@ -4,7 +4,7 @@ The full history with details is in the documentation:
 [русский](https://weibschatten.github.io/We1ssConnect/ru/docs/help/history/) ·
 [English](https://weibschatten.github.io/We1ssConnect/docs/help/history/).
 
-## Unreleased
+## 1.9.2
 
 - geosite:/geoip: categories in routing rules on every client: "Own rules" (through VPN, directly, block) on Android and desktop, a Categories field on the router. The router reads the same data as runetfreedom .srs rule-sets, and the apps now take geosite.dat from runetfreedom too, so ru-blocked and the other Russian categories work everywhere.
 
