@@ -21,6 +21,7 @@ const USAGE = `We1ssConnect ${svc.VERSION} for OpenWrt
   log [lines]             recent sing-box log
   update-check            latest release on GitHub
   update                  install the latest release
+  take-over               stop other clients (podkop, Passwall…) and their autostart
   prepare | apply-net | cleanup   used by /etc/init.d/we1ssconnect
 `;
 
@@ -51,6 +52,7 @@ case 'prepare':
 	}
 	break;
 case 'apply-net': result = svc.apply_net(); break;
+case 'take-over': result = svc.take_over(); break;
 case 'cleanup': result = svc.cleanup(); break;
 default:
 	print(USAGE);

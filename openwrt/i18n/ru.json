@@ -186,5 +186,8 @@
  "%s transport is not supported by sing-box": "транспорт %s не поддерживается sing-box",
  "Shadowsocks plugin %s is not supported by sing-box": "плагин Shadowsocks %s не поддерживается sing-box",
  "Missing: %s": "не хватает: %s",
- "Unknown link type: %s": "неизвестный тип ссылки: %s"
+ "Unknown link type: %s": "неизвестный тип ссылки: %s",
+ "To keep the tunnel working, these were stopped and their autostart turned off: %s. Nothing was removed; turn them back on under System → Startup after disconnecting here.": "Чтобы туннель работал, остановлены и выключены из автозапуска: %s. Ничего не удалено; вернуть их можно в «Система → Загрузка», отключив здесь We1ssConnect.",
+ "Another client is active: %s": "Работает другой клиент: %s",
+ "running or starts at boot": "запущен или включён в автозапуск"
 }

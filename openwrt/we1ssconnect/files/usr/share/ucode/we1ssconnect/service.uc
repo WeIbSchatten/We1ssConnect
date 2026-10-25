@@ -10,6 +10,7 @@ import * as lists from 'we1ssconnect.lists';
 import * as nft from 'we1ssconnect.nft';
 import * as dnsmasq from 'we1ssconnect.dnsmasq';
 import * as clash from 'we1ssconnect.clash';
+import * as takeover from 'we1ssconnect.takeover';
 import { mkdir_p } from 'we1ssconnect.util';
 
 export const VERSION = '0.0.0-dev';
@@ -82,6 +83,7 @@ function sync_cron(interval) {
 export function prepare() {
 	mkdir_p(RUN_DIR);
 	mkdir_p(TMP_DIR);
+	takeover.take_over();
 	const l = load_cfg();
 	const cfg = l.cfg;
 	const res = lists.resolve(cfg, (url) => lists.fetch_cached(url, TMP_DIR + '/lists', null));
@@ -143,6 +145,7 @@ export function status() {
 		version: VERSION, enabled: l.cfg.enabled, running: up, mode: l.cfg.mode, selected: l.cfg.selected,
 		error: st.error, warnings: st.warnings ?? [], servers: length(store.usable(l.data)),
 		singbox: split(sh('sing-box version').out, '\n')[0],
+		taken_over: takeover.taken_over().names ?? [],
 	};
 	if (up) {
 		const p = clash.proxies(api(l.cfg));
@@ -331,9 +334,10 @@ export function diagnostics() {
 	add('DNS through sing-box', sh(`nslookup -timeout=3 example.com ${singbox.DNS_LISTEN}`).code == 0);
 	const tunnel = sh(`curl -s -o /dev/null -m 8 -w '%{http_code}' -x ${SVC_PROXY} ${q(l.cfg.urltest.url)}`);
 	add('tunnel', tunnel.out == '204' || tunnel.out == '200', tunnel.out);
-	for (let pkg in ['podkop', 'luci-app-passwall', 'luci-app-passwall2', 'https-dns-proxy'])
-		if (stat('/usr/lib/opkg/info/' + pkg + '.control') || stat('/lib/apk/packages/' + pkg + '.list'))
-			add('conflict: ' + pkg, false, 'installed');
+	// Installed but stopped and disabled is fine; only an active rival breaks the tunnel.
+	for (let name in takeover.RIVALS)
+		if (takeover.active(name))
+			add('conflict: ' + name, false, 'running or starts at boot');
 	return { checks, warnings: st.warnings ?? [] };
 };
 
@@ -363,6 +367,10 @@ function set_main(key, value) {
 	c.set('we1ssconnect', 'main', key, value);
 	c.commit('we1ssconnect');
 }
+
+export function take_over() {
+	return { stopped: takeover.take_over() };
+};
 
 export function set_enabled(on) {
 	set_main('enabled', on ? '1' : '0');

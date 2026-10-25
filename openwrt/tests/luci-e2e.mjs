@@ -41,6 +41,16 @@ for (const [name, text] of pages) {
 	await page.screenshot({ path: `${out}/${name}.png`, fullPage: true });
 }
 
+// The install took podkop over; the overview says so and how to undo it.
+await page.goto(`${base}/cgi-bin/luci/admin/services/we1ssconnect/overview`);
+try {
+	await page.getByText('выключены из автозапуска: podkop', { exact: false }).first().waitFor({ timeout: 20000 });
+	console.log('ok   overview: says podkop was stopped');
+} catch {
+	console.log('FAIL overview: no notice about the stopped podkop');
+	failed++;
+}
+
 // Pinning a server from the list must reach sing-box without a page reload.
 await page.goto(`${base}/cgi-bin/luci/admin/services/we1ssconnect/servers`);
 await page.getByText('Нидерланды').first().click();
