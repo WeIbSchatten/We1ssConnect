@@ -25,6 +25,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+      - name: Check the release follows the panel's version series
+        if: env.RELEASE_VERSION != ''
+        run: scripts/check-version-series.sh "$RELEASE_VERSION"
       - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
@@ -212,8 +215,8 @@ jobs:
           path: dist/
 
   release:
-    if: needs.android.result == 'success' && needs.desktop.result == 'success' && (inputs.version || startsWith(github.ref, 'refs/tags/v'))
-    needs: [android, desktop]
+    if: needs.check.result == 'success' && needs.android.result == 'success' && needs.desktop.result == 'success' && (inputs.version || startsWith(github.ref, 'refs/tags/v'))
+    needs: [check, android, desktop]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7

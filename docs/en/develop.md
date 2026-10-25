@@ -55,6 +55,11 @@ version and `versionCode`, signs the APKs with the `ANDROID_KEYSTORE_B64` and
 arm64-v8a and armeabi-v7a APKs and `SHA256SUMS`. The app finds updates through this
 repository's latest release.
 
+Versions follow the [We1ssBoard](https://github.com/WeIbSchatten/We1ssBoard) panel: a client
+release shares the panel's `MAJOR.MINOR` (panel 1.9.x → clients 1.9.x), and patch versions are
+independent, so a client fix does not need a panel release. The workflow checks this with
+`scripts/check-version-series.sh` before building and refuses any other version.
+
 ## Licenses
 
 [Xray-core](https://github.com/XTLS/Xray-core) (MPL-2.0) and
