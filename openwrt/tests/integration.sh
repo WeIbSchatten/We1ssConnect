@@ -42,7 +42,7 @@ uci set we1ssconnect.main.sub_update_interval=6h
 uci commit we1ssconnect
 
 check "prepare builds a config sing-box accepts" 'we1ssconnect prepare > /tmp/we1ss-it/prepare.json'
-check "the status file has no hard error" 'grep -q "\"ok\":true" /var/run/we1ssconnect/status.json'
+check "the status file has no hard error" 'ucode -e "import { readfile } from \"fs\"; exit(json(readfile(\"/var/run/we1ssconnect/status.json\")).ok ? 0 : 1);"'
 check "cron refreshes subscriptions every 6 hours" 'grep -q "^0 \*/6 \* \* \* /usr/bin/we1ssconnect sub-update all" /etc/crontabs/root'
 
 check "apply-net loads the nft table" 'we1ssconnect apply-net > /tmp/we1ss-it/apply.json; nft list table inet we1ssconnect > /tmp/we1ss-it/table.nft'
@@ -59,7 +59,7 @@ check "a request through the tunnel works" '[ "$(curl -s -o /dev/null -w "%{http
 check "the shadowsocks server carried it" 'sleep 1; grep -q "inbound connection to www.gstatic.com:443" /tmp/we1ss-it/server.log'
 check "ping goes through the tunnel" 'we1ssconnect ping | grep -q "\"via\": \"tunnel\""'
 check "pinning a server switches the selector without a restart" \
-	'we1ssconnect select "$id" > /dev/null && curl -s -H "Authorization: Bearer $(cat /var/run/we1ssconnect/secret)" http://127.0.0.1:9090/proxies/main | grep -q "\"now\":\"s-$id\""'
+	'we1ssconnect select "$id" > /tmp/we1ss-it/select.json; curl -s -H "Authorization: Bearer $(cat /var/run/we1ssconnect/secret)" http://127.0.0.1:9090/proxies/main > /tmp/we1ss-it/main.json; grep -q "\"now\": *\"s-$id\"" /tmp/we1ss-it/main.json'
 check "the pin is saved in UCI" '[ "$(uci get we1ssconnect.main.selected)" = "$id" ]'
 check "the exit IP is found through the tunnel" 'we1ssconnect ip | grep -q "\"ip\""'
 check "diagnostics see the running service" 'we1ssconnect diag > /tmp/we1ss-it/diag.json; grep -A1 "\"name\": \"tunnel\"" /tmp/we1ss-it/diag.json | grep -q "\"ok\": true"'
@@ -69,7 +69,7 @@ check "cleanup removes the table, the route and restores dnsmasq" \
 	'we1ssconnect cleanup > /dev/null; ! nft list table inet we1ssconnect > /dev/null 2>&1 && ! ip rule | grep -q "lookup 105" && [ -z "$(uci -q get dhcp.@dnsmasq[0].server)" ]'
 
 if [ "$fails" -gt 0 ]; then
-	for f in prepare.json apply.json status.json diag.json client.log; do echo "--- $f"; cat "/tmp/we1ss-it/$f" 2> /dev/null | head -40; done
+	for f in prepare.json apply.json status.json select.json main.json diag.json client.log; do echo "--- $f"; cat "/tmp/we1ss-it/$f" 2> /dev/null | head -40; done
 fi
 echo "integration: $fails failed"
 [ "$fails" -eq 0 ]
