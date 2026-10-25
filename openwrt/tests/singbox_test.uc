@@ -90,7 +90,8 @@ test('global mode: everything through the pinned server, DNS through the tunnel'
 	eq(r.config.route.final, 'main');
 	eq(find(r.config.outbounds, 'main').default, 's-c3');
 	eq(find(r.config.dns.servers, 'dns-remote'), { tag: 'dns-remote', type: 'tls', server: '1.1.1.1', detour: 'main' });
-	eq(find(r.config.dns.servers, 'dns-fakeip'), null, 'no FakeIP in global mode');
+	eq(filter(r.config.dns.rules, (x) => x.server == 'dns-fakeip'), [], 'global mode hands out no new FakeIPs');
+	ok(find(r.config.dns.servers, 'dns-fakeip') != null, 'but still maps cached FakeIPs back to domains');
 	check(r.config, 'global');
 });
 

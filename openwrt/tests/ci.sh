@@ -26,5 +26,5 @@ done
 echo "== integration.sh"
 sh "$root/tests/integration.sh" "$root" || status=1
 echo "== e2e.sh"
-sh "$root/tests/e2e.sh" || status=1
+sh "$root/tests/e2e.sh" "$root" || status=1
 exit $status

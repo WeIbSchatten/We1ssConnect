@@ -38,7 +38,7 @@ sing-box run -c $dir/server.json > $dir/server.log 2>&1 &
 server_pid=$!
 
 rm -rf /etc/we1ssconnect /var/run/we1ssconnect
-cp /etc/config/we1ssconnect.orig /etc/config/we1ssconnect 2> /dev/null || cp /etc/config/we1ssconnect /etc/config/we1ssconnect.orig
+cp "$1/we1ssconnect/files/etc/config/we1ssconnect" /etc/config/we1ssconnect
 we1ssconnect import "ss://$(printf 'aes-128-gcm:testpw' | base64)@127.0.0.1:8388#Local" > /dev/null
 uci set we1ssconnect.main.enabled=1
 uci set we1ssconnect.main.manage_dnsmasq=0

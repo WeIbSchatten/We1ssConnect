@@ -230,12 +230,12 @@ export function build(cfg, data) {
 		{ type: 'udp', tag: 'dns-bootstrap', server: cfg.dns.bootstrap },
 		dns_remote(cfg, global && known.main),
 	];
-	if (!global) {
-		let fake = { type: 'fakeip', tag: 'dns-fakeip', inet4_range: FAKEIP_V4 };
-		if (cfg.ipv6)
-			fake.inet6_range = FAKEIP_V6;
-		push(servers, fake);
-	}
+	// Kept in global mode too: clients still hold FakeIP answers from before a mode switch,
+	// and only this server can map them back to domains.
+	let fake = { type: 'fakeip', tag: 'dns-fakeip', inet4_range: FAKEIP_V4 };
+	if (cfg.ipv6)
+		fake.inet6_range = FAKEIP_V6;
+	push(servers, fake);
 
 	let inbounds = [
 		{ type: 'tproxy', tag: 'tproxy-in', listen: '::', listen_port: TPROXY_PORT },
@@ -259,7 +259,7 @@ export function build(cfg, data) {
 			default_domain_resolver: { server: 'dns-direct' },
 		},
 		experimental: {
-			cache_file: { enabled: true, path: cfg.cache_path, store_fakeip: !global },
+			cache_file: { enabled: true, path: cfg.cache_path, store_fakeip: true },
 			clash_api: { external_controller: '127.0.0.1:' + cfg.clash.port, secret: cfg.clash.secret },
 		},
 	};
