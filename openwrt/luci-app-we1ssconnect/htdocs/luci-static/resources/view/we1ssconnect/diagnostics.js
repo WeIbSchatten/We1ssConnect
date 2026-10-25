@@ -43,7 +43,7 @@ return view.extend({
 		return w1.updateCheck().then((r) => {
 			if (r.error)
 				return dom.content(this.updateBox, E('span', { class: 'w1-bad' }, r.error));
-			if (!r.latest || r.latest == r.current)
+			if (!w1.updateAvailable(r))
 				return dom.content(this.updateBox, E('span', { class: 'w1-good' }, _('Up to date')));
 			dom.content(this.updateBox, [ _('Version %s is available.').format(r.latest), ' ',
 				E('button', { class: 'cbi-button cbi-button-positive', click: ui.createHandlerFn(this, () => w1.update().then(() => w1.notify({}, _('Updating in the background; reload the page in a minute.')))) }, _('Update')) ]);

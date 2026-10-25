@@ -158,6 +158,17 @@ return baseclass.extend({
 		return (i ? n.toFixed(n < 10 ? 2 : 1) : n) + ' ' + u[i];
 	},
 
+	// A release newer than the running one; dev builds (0.x from CI) never offer one.
+	updateAvailable: function(u) {
+		if (!u || !u.latest || !u.current || /^0\./.test(u.current))
+			return false;
+		const a = u.latest.split('.').map(Number), b = u.current.split('.').map(Number);
+		for (let i = 0; i < 3; i++)
+			if ((a[i] || 0) != (b[i] || 0))
+				return (a[i] || 0) > (b[i] || 0);
+		return false;
+	},
+
 	date: function(unix) {
 		return unix ? new Date(unix * 1000).toLocaleDateString() : '';
 	},

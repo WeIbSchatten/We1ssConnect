@@ -57,7 +57,7 @@ return view.extend({
 		const warnings = (st.warnings || []).concat(st.error ? [ st.error ] : []);
 		dom.content(box, [
 			w1.header('We1ssConnect', [ _('Version'), ' ', st.version, ' · ', st.singbox || '' ], pill),
-			this.update && this.update.latest && this.update.latest != st.version && this.update.current != '0.0.0'
+			w1.updateAvailable(this.update)
 				? E('div', { class: 'w1-alert' }, [ _('Version %s is available.').format(this.update.latest), ' ',
 					E('button', { class: 'cbi-button cbi-button-action', click: ui.createHandlerFn(this, () => w1.update().then(() => w1.notify({}, _('Updating in the background; reload the page in a minute.')))) }, _('Update')) ])
 				: '',

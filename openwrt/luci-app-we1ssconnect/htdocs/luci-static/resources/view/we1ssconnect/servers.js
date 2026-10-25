@@ -96,7 +96,7 @@ return view.extend({
 				E('button', { class: 'cbi-button', click: ui.createHandlerFn(this, () => w1.subUpdate('all').then(() => this.refresh())) }, _('Refresh subscriptions')),
 			]),
 			auto,
-			blocks.length ? blocks : E('div', { class: 'w1-card w1-muted' }, _('No servers yet: add a We1ssBoard subscription or paste keys.')),
+			...(blocks.length ? blocks : [ E('div', { class: 'w1-card w1-muted' }, _('No servers yet: add a We1ssBoard subscription or paste keys.')) ]),
 		]);
 	},
 
