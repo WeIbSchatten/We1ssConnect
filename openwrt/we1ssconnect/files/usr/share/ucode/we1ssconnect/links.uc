@@ -282,10 +282,6 @@ function validate(r) {
 	return r;
 }
 
-export function parse(link) {
-	return validate(parse_link(link));
-};
-
 function parse_link(link) {
 	link = trim(link ?? '');
 	const shown = length(link) > 60 ? substr(link, 0, 60) + '…' : link;
@@ -309,6 +305,10 @@ function parse_link(link) {
 	}
 	return fail(u.fragment || shown, `unknown link type ${u.scheme}`);
 }
+
+export function parse(link) {
+	return validate(parse_link(link));
+};
 
 // A subscription body or pasted text: one link per line, plain or base64 as a whole.
 export function parse_all(body) {
