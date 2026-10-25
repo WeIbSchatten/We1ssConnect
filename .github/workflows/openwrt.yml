@@ -1,7 +1,7 @@
 name: OpenWrt
 
-# Unit tests of the router client inside the real OpenWrt userland of each supported
-# release, with that release's sing-box from the feed.
+# The router client: unit, integration and TPROXY end-to-end tests inside the real OpenWrt
+# userland of each supported release, then .ipk (24.10) and .apk (25.12) builds with the SDK.
 on:
   workflow_dispatch:
   pull_request:
@@ -9,6 +9,11 @@ on:
   push:
     branches: [main]
     paths: ["openwrt/**", ".github/workflows/openwrt.yml"]
+  workflow_call:
+    inputs:
+      version:
+        type: string
+        required: false
 
 jobs:
   test:
@@ -25,3 +30,43 @@ jobs:
         run: |
           docker run --rm --privileged -v "$PWD/openwrt:/src" \
             "openwrt/rootfs:x86-64-openwrt-${{ matrix.release }}" sh /src/tests/ci.sh
+
+  translations:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+      - name: The .pot and ru .po match the strings in the code
+        run: |
+          node openwrt/i18n/i18n.mjs openwrt/luci-app-we1ssconnect openwrt/i18n/ru.json
+          git diff --exit-code -- openwrt/luci-app-we1ssconnect/po
+
+  build:
+    needs: [test, translations]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - sdk: "24.10.8"
+            format: ipk
+          - sdk: "25.12.6"
+            format: apk
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Version
+        run: |
+          version="${{ inputs.version }}"
+          echo "VERSION=${version:-0.0.${{ github.run_number }}}" >> "$GITHUB_ENV"
+      - name: Build with the OpenWrt ${{ matrix.sdk }} SDK
+        run: |
+          mkdir -p dist && chmod 777 dist
+          docker run --rm -v "$PWD/openwrt:/src:ro" -v "$PWD/dist:/out" \
+            "openwrt/sdk:x86-64-${{ matrix.sdk }}" sh /src/build.sh /src /out "$VERSION"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: we1ssconnect-openwrt-${{ matrix.format }}
+          path: dist/*.${{ matrix.format }}
+          if-no-files-found: error
