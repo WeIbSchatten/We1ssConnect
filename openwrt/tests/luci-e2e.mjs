@@ -51,6 +51,18 @@ try {
 	failed++;
 }
 
+// The service's English config warnings reach a Russian LuCI translated, arguments kept.
+const shown = await page.evaluate(() => L.require('we1ssconnect.common').then((w1) => [
+	w1.warning('selective mode: no rule sends traffic through the tunnel'),
+	w1.warning('rule YouTube: target group:x is not available'),
+]));
+const want = [
+	'Выборочный режим, но ни одно включённое правило не отправляет трафик в туннель: включите правило или перейдите в глобальный режим.',
+	'Правило YouTube: цель group:x недоступна.',
+];
+if (JSON.stringify(shown) === JSON.stringify(want)) console.log('ok   warnings are translated');
+else { console.log(`FAIL warnings: ${JSON.stringify(shown)}`); failed++; }
+
 // Pinning a server from the list must reach sing-box without a page reload.
 await page.goto(`${base}/cgi-bin/luci/admin/services/we1ssconnect/servers`);
 await page.getByText('Нидерланды').first().click();

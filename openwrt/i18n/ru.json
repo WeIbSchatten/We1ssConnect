@@ -192,5 +192,13 @@
  "running or starts at boot": "запущен или включён в автозапуск",
  "Categories": "Категории",
  "geosite:… and geoip:… categories of the rule files, as in Xray and v2rayN: geosite:ru-blocked, geosite:youtube, geoip:telegram. The phone and computer apps understand the same names.": "Категории geosite:… и geoip:… файлов правил, как в Xray и v2rayN: geosite:ru-blocked, geosite:youtube, geoip:telegram. Приложения на телефоне и компьютере понимают те же названия.",
- "Use geosite:name or geoip:name": "Укажите geosite:название или geoip:название"
+ "Use geosite:name or geoip:name": "Укажите geosite:название или geoip:название",
+ "Selective mode, but no enabled rule sends traffic through the tunnel: turn a rule on or switch to global mode.": "Выборочный режим, но ни одно включённое правило не отправляет трафик в туннель: включите правило или перейдите в глобальный режим.",
+ "Global mode needs at least one server.": "Для глобального режима нужен хотя бы один сервер.",
+ "The selected server %s is gone; using Auto.": "Выбранного сервера %s больше нет; используется «Авто».",
+ "Group %s has no usable servers.": "В группе %s нет рабочих серверов.",
+ "Rule %s: target %s is not available.": "Правило %s: цель %s недоступна.",
+ "Rule %s: no VPN interface chosen.": "Правило %s: не выбран VPN-интерфейс.",
+ "Rule %s: unknown category %s.": "Правило %s: неизвестная категория %s.",
+ "%s: invalid filter %s.": "%s: неверный фильтр %s."
 }

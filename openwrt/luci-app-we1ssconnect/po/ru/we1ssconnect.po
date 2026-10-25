@@ -554,6 +554,30 @@ msgstr "Российские сайты и IP"
 msgid "Ads and trackers"
 msgstr "Реклама и трекеры"
 
+msgid "Selective mode, but no enabled rule sends traffic through the tunnel: turn a rule on or switch to global mode."
+msgstr "Выборочный режим, но ни одно включённое правило не отправляет трафик в туннель: включите правило или перейдите в глобальный режим."
+
+msgid "Global mode needs at least one server."
+msgstr "Для глобального режима нужен хотя бы один сервер."
+
+msgid "The selected server %s is gone; using Auto."
+msgstr "Выбранного сервера %s больше нет; используется «Авто»."
+
+msgid "Group %s has no usable servers."
+msgstr "В группе %s нет рабочих серверов."
+
+msgid "Rule %s: target %s is not available."
+msgstr "Правило %s: цель %s недоступна."
+
+msgid "Rule %s: no VPN interface chosen."
+msgstr "Правило %s: не выбран VPN-интерфейс."
+
+msgid "Rule %s: unknown category %s."
+msgstr "Правило %s: неизвестная категория %s."
+
+msgid "%s: invalid filter %s."
+msgstr "%s: неверный фильтр %s."
+
 msgid "no answer"
 msgstr "нет ответа"
 

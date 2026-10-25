@@ -25,7 +25,7 @@ return view.extend({
 		]));
 		dom.content(this.box, [
 			w1.header(_('Diagnostics'), [ 'We1ssConnect ', st.version || '', ' · ', st.singbox || '' ]),
-			(diag.warnings || []).length ? E('div', { class: 'w1-alert' }, diag.warnings.map((x) => E('div', {}, x))) : '',
+			(diag.warnings || []).length ? E('div', { class: 'w1-alert' }, diag.warnings.map((x) => E('div', {}, w1.warning(x)))) : '',
 			E('div', { class: 'w1-toolbar' }, [
 				E('button', { class: 'cbi-button cbi-button-action', click: ui.createHandlerFn(this, 'reload') }, _('Run again')),
 				E('button', { class: 'cbi-button', click: ui.createHandlerFn(this, 'handleUpdate') }, _('Check for updates')),

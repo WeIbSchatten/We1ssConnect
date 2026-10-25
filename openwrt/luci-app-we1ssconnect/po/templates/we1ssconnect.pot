@@ -553,6 +553,30 @@ msgstr ""
 msgid "Ads and trackers"
 msgstr ""
 
+msgid "Selective mode, but no enabled rule sends traffic through the tunnel: turn a rule on or switch to global mode."
+msgstr ""
+
+msgid "Global mode needs at least one server."
+msgstr ""
+
+msgid "The selected server %s is gone; using Auto."
+msgstr ""
+
+msgid "Group %s has no usable servers."
+msgstr ""
+
+msgid "Rule %s: target %s is not available."
+msgstr ""
+
+msgid "Rule %s: no VPN interface chosen."
+msgstr ""
+
+msgid "Rule %s: unknown category %s."
+msgstr ""
+
+msgid "%s: invalid filter %s."
+msgstr ""
+
 msgid "no answer"
 msgstr ""
 
