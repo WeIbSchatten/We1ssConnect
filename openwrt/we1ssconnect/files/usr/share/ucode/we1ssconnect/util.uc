@@ -1,5 +1,20 @@
 // Small helpers shared by the We1ssConnect modules.
 
+import { mkdir, stat } from 'fs';
+
+// /var/run is missing until procd creates it, and fs.mkdir does not create parents.
+export function mkdir_p(path) {
+	let cur = '';
+	for (let part in split(path, '/')) {
+		if (part == '')
+			continue;
+		cur += '/' + part;
+		if (!stat(cur))
+			mkdir(cur, 0755);
+	}
+	return stat(path)?.type == 'directory';
+};
+
 export function urldecode(s) {
 	if (s == null)
 		return null;

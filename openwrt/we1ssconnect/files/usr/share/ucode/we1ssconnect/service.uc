@@ -1,6 +1,6 @@
 // Every action of the router client, shared by the `we1ssconnect` CLI and the rpcd object.
 
-import { readfile, writefile, mkdir, popen, unlink, stat } from 'fs';
+import { readfile, writefile, popen, stat } from 'fs';
 import { cursor } from 'uci';
 import * as store from 'we1ssconnect.store';
 import * as sub from 'we1ssconnect.subscription';
@@ -10,6 +10,7 @@ import * as lists from 'we1ssconnect.lists';
 import * as nft from 'we1ssconnect.nft';
 import * as dnsmasq from 'we1ssconnect.dnsmasq';
 import * as clash from 'we1ssconnect.clash';
+import { mkdir_p } from 'we1ssconnect.util';
 
 export const VERSION = '0.0.0-dev';
 export const REPO = 'WeIbSchatten/We1ssConnect';
@@ -35,7 +36,7 @@ function secret() {
 	let s = trim(readfile(RUN_DIR + '/secret') ?? '');
 	if (s == '') {
 		s = store.new_id() + store.new_id() + store.new_id();
-		mkdir(RUN_DIR);
+		mkdir_p(RUN_DIR);
 		writefile(RUN_DIR + '/secret', s);
 	}
 	return s;
@@ -79,8 +80,8 @@ function sync_cron(interval) {
 // Builds and checks everything before the service touches the network: a config sing-box
 // rejects leaves nft and dnsmasq as they are.
 export function prepare() {
-	mkdir(RUN_DIR);
-	mkdir(TMP_DIR);
+	mkdir_p(RUN_DIR);
+	mkdir_p(TMP_DIR);
 	const l = load_cfg();
 	const cfg = l.cfg;
 	const res = lists.resolve(cfg, (url) => lists.fetch_cached(url, TMP_DIR + '/lists', null));

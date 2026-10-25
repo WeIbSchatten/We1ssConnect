@@ -17,7 +17,7 @@ mkdir -p /etc/crontabs /tmp/we1ss-it
 touch /etc/crontabs/root
 
 cat > /tmp/we1ss-it/server.json <<'EOF'
-{"log":{"level":"warn"},"inbounds":[{"type":"shadowsocks","listen":"127.0.0.1","listen_port":8388,"method":"aes-128-gcm","password":"testpw"}],"outbounds":[{"type":"direct"}]}
+{"log":{"level":"info"},"inbounds":[{"type":"shadowsocks","listen":"127.0.0.1","listen_port":8388,"method":"aes-128-gcm","password":"testpw"}],"outbounds":[{"type":"direct"}]}
 EOF
 sing-box run -c /tmp/we1ss-it/server.json > /tmp/we1ss-it/server.log 2>&1 &
 server_pid=$!
@@ -52,11 +52,11 @@ check "dnsmasq forwards to sing-box" '[ "$(uci -q get dhcp.@dnsmasq[0].server)" 
 
 sing-box run -c /var/run/we1ssconnect/config.json -D /var/run/we1ssconnect > /tmp/we1ss-it/client.log 2>&1 &
 client_pid=$!
-for i in $(seq 1 20); do curl -s -o /dev/null http://127.0.0.1:9090/ && break; sleep 0.5; done
+for i in $(seq 1 20); do curl -s -o /dev/null http://127.0.0.1:9090/ && break; sleep 1; done
 
 check "status reports running with the Local server" 'we1ssconnect status > /tmp/we1ss-it/status.json; grep -q "\"running\": true" /tmp/we1ss-it/status.json'
 check "a request through the tunnel works" '[ "$(curl -s -o /dev/null -w "%{http_code}" -m 10 -x socks5h://127.0.0.1:2081 https://www.gstatic.com/generate_204)" = 204 ]'
-check "the shadowsocks server carried it" 'sleep 1; [ -s /tmp/we1ss-it/server.log ] || grep -q "inbound/shadowsocks" /tmp/we1ss-it/client.log || true'
+check "the shadowsocks server carried it" 'sleep 1; grep -q "inbound connection to www.gstatic.com:443" /tmp/we1ss-it/server.log'
 check "ping goes through the tunnel" 'we1ssconnect ping | grep -q "\"via\": \"tunnel\""'
 check "pinning a server switches the selector without a restart" \
 	'we1ssconnect select "$id" > /dev/null && curl -s -H "Authorization: Bearer $(cat /var/run/we1ssconnect/secret)" http://127.0.0.1:9090/proxies/main | grep -q "\"now\":\"s-$id\""'

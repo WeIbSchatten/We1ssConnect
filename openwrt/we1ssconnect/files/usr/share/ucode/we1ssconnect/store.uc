@@ -1,7 +1,8 @@
 // Servers live in a JSON file next to the UCI config: subscriptions bring hundreds of them,
 // which UCI and LuCI forms handle badly. Ids stay stable across subscription refreshes.
 
-import { readfile, writefile, mkdir, rename } from 'fs';
+import { readfile, writefile, rename } from 'fs';
+import { mkdir_p } from 'we1ssconnect.util';
 import { parse_all } from 'we1ssconnect.links';
 
 export function state_dir() {
@@ -36,7 +37,7 @@ export function load() {
 };
 
 export function save(data) {
-	mkdir(state_dir());
+	mkdir_p(state_dir());
 	const tmp = path() + '.tmp';
 	writefile(tmp, sprintf('%.J\n', data));
 	rename(tmp, path());

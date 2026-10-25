@@ -1,7 +1,8 @@
 // Remote lists: sing-box fetches .srs/.json rule-sets itself; plain-text domain/CIDR lists and
 // the service subnet lists (needed in nft, which cannot read rule-sets) are fetched here.
 
-import { readfile, writefile, mkdir, popen } from 'fs';
+import { readfile, popen } from 'fs';
+import { mkdir_p } from 'we1ssconnect.util';
 
 const ITDOG_SUBNETS = 'https://raw.githubusercontent.com/itdoginfo/allow-domains/main/Subnets/IPv4/';
 
@@ -40,7 +41,7 @@ function cache_name(url) {
 
 // Downloads to a cache; a failed download falls back to the last good copy.
 export function fetch_cached(url, dir, via_proxy) {
-	mkdir(dir);
+	mkdir_p(dir);
 	const file = dir + '/' + cache_name(url);
 	const proxy = via_proxy ? `--socks5-hostname ${via_proxy} ` : '';
 	const p = popen(`curl -fsSL --max-time 30 ${proxy}-o '${file}.new' '${replace(url, "'", '')}' 2>&1 && mv '${file}.new' '${file}'`);
