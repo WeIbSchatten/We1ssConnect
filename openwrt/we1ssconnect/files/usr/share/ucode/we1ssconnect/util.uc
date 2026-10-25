@@ -17,7 +17,7 @@ export function pctdecode(s) {
 export function b64decode(s) {
 	if (type(s) != 'string')
 		return null;
-	s = replace(s, /[\s]+/g, '');
+	s = replace(s, /\s+/g, '');
 	if (!length(s) || !match(s, /^[A-Za-z0-9+\/_-]+=*$/))
 		return null;
 	s = replace(replace(replace(s, /=+$/, ''), /-/g, '+'), /_/g, '/');

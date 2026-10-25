@@ -70,9 +70,9 @@ test('shadowsocks SIP002, legacy and 2022', () => {
 		{ type: 'shadowsocks', server: '1.2.3.4', server_port: 8388, method: 'aes-256-gcm', password: 'secret' });
 	eq(parse('ss://' + b64enc('chacha20-ietf-poly1305:pw@5.6.7.8:443') + '#old').outbound,
 		{ type: 'shadowsocks', server: '5.6.7.8', server_port: 443, method: 'chacha20-ietf-poly1305', password: 'pw' });
-	const slashy = 'aes-128-gcm:??>>';
+	const slashy = 'aes-128-gcm:????';
 	ok(index(b64enc(slashy), '/') >= 0, 'the fixture really has a slash in its base64');
-	eq(parse('ss://' + b64enc(slashy) + '@h:3#n').outbound.password, '??>>');
+	eq(parse('ss://' + b64enc(slashy) + '@h:3#n').outbound.password, '????');
 	eq(parse('ss://' + b64enc(slashy + '@h:2') + '#legacy').outbound.server_port, 2);
 	eq(parse('ss://2022-blake3-aes-128-gcm:a2V5%3D@h:1#n').outbound.password, 'a2V5=');
 	eq(parse('ss://' + b64enc('aes-128-gcm:pw') + '@h:1?plugin=obfs-local%3Bobfs%3Dhttp%3Bobfs-host%3Dx.com#o').outbound,

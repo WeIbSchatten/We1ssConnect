@@ -42,7 +42,7 @@ function build_transport(p) {
 	const host = p.host ?? '';
 	if (net == 'ws') {
 		let path = p.path || '/', t = { type: 'ws' };
-		const ed = match(path, /^(.*?)\?ed=(\d+)$/);
+		const ed = match(path, /^([^?]*)\?ed=([0-9]+)$/);
 		if (ed) {
 			path = ed[1] || '/';
 			t.max_early_data = int(ed[2]);
@@ -153,7 +153,10 @@ function parse_ss(link, u) {
 		const decoded = b64decode(pctdecode(body));
 		if (!decoded || index(decoded, '@') < 0)
 			return fail(u.fragment || link, 'shadowsocks link is not readable');
-		return parse_ss(link, { ...parse_url('ss://' + decoded), fragment: u.fragment });
+		const inner = parse_url('ss://' + decoded);
+		if (!inner || inner.userinfo == null)
+			return fail(u.fragment || link, 'shadowsocks link is not readable');
+		return parse_ss(link, { ...inner, fragment: u.fragment });
 	}
 	const name = u.fragment || default_name('shadowsocks', u.host, u.port);
 	const bad = need_address(u, name);
