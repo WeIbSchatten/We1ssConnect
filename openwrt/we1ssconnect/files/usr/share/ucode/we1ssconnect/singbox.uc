@@ -50,14 +50,29 @@ function dns_remote(cfg, global) {
 	return s;
 }
 
+const QUIC_TYPES = { hysteria2: true, tuic: true };
+
+// Applied at build time, so servers stored by older versions are fixed too.
 function tune_outbound(ob, cfg) {
 	let o = { ...ob };
-	if (o.tls) {
-		o.tls = { ...o.tls };
-		if (cfg.force_chrome_fp && (o.tls.utls || o.tls.reality))
-			o.tls.utls = { enabled: true, fingerprint: 'chrome' };
-		if (cfg.fragment && !o.tls.reality && o.type != 'hysteria2' && o.type != 'tuic')
-			o.tls.fragment = true;
+	if (!o.tls)
+		return o;
+	o.tls = { ...o.tls };
+	if (QUIC_TYPES[o.type]) {
+		// sing-box refuses uTLS on QUIC ("unsupported usage for uTLS"); links carry fp anyway.
+		delete o.tls.utls;
+		return o;
+	}
+	if (cfg.force_chrome_fp && (o.tls.utls || o.tls.reality))
+		o.tls.utls = { enabled: true, fingerprint: 'chrome' };
+	if (cfg.fragment && !o.tls.reality)
+		o.tls.fragment = true;
+	// WebSocket and HTTPUpgrade need HTTP/1.1: offered h2, Xray picks it and rejects the upgrade.
+	const t = o.transport?.type;
+	if ((t == 'ws' || t == 'httpupgrade') && o.tls.alpn) {
+		o.tls.alpn = filter(o.tls.alpn, (a) => a != 'h2' && a != 'h3');
+		if (!length(o.tls.alpn))
+			delete o.tls.alpn;
 	}
 	return o;
 }
@@ -154,7 +169,7 @@ export function build(cfg, data) {
 	if (length(bypass))
 		push(route_rules, { source_ip_cidr: bypass, outbound: 'direct' });
 
-	let dns_rules = [];
+	let dns_rules = [], tunnel_rules = 0;
 	for (let r in cfg.rules) {
 		let target = null;
 		if (r.action == 'proxy') {
@@ -197,6 +212,8 @@ export function build(cfg, data) {
 			length(suffixes) ? { domain_suffix: suffixes } : null,
 			length(cidrs) ? { ip_cidr: cidrs } : null,
 		], (m) => m != null);
+		if ((r.action == 'proxy' || r.action == 'vpn') && length(matchers))
+			tunnel_rules++;
 		for (let m in matchers) {
 			let rule = { ...m, ...act };
 			delete rule.by_ip;
@@ -219,6 +236,10 @@ export function build(cfg, data) {
 		push(route_rules, { source_ip_cidr: tunnel, outbound: 'main' });
 	if (cfg.lan_proxy.enabled && known.main)
 		push(route_rules, { inbound: ['lan-in'], outbound: 'main' });
+
+	// The most common "nothing works": switched on in selective mode with every rule off.
+	if (!global && !tunnel_rules && !length(tunnel))
+		push(errors, 'selective mode: no rule sends traffic through the tunnel');
 
 	let final = 'direct';
 	if (global) {

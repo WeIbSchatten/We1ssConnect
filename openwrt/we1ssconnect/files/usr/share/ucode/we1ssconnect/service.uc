@@ -178,12 +178,25 @@ export function servers() {
 export function ping() {
 	const l = load_cfg();
 	if (status().running) {
-		const r = clash.group_delay(api(l.cfg), 'auto', l.cfg.urltest.url, 5000);
-		if (r.error)
-			return r;
-		let out = {};
+		// One request per server in parallel: sing-box's Clash API has no group delay endpoint.
+		const a = api(l.cfg);
+		const url = replace(l.cfg.urltest.url, /[^A-Za-z0-9._~-]/g, (c) => sprintf('%%%02X', ord(c)));
+		let script = '';
 		for (let s in store.usable(l.data))
-			out[s.id] = r[singbox.server_tag(s.id)] ?? -1;
+			script += sprintf('(echo "%s $(curl -s -m 8 -H %s %s)") &\n', s.id, q('Authorization: Bearer ' + a.secret),
+				q(`http://127.0.0.1:${a.port}/proxies/${singbox.server_tag(s.id)}/delay?timeout=5000&url=${url}`));
+		let out = {};
+		for (let line in split(sh(script + 'wait').out, '\n')) {
+			const m = match(line, /^([0-9a-f]+) (.*)$/);
+			if (!m)
+				continue;
+			let d = -1;
+			try {
+				d = json(m[2])?.delay ?? -1;
+			}
+			catch (e) {}
+			out[m[1]] = d > 0 ? d : -1;
+		}
 		return { via: 'tunnel', delays: out };
 	}
 	// Each line: "<id> ms <value>" from ping, "<id> s <value>" from curl's connect time.
@@ -323,7 +336,9 @@ export function diagnostics() {
 	add('service', sh('pidof sing-box').code == 0);
 	add('nftables', sh(`nft list table inet ${nft.TABLE}`).code == 0);
 	add('tproxy module', sh('grep -q nft_tproxy /proc/modules || ls /lib/modules/*/nft_tproxy.ko').code == 0);
-	add('policy routing', index(sh('ip rule').out, `lookup ${nft.ROUTE_TABLE}`) >= 0);
+	// The table may print by name (podkop calls 105 "podkop" in rt_tables), so check mark and route.
+	const marked = index(sh('ip rule').out, `fwmark ${replace(nft.FWMARK, /^0x0*/, '0x')}/`) >= 0;
+	add('policy routing', marked && index(sh(`ip route show table ${nft.ROUTE_TABLE}`).out, 'local default dev lo') >= 0);
 	if (l.cfg.manage_dnsmasq) {
 		let c = cursor();
 		c.load('dhcp');

@@ -21,9 +21,10 @@ sing-box generate tls-keypair test.local -m 1 > $dir/pair.pem
 awk '/BEGIN PRIVATE KEY/,/END PRIVATE KEY/' $dir/pair.pem > $dir/key.pem
 awk '/BEGIN CERTIFICATE/,/END CERTIFICATE/' $dir/pair.pem > $dir/cert.pem
 uuid=$(sing-box generate uuid)
-reality="$(sing-box generate reality-keypair)"
-rpriv=$(echo "$reality" | awk '/PrivateKey/ { print $2 }')
-rpub=$(echo "$reality" | awk '/PublicKey/ { print $2 }')
+# Reality keys from Xray itself, as the panel makes them (its public key prints as "Password").
+reality="$("$xray" x25519)"
+rpriv=$(echo "$reality" | awk -F': *' '/PrivateKey/ { print $2; exit }')
+rpub=$(echo "$reality" | awk -F': *' '/Password|PublicKey/ { print $NF; exit }')
 xtls="\"security\":\"tls\",\"tlsSettings\":{\"serverName\":\"test.local\",\"certificates\":[{\"certificateFile\":\"$dir/cert.pem\",\"keyFile\":\"$dir/key.pem\"}]"
 
 cat > $dir/xray.json <<EOF

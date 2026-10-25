@@ -141,6 +141,31 @@ test('categories: geosite sets take part in DNS, geoip sets only in routing', ()
 	check(c, 'categories');
 });
 
+test('stored servers are fixed at build time: QUIC without uTLS, WebSocket without h2', () => {
+	const stored = { subscriptions: {}, servers: [
+		{ id: 'h', name: 'HY', ok: true, outbound: { type: 'hysteria2', server: 'h', server_port: 1, password: 'p',
+			tls: { enabled: true, server_name: 'h', alpn: ['h3'], utls: { enabled: true, fingerprint: 'chrome' } } } },
+		{ id: 'w', name: 'WS', ok: true, outbound: { type: 'vless', server: 'w', server_port: 1, uuid: 'u',
+			tls: { enabled: true, server_name: 'w', alpn: ['h2', 'http/1.1'], utls: { enabled: true, fingerprint: 'firefox' } },
+			transport: { type: 'ws', path: '/' } } },
+		{ id: 'g', name: 'GRPC', ok: true, outbound: { type: 'vless', server: 'g', server_port: 1, uuid: 'u',
+			tls: { enabled: true, server_name: 'g', alpn: ['h2', 'http/1.1'] }, transport: { type: 'grpc', service_name: '' } } },
+	] };
+	const c = build(settings({ fragment: true }), stored).config;
+	eq(find(c.outbounds, 's-h').tls, { enabled: true, server_name: 'h', alpn: ['h3'] });
+	eq(find(c.outbounds, 's-w').tls.alpn, ['http/1.1']);
+	eq(find(c.outbounds, 's-w').tls.utls, { enabled: true, fingerprint: 'chrome' });
+	eq(find(c.outbounds, 's-g').tls.alpn, ['h2', 'http/1.1'], 'gRPC keeps h2');
+	check(c, 'stored servers');
+});
+
+test('selective mode without a tunnel rule says nothing will go through the tunnel', () => {
+	eq(build(settings({ rules: [{ id: 'r', name: 'RU', action: 'direct', presets: ['ru'] }] }), DATA).errors,
+		['selective mode: no rule sends traffic through the tunnel']);
+	eq(build(settings({ devices: [{ ip: '192.168.1.5', mode: 'tunnel' }] }), DATA).errors, [], 'a tunnel device is enough');
+	eq(build(settings({ mode: 'global' }), DATA).errors, []);
+});
+
 test('VPN interfaces alone work without any server', () => {
 	const r = build(settings({ rules: [{ id: 'r1', name: 'Work', action: 'vpn', interface: 'wg0', domains: ['corp.example'] }] }), { servers: [], subscriptions: {} });
 	eq(r.errors, []);
@@ -159,6 +184,7 @@ test('missing targets are reported and skipped', () => {
 		'rule One: target group:nope is not available',
 		'rule Two: target server:x5 is not available',
 		'rule Three: no interface',
+		'selective mode: no rule sends traffic through the tunnel',
 	]);
 	eq(filter(r.config.route.rules, (x) => x.domain_suffix), []);
 	check(r.config, 'with errors');
