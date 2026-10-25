@@ -3,6 +3,13 @@ title: "Version history"
 description: "What changed in each We1ssConnect version."
 ---
 
+## 1.9.3
+
+- Router: REALITY servers work with panels on Xray 26.9.8 and later; they go through Xray, which downloads itself on the first connect ([details](../openwrt/index.mdx#reality-servers)).
+- Router: Hysteria2, TUIC and WebSocket now work with panel servers, and the delay test shows delays instead of −1. Stored servers and subscriptions are fixed by themselves, no re-import needed.
+- Router: when no rule in selective mode leads into the tunnel, the overview says so ([details](../openwrt/troubleshooting.mdx#connected-but-everything-goes-direct)); LuCI warnings are translated.
+- Router: diagnostics no longer flag routing after podkop.
+
 ## 1.9.2
 
 - `geosite:` and `geoip:` categories in your own rules on every client, with the same names: the "Own rules" screen (through VPN, directly, block) on the phone and computer ([details](../features/routing.mdx#own-rules)), a "Categories" field on the router ([details](../openwrt/routing.mdx#categories)).
