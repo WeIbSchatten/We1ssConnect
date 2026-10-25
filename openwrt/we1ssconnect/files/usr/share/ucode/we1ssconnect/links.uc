@@ -154,12 +154,11 @@ function parse_ss(link, u) {
 		if (!decoded || index(decoded, '@') < 0)
 			return fail(u.fragment || link, 'shadowsocks link is not readable');
 		// The decoded text is not URL-encoded, so the password may hold "?" or "#".
-		const at = rindex(decoded, '@');
-		const addr = match(substr(decoded, at + 1), /^\[?([^\]]*)\]?:([0-9]+)$/);
-		if (!addr)
+		const m = match(decoded, /^(.*)@\[?([^\]@]*)\]?:([0-9]+)$/);
+		if (!m)
 			return fail(u.fragment || link, 'shadowsocks link is not readable');
-		const pair = split_pair(substr(decoded, 0, at));
-		const host = addr[1], port = int(addr[2]);
+		const pair = split_pair(m[1]);
+		const host = m[2], port = int(m[3]);
 		return { ok: true, name: u.fragment || default_name('shadowsocks', host, port),
 			outbound: { type: 'shadowsocks', server: host, server_port: port, method: pair[0], password: pair[1] } };
 	}

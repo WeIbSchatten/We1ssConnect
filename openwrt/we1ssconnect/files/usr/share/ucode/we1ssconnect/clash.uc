@@ -15,13 +15,14 @@ export function call(api, method, path, body) {
 	const p = popen(cmd);
 	const out = p.read('all');
 	p.close();
-	const nl = rindex(out, '\n');
-	const status = int(substr(out, nl + 1));
+	// "<body>\n<status>"; a 204 has an empty body, so the newline comes first.
+	const m = match(out ?? '', /^(.*)\n([0-9]+)$/);
+	const status = m ? int(m[2]) : 0;
 	if (!status)
 		return { error: 'sing-box is not running' };
 	let parsed = null;
 	try {
-		parsed = json(substr(out, 0, nl));
+		parsed = m[1] != '' ? json(m[1]) : null;
 	}
 	catch (e) {
 		parsed = null;

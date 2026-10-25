@@ -98,7 +98,7 @@ jobs:
       - name: Boot it and connect
         run: |
           sudo modprobe -a nft_tproxy nf_tproxy_ipv4 nf_tproxy_ipv6 nft_socket
-          docker run -d --name owrt --privileged -p 8080:80 -v "$PWD/openwrt:/src:ro" owrt-luci /sbin/init
+          docker run -d --name owrt --privileged -v "$PWD/openwrt:/src:ro" owrt-luci /sbin/init
           for i in $(seq 1 30); do docker exec owrt ubus list we1ssconnect > /dev/null 2>&1 && break; sleep 1; done
           docker exec owrt sh /src/tests/luci-setup.sh configure
       - uses: actions/setup-node@v7
@@ -106,10 +106,15 @@ jobs:
           node-version-file: .nvmrc
       - name: Drive LuCI
         run: |
-          npm install --no-save playwright@1.56.1 > /dev/null
+          ip="$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' owrt)"
+          docker exec owrt netstat -lnt | grep -E ':80 |:443 ' || true
+          for i in $(seq 1 30); do curl -sf -o /dev/null "http://$ip/cgi-bin/luci/" && break; sleep 1; done
+          curl -sS -o /dev/null -w 'LuCI answers %{http_code}
+' "http://$ip/cgi-bin/luci/"
+          mkdir -p /tmp/pw && cp openwrt/tests/luci-e2e.mjs /tmp/pw/ && cd /tmp/pw
+          npm init -y > /dev/null && npm install playwright@1.56.1 > /dev/null
           npx playwright install --with-deps chromium > /dev/null
-          for i in $(seq 1 30); do curl -sf http://127.0.0.1:8080/cgi-bin/luci/ > /dev/null && break; sleep 1; done
-          node openwrt/tests/luci-e2e.mjs http://127.0.0.1:8080 shots
+          node luci-e2e.mjs "http://$ip" "$GITHUB_WORKSPACE/shots"
       - name: Service log
         if: always()
         run: docker exec owrt sh -c 'logread | tail -n 80' || true
