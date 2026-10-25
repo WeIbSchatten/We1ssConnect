@@ -19,8 +19,9 @@ return view.extend({
 	draw: function(diag, log, st) {
 		const checks = (diag.checks || []).map((c) => E('div', { class: 'w1-check' }, [
 			E('span', { class: c.ok ? 'w1-good' : 'w1-bad', style: 'width:18px' }, c.ok ? '✓' : '✗'),
-			E('span', { style: 'flex:1' }, CHECK_NAMES[c.name] || c.name),
-			E('span', { class: 'w1-muted', style: 'font-size:12px' }, c.detail || ''),
+			E('span', { style: 'flex:1' }, CHECK_NAMES[c.name]
+				|| (c.name.indexOf('conflict: ') == 0 ? _('Another client is active: %s').format(c.name.slice(10)) : c.name)),
+			E('span', { class: 'w1-muted', style: 'font-size:12px' }, c.detail == 'running or starts at boot' ? _('running or starts at boot') : (c.detail || '')),
 		]));
 		dom.content(this.box, [
 			w1.header(_('Diagnostics'), [ 'We1ssConnect ', st.version || '', ' · ', st.singbox || '' ]),

@@ -53,6 +53,12 @@ msgstr "DNS отвечает через sing-box"
 msgid "Request through the tunnel"
 msgstr "Запрос через туннель"
 
+msgid "Another client is active: %s"
+msgstr "Работает другой клиент: %s"
+
+msgid "running or starts at boot"
+msgstr "запущен или включён в автозапуск"
+
 msgid "Diagnostics"
 msgstr "Диагностика"
 
@@ -136,6 +142,9 @@ msgstr "Серверы"
 
 msgid "Version"
 msgstr "Версия"
+
+msgid "To keep the tunnel working, these were stopped and their autostart turned off: %s. Nothing was removed; turn them back on under System → Startup after disconnecting here."
+msgstr "Чтобы туннель работал, остановлены и выключены из автозапуска: %s. Ничего не удалено; вернуть их можно в «Система → Загрузка», отключив здесь We1ssConnect."
 
 msgid "Tunnel"
 msgstr "Туннель"

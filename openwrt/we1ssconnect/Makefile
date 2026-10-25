@@ -13,7 +13,6 @@ define Package/we1ssconnect
   TITLE:=We1ssConnect router client on sing-box
   URL:=https://github.com/WeIbSchatten/We1ssConnect
   DEPENDS:=+sing-box +kmod-nft-tproxy +nftables +curl +ca-bundle +ucode +ucode-mod-fs +ucode-mod-uci
-  CONFLICTS:=podkop
   PKGARCH:=all
 endef
 
@@ -47,6 +46,9 @@ define Package/we1ssconnect/postinst
 #!/bin/sh
 [ -n "$$IPKG_INSTROOT" ] && exit 0
 /etc/init.d/rpcd reload
+# podkop, Passwall and the like capture the same traffic: stop them and their autostart.
+stopped="$$(/usr/bin/we1ssconnect take-over | jsonfilter -e '@.stopped[*]' | tr '\n' ' ')"
+[ -n "$$stopped" ] && echo "We1ssConnect: stopped and disabled $${stopped}(nothing was removed)"
 /etc/init.d/we1ssconnect enable
 /etc/init.d/we1ssconnect restart
 exit 0

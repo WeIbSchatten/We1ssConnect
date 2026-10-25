@@ -7,6 +7,14 @@ set -eu
 case "$1" in
 install)
 	mkdir -p /var/lock
+	# An enabled podkop: installing our package must stop it and turn off its autostart.
+	printf '#!/bin/sh /etc/rc.common
+START=99
+start() { :; }
+stop() { echo stop >> /root/podkop.calls; }
+' > /etc/init.d/podkop
+	chmod +x /etc/init.d/podkop
+	/etc/init.d/podkop enable
 	if command -v apk > /dev/null; then
 		apk update > /dev/null
 		apk add luci luci-i18n-base-ru > /dev/null
@@ -16,6 +24,9 @@ install)
 		opkg install luci luci-i18n-base-ru > /dev/null
 		opkg install /pkgs/*.ipk
 	fi
+	/etc/init.d/podkop enabled && { echo 'FAIL podkop still starts at boot after install'; exit 1; }
+	grep -q stop /root/podkop.calls || { echo 'FAIL podkop was not stopped by the install'; exit 1; }
+	echo 'ok   the install stopped podkop and turned off its autostart'
 	/etc/init.d/network disable
 	/etc/init.d/firewall disable
 	printf 'test\ntest\n' | passwd root > /dev/null

@@ -32,7 +32,19 @@ and in `we1ssconnect status`.
 GitHub or the subscription server may be blocked for direct access. Turn on **Download lists through
 the tunnel**; test the subscription from the router with `curl -I '<link>'`.
 
-## Next to podkop, Passwall, https-dns-proxy
+## Other clients: podkop, Passwall, OpenClash
 
-They capture traffic and DNS the same way, so they do not work together. Diagnostics names the
-conflicting package — remove it or We1ssConnect.
+podkop, Passwall, Passwall2, OpenClash, Nikki and https-dns-proxy capture traffic and DNS the same
+way, so they cannot run beside We1ssConnect. When the package is installed and on every **Connect**,
+the ones that are running or start at boot are stopped and their autostart is turned off, along
+with the sing-box service podkop runs through. Nothing is removed; the overview says what was
+stopped.
+
+To go back to podkop, say: press **Disconnect** in We1ssConnect, then turn podkop on under
+**System → Startup** or over SSH:
+
+```sh
+/etc/init.d/podkop enable && /etc/init.d/podkop start
+```
+
+If another client runs again, diagnostics shows "Another client is active".
