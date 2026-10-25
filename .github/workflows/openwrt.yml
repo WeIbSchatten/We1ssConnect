@@ -1,0 +1,25 @@
+name: OpenWrt
+
+# Unit tests of the router client inside the real OpenWrt userland of each supported
+# release, with that release's sing-box from the feed.
+on:
+  workflow_dispatch:
+  pull_request:
+    paths: ["openwrt/**", ".github/workflows/openwrt.yml"]
+  push:
+    branches: [main]
+    paths: ["openwrt/**", ".github/workflows/openwrt.yml"]
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        release: ["24.10", "25.12"]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Test on OpenWrt ${{ matrix.release }}
+        run: |
+          docker run --rm --cap-add NET_ADMIN -v "$PWD/openwrt:/src" \
+            "openwrt/rootfs:x86-64-openwrt-${{ matrix.release }}" sh /src/tests/ci.sh
