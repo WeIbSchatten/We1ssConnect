@@ -1,5 +1,6 @@
 import { test, eq, ok, done } from 't';
 import { parse, parse_all } from 'we1ssconnect.links';
+import { parse_url, b64decode } from 'we1ssconnect.util';
 
 test('vless reality vision', () => {
 	const r = parse('vless://11111111-2222-3333-4444-555555555555@example.com:443?type=tcp&security=reality&pbk=PUBKEY&sid=ab12&sni=www.microsoft.com&fp=firefox&flow=xtls-rprx-vision#%D0%A4%D0%B8%D0%BD%D0%BB%D1%8F%D0%BD%D0%B4%D0%B8%D1%8F');
@@ -119,6 +120,12 @@ test('names fall back to type and address; bad links explain why', () => {
 	eq(parse('vless://u@h').reason, 'missing port');
 	eq(parse('foo://x').reason, 'unknown link type foo');
 	eq(parse('https://t.me/proxy?server=x').reason, 'unknown link type https');
+});
+
+test('an empty userinfo stays an empty string, not a missing one', () => {
+	eq(parse_url('ss://@h:1').userinfo, '');
+	eq(parse_url('ss://h:1').userinfo, null);
+	eq(b64decode(''), null);
 });
 
 test('servers without credentials are rejected before they can break the config', () => {
