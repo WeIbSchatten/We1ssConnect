@@ -1,4 +1,4 @@
-import { buildVpnConfig, prepareOutbound, serverAddress, serverEndpoint } from './config';
+import { buildVpnConfig, needsGeo, prepareOutbound, serverAddress, serverEndpoint } from './config';
 import { DEFAULT_SETTINGS, type Server, type XrayOutbound } from './types';
 
 const reality: XrayOutbound = {
@@ -89,4 +89,34 @@ test('server endpoint marks UDP-only servers for ICMP', () => {
     port: 8443,
     udp: true,
   });
+});
+
+test('custom rules come before the presets: block, then through the VPN, then direct', () => {
+  const settings = {
+    ...DEFAULT_SETTINGS,
+    ruDirect: true,
+    customRules: {
+      proxy: ['geosite:youtube', 'geoip:telegram'],
+      direct: ['example.org', '10.20.0.0/16'],
+      block: ['geosite:category-ads-all', 'bad typo entry'],
+    },
+  };
+  const rules = JSON.parse(buildVpnConfig(servers, servers[0], settings)).routing.rules;
+  expect(rules.slice(2, 7)).toEqual([
+    { type: 'field', domain: ['geosite:category-ads-all'], outboundTag: 'block' },
+    { type: 'field', domain: ['geosite:youtube'], balancerTag: 'main' },
+    { type: 'field', ip: ['geoip:telegram'], balancerTag: 'main' },
+    { type: 'field', domain: ['domain:example.org'], outboundTag: 'direct' },
+    { type: 'field', ip: ['10.20.0.0/16'], outboundTag: 'direct' },
+  ]);
+  expect(rules[7]).toMatchObject({ domain: expect.arrayContaining(['geosite:category-ru']), outboundTag: 'direct' });
+});
+
+test('IP rules need sniffed domains resolved; geo entries need the rule files', () => {
+  const ipOnly = { ...DEFAULT_SETTINGS, customRules: { proxy: [], direct: ['geoip:ru'], block: [] } };
+  expect(JSON.parse(buildVpnConfig(servers, servers[0], ipOnly)).routing.domainStrategy).toBe('IPIfNonMatch');
+  expect(needsGeo(ipOnly)).toBe(true);
+  const domains = { ...DEFAULT_SETTINGS, customRules: { proxy: ['example.com'], direct: [], block: [] } };
+  expect(JSON.parse(buildVpnConfig(servers, servers[0], domains)).routing.domainStrategy).toBe('AsIs');
+  expect(needsGeo(domains)).toBe(false);
 });

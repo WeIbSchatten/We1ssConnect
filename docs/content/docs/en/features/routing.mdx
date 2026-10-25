@@ -26,11 +26,35 @@ The list has search, icons and a **Show system apps** switch. Changes apply on t
 | **Russian sites directly** | `.ru`, `.su`, `.рф` domains, sites from the `category-ru` list and Russian IP addresses bypass the VPN; their addresses come from Yandex DNS so they resolve to nearby servers |
 | **Block ads** | ad and tracker domains from `category-ads-all` do not open |
 
-The presets need two rule files. They download on the first connect with a preset on and
-refresh weekly:
+## Own rules
 
-- `geoip.dat`: IP ranges by country ([runetfreedom/russia-v2ray-rules-dat](https://github.com/runetfreedom/russia-v2ray-rules-dat));
-- `geosite.dat`: domain lists ([v2fly/domain-list-community](https://github.com/v2fly/domain-list-community)).
+**Settings → Own rules** has three lists: **Through VPN**, **Directly** and **Block**. One entry per
+line in each:
+
+| Entry | Meaning |
+| --- | --- |
+| `geosite:ru-blocked`, `geosite:youtube` | a domain category of the rule files |
+| `geoip:ru`, `geoip:telegram` | an IP category of the rule files |
+| `example.com` | a domain with all its subdomains |
+| `full:www.example.com` | just this domain |
+| `keyword:tracker` | domains containing the word |
+| `10.0.0.0/8`, `1.2.3.4` | a subnet or an address |
+
+**Block** is checked first, then **Through VPN**, then **Directly**, and only then the presets. So
+`geoip:ru` can go direct while `geosite:youtube` goes through the VPN. Lines that are not understood
+are highlighted and cannot be saved.
+
+The [router client](../openwrt/routing.mdx#categories) understands the same category names.
+
+## Rule files
+
+The presets and categories need two rule files from
+[runetfreedom/russia-v2ray-rules-dat](https://github.com/runetfreedom/russia-v2ray-rules-dat): every
+v2fly category plus Russian ones (`ru-blocked`, `ru-available-only-inside` and others). They download
+on the first connect that needs them and refresh weekly:
+
+- `geoip.dat`: IP ranges by country and service;
+- `geosite.dat`: domain lists.
 
 **Update routing rules** downloads them again by hand.
 

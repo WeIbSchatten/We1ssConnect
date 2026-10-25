@@ -4,6 +4,10 @@ The full history with details is in the documentation:
 [русский](https://weibschatten.github.io/We1ssConnect/ru/docs/help/history/) ·
 [English](https://weibschatten.github.io/We1ssConnect/docs/help/history/).
 
+## Unreleased
+
+- geosite:/geoip: categories in routing rules on every client: "Own rules" (through VPN, directly, block) on Android and desktop, a Categories field on the router. The router reads the same data as runetfreedom .srs rule-sets, and the apps now take geosite.dat from runetfreedom too, so ru-blocked and the other Russian categories work everywhere.
+
 ## 1.9.1
 
 - OpenWrt: other clients (podkop, Passwall, Passwall2, OpenClash, Nikki, https-dns-proxy) no longer block the install; installing and Connect stop the active ones and turn off their autostart instead of requiring their removal, and the overview says what was stopped.

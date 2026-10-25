@@ -24,11 +24,26 @@ bottom and the first match wins; drag rows to change the order.
   and others) the router loads their subnets too.
 - **Presets** — "Russian sites and IPs" (`.ru`, `.su`, `.рф`, the `category-ru` list and Russian IP
   ranges) and "Ads and trackers" (`category-ads-all`). The same lists as in the app.
+- **Categories** — `geosite:…` and `geoip:…`, as in Xray and v2rayN (see below).
 - **Domains** — one per line; a domain also covers its subdomains.
 - **IP addresses and subnets** — such as `149.154.160.0/20`.
 - **Remote lists** — URLs of sing-box rule-sets (`.srs`, `.json`) or plain text lists of domains and
   subnets. Lines like `example.com`, `*.example.com`, `domain:example.com`,
   `DOMAIN-SUFFIX,example.com`, addresses, subnets and `#` comments are understood.
+
+## Categories
+
+Categories are the ones of Xray's `geosite.dat` and `geoip.dat`: `geosite:ru-blocked`, `geosite:youtube`,
+`geosite:category-ads-all`, `geoip:ru`, `geoip:telegram` and hundreds more. sing-box on the router does
+not read `.dat`, so the router takes the same data from
+[runetfreedom/russia-v2ray-rules-dat](https://github.com/runetfreedom/russia-v2ray-rules-dat), which publishes
+every category as its own `.srs` rule-set, and keeps them up to date. These are the same files the phone
+and computer apps use, so the names match.
+
+Write categories in the **Categories** field or right in **Domains** and **IP addresses and subnets**.
+Categories with attributes (`geosite:google@cn`) are not supported. A category that does not exist is
+skipped with a warning on the overview. Subnets of `geoip:` categories in "through the tunnel" rules are
+captured too, so apps that connect by IP also go through the tunnel.
 
 ## How it works
 

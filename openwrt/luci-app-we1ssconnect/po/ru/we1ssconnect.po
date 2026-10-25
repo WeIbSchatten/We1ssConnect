@@ -248,6 +248,15 @@ msgstr "Списки сообщества itdoginfo/allow-domains, обновл�
 msgid "Presets"
 msgstr "Пресеты"
 
+msgid "Categories"
+msgstr "Категории"
+
+msgid "geosite:… and geoip:… categories of the rule files, as in Xray and v2rayN: geosite:ru-blocked, geosite:youtube, geoip:telegram. The phone and computer apps understand the same names."
+msgstr "Категории geosite:… и geoip:… файлов правил, как в Xray и v2rayN: geosite:ru-blocked, geosite:youtube, geoip:telegram. Приложения на телефоне и компьютере понимают те же названия."
+
+msgid "Use geosite:name or geoip:name"
+msgstr "Укажите geosite:название или geoip:название"
+
 msgid "Domains"
 msgstr "Домены"
 

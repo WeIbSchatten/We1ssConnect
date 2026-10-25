@@ -12,6 +12,9 @@ export const DEFAULTS = {
 	manage_dnsmasq: '1', log_level: 'warn', clash_port: '9090',
 };
 
+// Category names of the published rule-sets; attributes like google@cn are not among them.
+const CATEGORY = /^[a-z0-9][a-z0-9._!-]*$/;
+
 function list(v) {
 	if (v == null || v == '')
 		return [];
@@ -67,12 +70,29 @@ export function normalize(sections, data, runtime) {
 			}
 			push(groups, { id, name: s.name || id, servers: members, selected: s.selected });
 		}
-		else if (s['.type'] == 'rule' && s.enabled != '0')
+		else if (s['.type'] == 'rule' && s.enabled != '0') {
+			// geosite:/geoip: also work in the domain and subnet fields, as they do in Xray.
+			const name = s.name || id;
+			let categories = [], domains = [], subnets = [];
+			for (let e in [ ...list(s.category), ...lines(s.domain), ...lines(s.subnet) ]) {
+				const m = match(lc(e), /^(geosite|geoip):(.*)$/);
+				if (m && match(m[2], CATEGORY))
+					push(categories, m[1] + ':' + m[2]);
+				else if (m)
+					push(errors, `rule ${name}: bad category ${e}`);
+			}
+			for (let e in lines(s.domain))
+				if (!match(lc(e), /^geo(site|ip):/))
+					push(domains, e);
+			for (let e in lines(s.subnet))
+				if (!match(lc(e), /^geo(site|ip):/))
+					push(subnets, e);
 			push(rules, {
-				id, name: s.name || id, action: s.action || 'proxy', target: s.target || 'auto', interface: s.interface,
+				id, name, action: s.action || 'proxy', target: s.target || 'auto', interface: s.interface,
 				services: list(s.service), presets: list(s.preset), remote_lists: list(s.remote_list),
-				domains: lines(s.domain), subnets: lines(s.subnet),
+				categories: uniq(categories), domains, subnets,
 			});
+		}
 		else if (s['.type'] == 'device' && s.ip && (s.mode == 'tunnel' || s.mode == 'bypass'))
 			push(devices, { name: s.name || s.ip, ip: s.ip, mode: s.mode });
 	}

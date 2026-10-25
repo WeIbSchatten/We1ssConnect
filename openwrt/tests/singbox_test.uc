@@ -69,6 +69,7 @@ test('selective mode: lists through the tunnel, the rest direct', () => {
 	eq(find(c.outbounds, 'vpn-wg0').bind_interface, 'wg0');
 	eq(map(c.endpoints, (e) => e.tag), ['s-w4']);
 	eq(map(c.route.rule_set, (s) => s.tag), ['svc-youtube', 'geosite-category-ru', 'geoip-ru', 'geosite-category-ads-all']);
+	eq(filter(c.route.rule_set, (s) => s.tag == 'geoip-ru')[0].url, 'https://raw.githubusercontent.com/runetfreedom/russia-v2ray-rules-dat/release/sing-box/rule-set-geoip/geoip-ru.srs', 'presets use the same source as categories');
 	ok(index(map(c.route.rules, (x) => x.outbound ?? x.action), 'main') >= 0);
 	eq(filter(c.route.rules, (x) => x.ip_cidr), [{ ip_cidr: ['10.20.0.0/16'], outbound: 'vpn-wg0' }]);
 	eq(filter(c.dns.rules, (x) => x.server == 'dns-fakeip'), [
@@ -76,7 +77,7 @@ test('selective mode: lists through the tunnel, the rest direct', () => {
 		{ domain_suffix: ['example.org'], query_type: ['A', 'AAAA'], server: 'dns-fakeip' },
 	]);
 	eq(filter(c.dns.rules, (x) => x.server == 'dns-direct'), [
-		{ rule_set: ['geosite-category-ru', 'geoip-ru'], server: 'dns-direct' },
+		{ rule_set: ['geosite-category-ru'], server: 'dns-direct' },
 		{ domain_suffix: ['ru', 'su', 'xn--p1ai'], server: 'dns-direct' },
 	]);
 	eq(find(c.dns.servers, 'dns-remote'), { tag: 'dns-remote', type: 'https', server: 'dns.google', domain_resolver: 'dns-bootstrap' });
@@ -122,6 +123,22 @@ test('devices, groups, LAN proxy, QUIC block, fragment and the chrome fingerprin
 	eq(find(c.dns.servers, 'dns-fakeip').inet6_range, 'fc00::/18');
 	eq(c.dns.strategy, 'prefer_ipv4');
 	check(c, 'devices and groups');
+});
+
+test('categories: geosite sets take part in DNS, geoip sets only in routing', () => {
+	const r = build(settings({ rules: [{ id: 'r1', name: 'Blocked', action: 'proxy', target: 'auto', categories: ['geosite:ru-blocked', 'geoip:telegram'] }] }), DATA);
+	eq(r.errors, []);
+	const c = r.config;
+	eq(map(c.route.rule_set, (s) => [s.tag, s.url]), [
+		['geosite-ru-blocked', 'https://raw.githubusercontent.com/runetfreedom/russia-v2ray-rules-dat/release/sing-box/rule-set-geosite/geosite-ru-blocked.srs'],
+		['geoip-telegram', 'https://raw.githubusercontent.com/runetfreedom/russia-v2ray-rules-dat/release/sing-box/rule-set-geoip/geoip-telegram.srs'],
+	]);
+	eq(filter(c.route.rules, (x) => x.rule_set), [
+		{ rule_set: ['geosite-ru-blocked'], outbound: 'main' },
+		{ rule_set: ['geoip-telegram'], outbound: 'main' },
+	]);
+	eq(filter(c.dns.rules, (x) => x.rule_set), [{ rule_set: ['geosite-ru-blocked'], query_type: ['A', 'AAAA'], server: 'dns-fakeip' }]);
+	check(c, 'categories');
 });
 
 test('VPN interfaces alone work without any server', () => {

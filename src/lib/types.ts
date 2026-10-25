@@ -1,6 +1,7 @@
 import type { AppMode } from 'xray-vpn';
 
 import type { StylePreset } from './palettes';
+import { EMPTY_RULES, type CustomRules } from './rules';
 
 export interface XrayOutbound {
   protocol: string;
@@ -64,6 +65,8 @@ export interface Settings {
   ruDirect: boolean;
   /** Ad and tracker domains are dropped (geosite:category-ads-all). */
   blockAds: boolean;
+  /** The user's own entries per target; they come before the presets. */
+  customRules: CustomRules;
   /** Resolver used through the tunnel. */
   dns: DnsProvider;
   /** DNS over HTTPS instead of plain UDP to the same resolver. */
@@ -104,6 +107,7 @@ export const DEFAULT_SETTINGS: Settings = {
   apps: [],
   ruDirect: false,
   blockAds: false,
+  customRules: EMPTY_RULES,
   dns: 'cloudflare',
   dnsOverHttps: false,
   ipv6: false,
