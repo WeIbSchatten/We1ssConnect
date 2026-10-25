@@ -68,12 +68,12 @@ export function parse_url(s) {
 		rest = substr(rest, 0, qpos);
 	}
 	// Userinfo first: standard base64 credentials may contain "/".
+	// The last "@" splits it; ucode 24.10's rindex() misses a match at index 0.
 	let userinfo = null;
-	let at = rindex(rest, '@');
-	if (at >= 0) {
-		// ucode 24.10 yields null, not "", for a zero-length substr.
-		userinfo = at > 0 ? substr(rest, 0, at) : '';
-		rest = substr(rest, at + 1);
+	const um = match(rest, /^(.*)@([^@]*)$/);
+	if (um) {
+		userinfo = um[1];
+		rest = um[2];
 	}
 	let spos = index(rest, '/');
 	if (spos >= 0) {
