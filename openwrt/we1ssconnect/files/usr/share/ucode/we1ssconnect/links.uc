@@ -149,7 +149,7 @@ function split_pair(s) {
 function parse_ss(link, u) {
 	if (u.userinfo == null) {
 		// Legacy form: ss://base64(method:password@host:port)#name
-		const body = match(link, /^ss://([^#?]*)/i)[1];
+		const body = match(link, /^ss:\/\/([^#?]*)/i)[1];
 		const decoded = b64decode(pctdecode(body));
 		if (!decoded || index(decoded, '@') < 0)
 			return fail(u.fragment || link, 'shadowsocks link is not readable');
