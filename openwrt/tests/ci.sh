@@ -4,7 +4,7 @@
 set -eu
 
 root="$(cd "$(dirname "$0")/.." && pwd)"
-deps="curl sing-box ucode-mod-fs ucode-mod-uci ucode-mod-ubus ucode-mod-uloop nftables kmod-nft-tproxy"
+deps="curl coreutils-base64 sing-box ucode-mod-fs ucode-mod-uci ucode-mod-ubus ucode-mod-uloop nftables kmod-nft-tproxy"
 
 mkdir -p /var/lock
 if command -v apk > /dev/null; then
@@ -23,4 +23,6 @@ for t in "$root"/tests/*_test.uc; do
 	echo "== $(basename "$t")"
 	ucode -L "$root/tests/lib/*.uc" -L "$root/we1ssconnect/files/usr/share/ucode/*.uc" "$t" || status=1
 done
+echo "== integration.sh"
+sh "$root/tests/integration.sh" "$root" || status=1
 exit $status
