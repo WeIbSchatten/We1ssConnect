@@ -89,14 +89,17 @@ jobs:
         with:
           name: we1ssconnect-openwrt-${{ matrix.format }}
           path: pkgs
-      - name: Boot OpenWrt ${{ matrix.release }}
+      - name: Install LuCI and We1ssConnect with the release's package manager
+        run: |
+          docker run --name prep -v "$PWD/pkgs:/pkgs:ro" -v "$PWD/openwrt:/src:ro" \
+            "openwrt/rootfs:x86-64-openwrt-${{ matrix.release }}" sh /src/tests/luci-setup.sh install
+          docker commit prep owrt-luci > /dev/null
+      - name: Boot it and connect
         run: |
           sudo modprobe -a nft_tproxy nf_tproxy_ipv4 nf_tproxy_ipv6 nft_socket
-          docker run -d --name owrt --privileged -p 8080:80 -v "$PWD/pkgs:/pkgs:ro" -v "$PWD/openwrt:/src:ro" \
-            "openwrt/rootfs:x86-64-openwrt-${{ matrix.release }}" /sbin/init
-          for i in $(seq 1 30); do docker exec owrt ubus list rpcd > /dev/null 2>&1 && break; sleep 1; done
-      - name: Install LuCI and We1ssConnect
-        run: docker exec owrt sh /src/tests/luci-setup.sh
+          docker run -d --name owrt --privileged -p 8080:80 -v "$PWD/openwrt:/src:ro" owrt-luci /sbin/init
+          for i in $(seq 1 30); do docker exec owrt ubus list we1ssconnect > /dev/null 2>&1 && break; sleep 1; done
+          docker exec owrt sh /src/tests/luci-setup.sh configure
       - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
