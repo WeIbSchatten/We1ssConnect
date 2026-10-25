@@ -71,8 +71,8 @@ export function parse_url(s) {
 	let userinfo = null;
 	let at = rindex(rest, '@');
 	if (at >= 0) {
-		// ucode 24.10 returns null, not "", for an empty substr.
-		userinfo = substr(rest, 0, at) ?? '';
+		// ucode 24.10 yields null, not "", for a zero-length substr.
+		userinfo = at > 0 ? substr(rest, 0, at) : '';
 		rest = substr(rest, at + 1);
 	}
 	let spos = index(rest, '/');
