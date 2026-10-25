@@ -11,7 +11,11 @@ rm -rf $dir /etc/we1ssconnect /var/run/we1ssconnect
 mkdir -p $dir
 cp "$1/we1ssconnect/files/etc/config/we1ssconnect" /etc/config/we1ssconnect
 
-# A self-signed certificate for test.local, as the servers' TLS.
+# The panel runs Xray, so its protocols are served by Xray 26.10.21 itself, with Xray's TLS
+# defaults (ALPN h2,http/1.1); TUIC, which Xray lacks, by sing-box.
+xray=/src/.xray/xray
+[ -x "$xray" ] || { echo "FAIL Xray binary missing at $xray"; exit 1; }
+
 sing-box generate tls-keypair test.local -m 1 > $dir/pair.pem
 awk '/BEGIN PRIVATE KEY/,/END PRIVATE KEY/' $dir/pair.pem > $dir/key.pem
 awk '/BEGIN CERTIFICATE/,/END CERTIFICATE/' $dir/pair.pem > $dir/cert.pem
@@ -19,19 +23,30 @@ uuid=$(sing-box generate uuid)
 reality="$(sing-box generate reality-keypair)"
 rpriv=$(echo "$reality" | awk '/PrivateKey/ { print $2 }')
 rpub=$(echo "$reality" | awk '/PublicKey/ { print $2 }')
-tls="\"enabled\":true,\"server_name\":\"test.local\",\"certificate_path\":\"$dir/cert.pem\",\"key_path\":\"$dir/key.pem\""
+xtls="\"security\":\"tls\",\"tlsSettings\":{\"serverName\":\"test.local\",\"certificates\":[{\"certificateFile\":\"$dir/cert.pem\",\"keyFile\":\"$dir/key.pem\"}]"
+
+cat > $dir/xray.json <<EOF
+{"log":{"loglevel":"warning"},
+ "inbounds":[
+  {"listen":"127.0.0.1","port":8443,"protocol":"hysteria","settings":{"version":2,"clients":[{"auth":"hypw","email":"u"}]},
+   "streamSettings":{"network":"hysteria",$xtls,"alpn":["h3"]},"hysteriaSettings":{"version":2},"finalmask":{"udp":[{"type":"salamander","settings":{"password":"ob"}}]}}},
+  {"listen":"127.0.0.1","port":8444,"protocol":"vless","settings":{"clients":[{"id":"$uuid"}],"decryption":"none"},
+   "streamSettings":{"network":"ws",$xtls},"wsSettings":{"path":"/ws"}}},
+  {"listen":"127.0.0.1","port":8445,"protocol":"vless","settings":{"clients":[{"id":"$uuid"}],"decryption":"none"},
+   "streamSettings":{"network":"grpc",$xtls},"grpcSettings":{"serviceName":"svc"}}},
+  {"listen":"127.0.0.1","port":8446,"protocol":"trojan","settings":{"clients":[{"password":"trpw"}]},
+   "streamSettings":{"network":"raw",$xtls}}},
+  {"listen":"127.0.0.1","port":8447,"protocol":"vless","settings":{"clients":[{"id":"$uuid","flow":"xtls-rprx-vision"}],"decryption":"none"},
+   "streamSettings":{"network":"raw","security":"reality","realitySettings":{"dest":"www.microsoft.com:443","serverNames":["www.microsoft.com"],"privateKey":"$rpriv","shortIds":["ab12"]}}}
+ ],
+ "outbounds":[{"protocol":"freedom"}]}
+EOF
+"$xray" run -c $dir/xray.json > $dir/xray.log 2>&1 &
+xray_pid=$!
 
 cat > $dir/server.json <<EOF
-{"log":{"level":"warn"},
- "inbounds":[
-  {"type":"hysteria2","listen":"127.0.0.1","listen_port":8443,"users":[{"password":"hypw"}],"obfs":{"type":"salamander","password":"ob"},"tls":{$tls,"alpn":["h3"]}},
-  {"type":"vless","listen":"127.0.0.1","listen_port":8444,"users":[{"uuid":"$uuid"}],"transport":{"type":"ws","path":"/ws"},"tls":{$tls,"alpn":["h2","http/1.1"]}},
-  {"type":"vless","listen":"127.0.0.1","listen_port":8445,"users":[{"uuid":"$uuid"}],"transport":{"type":"grpc","service_name":"svc"},"tls":{$tls,"alpn":["h2"]}},
-  {"type":"trojan","listen":"127.0.0.1","listen_port":8446,"users":[{"password":"trpw"}],"tls":{$tls,"alpn":["h2","http/1.1"]}},
-  {"type":"vless","listen":"127.0.0.1","listen_port":8447,"users":[{"uuid":"$uuid","flow":"xtls-rprx-vision"}],"tls":{"enabled":true,"server_name":"www.microsoft.com","reality":{"enabled":true,"handshake":{"server":"www.microsoft.com","server_port":443},"private_key":"$rpriv","short_id":["ab12"]}}},
-  {"type":"tuic","listen":"127.0.0.1","listen_port":8448,"users":[{"uuid":"$uuid","password":"tupw"}],"congestion_control":"bbr","tls":{$tls,"alpn":["h3"]}}
- ],
- "outbounds":[{"type":"direct"}]}
+{"log":{"level":"warn"},"inbounds":[{"type":"tuic","listen":"127.0.0.1","listen_port":8448,"users":[{"uuid":"$uuid","password":"tupw"}],"congestion_control":"bbr",
+ "tls":{"enabled":true,"server_name":"test.local","certificate_path":"$dir/cert.pem","key_path":"$dir/key.pem","alpn":["h3"]}}],"outbounds":[{"type":"direct"}]}
 EOF
 sing-box run -c $dir/server.json > $dir/server.log 2>&1 &
 server_pid=$!
@@ -61,9 +76,10 @@ for name in HY2 WS GRPC TROJAN REALITY TUIC; do
 	if [ "$code" = 204 ]; then pass "$name carries a request"; else fail "$name carries a request (got $code)"; fi
 done
 
-kill $client_pid $server_pid 2> /dev/null
+kill $client_pid $server_pid $xray_pid 2> /dev/null
 if [ "$fails" -gt 0 ]; then
 	echo "--- client.log"; grep -v 'inbound connection' $dir/client.log | tail -n 30
+	echo "--- xray.log"; tail -n 20 $dir/xray.log
 	echo "--- server.log"; tail -n 20 $dir/server.log
 fi
 echo "protocols: $fails failed"

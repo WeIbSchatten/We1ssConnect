@@ -26,6 +26,10 @@ jobs:
       - uses: actions/checkout@v7
       - name: Load the TPROXY modules nft -c needs
         run: sudo modprobe -a nft_tproxy nf_tproxy_ipv4 nf_tproxy_ipv6 nft_socket
+      - name: Xray 26.10.21, the panel's core, as the protocol tests' server
+        run: |
+          curl -fsSL -o /tmp/xray.zip https://github.com/XTLS/Xray-core/releases/download/v26.10.21/Xray-linux-64.zip
+          unzip -o -q /tmp/xray.zip xray -d openwrt/.xray
       - name: Test on OpenWrt ${{ matrix.release }}
         run: |
           docker run --rm --privileged -v "$PWD/openwrt:/src" \
