@@ -25,6 +25,8 @@ for t in "$root"/tests/*_test.uc; do
 done
 echo "== integration.sh"
 sh "$root/tests/integration.sh" "$root" || status=1
+echo "== protocols.sh"
+sh "$root/tests/protocols.sh" "$root" || status=1
 echo "== e2e.sh"
 sh "$root/tests/e2e.sh" "$root" || status=1
 exit $status
