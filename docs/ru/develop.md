@@ -54,6 +54,11 @@ npx tsc --noEmit && npx expo lint && npx jest --ci
 `ANDROID_KEYSTORE_PASSWORD`, создаёт тег `v<версия>` и релиз с APK для arm64-v8a и armeabi-v7a
 и файлом `SHA256SUMS`. Приложение находит обновления через последний релиз этого репозитория.
 
+Версии идут вслед за панелью [We1ssBoard](https://github.com/WeIbSchatten/We1ssBoard): у релиза
+клиентов те же `MAJOR.MINOR`, что у панели (панель 1.9.x → клиенты 1.9.x), а патч-версии
+независимы, поэтому исправление в клиенте не требует релиза панели. Workflow проверяет это
+скриптом `scripts/check-version-series.sh` до сборки и не пропускает другие версии.
+
 ## Лицензии
 
 Используются [Xray-core](https://github.com/XTLS/Xray-core) (MPL-2.0) и
