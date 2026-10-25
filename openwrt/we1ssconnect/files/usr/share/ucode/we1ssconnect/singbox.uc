@@ -1,6 +1,8 @@
 // Builds the sing-box config from normalized settings (config.uc) and the server store.
 // Pure: no file or network access, so every branch is unit-tested and `sing-box check`ed.
 
+import { category_url } from 'we1ssconnect.lists';
+
 export const TPROXY_PORT = 1602;
 export const DNS_LISTEN = '127.0.0.42';
 export const SVC_PORT = 2081;
@@ -9,8 +11,6 @@ export const FAKEIP_V4 = '198.18.0.0/15';
 export const FAKEIP_V6 = 'fc00::/18';
 
 const ITDOG = 'https://github.com/itdoginfo/allow-domains/releases/latest/download/';
-const SAGER_SITE = 'https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/';
-const SAGER_IP = 'https://raw.githubusercontent.com/SagerNet/sing-geoip/rule-set/';
 
 // Community lists of itdoginfo/allow-domains, downloaded by sing-box at runtime.
 export const SERVICES = [
@@ -19,14 +19,10 @@ export const SERVICES = [
 	'meta', 'twitter', 'cloudflare', 'cloudfront', 'digitalocean', 'hetzner', 'ovh', 'telegram', 'roblox',
 ];
 
+// The same categories as the apps' presets, from the same source as the user's geosite:/geoip:.
 export const PRESETS = {
-	ru: {
-		rule_sets: [['geosite-category-ru', SAGER_SITE + 'geosite-category-ru.srs'], ['geoip-ru', SAGER_IP + 'geoip-ru.srs']],
-		domain_suffix: ['ru', 'su', 'xn--p1ai'],
-	},
-	ads: {
-		rule_sets: [['geosite-category-ads-all', SAGER_SITE + 'geosite-category-ads-all.srs']],
-	},
+	ru: { categories: ['geosite:category-ru', 'geoip:ru'], domain_suffix: ['ru', 'su', 'xn--p1ai'] },
+	ads: { categories: ['geosite:category-ads-all'] },
 };
 
 export function server_tag(id) {
@@ -178,14 +174,17 @@ export function build(cfg, data) {
 		else if (r.action == 'direct')
 			target = 'direct';
 
-		let sets = [], suffixes = [ ...(r.domains ?? []) ], cidrs = [ ...(r.subnets ?? []) ];
+		let sets = [], ipsets = [], suffixes = [ ...(r.domains ?? []) ], cidrs = [ ...(r.subnets ?? []) ];
 		for (let svc in r.services ?? [])
 			push(sets, add_rule_set('svc-' + svc, ITDOG + svc + '.srs'));
+		let categories = [ ...(r.categories ?? []) ];
 		for (let p in r.presets ?? []) {
-			for (let rs in PRESETS[p]?.rule_sets ?? [])
-				push(sets, add_rule_set(rs[0], rs[1]));
+			push(categories, ...(PRESETS[p]?.categories ?? []));
 			push(suffixes, ...(PRESETS[p]?.domain_suffix ?? []));
 		}
+		// geoip sets hold only addresses, so they stay out of the DNS rules.
+		for (let cat in categories)
+			push(substr(cat, 0, 6) == 'geoip:' ? ipsets : sets, add_rule_set(replace(cat, ':', '-'), category_url(cat)));
 		for (let i, url in r.remote_lists ?? [])
 			push(sets, add_rule_set(`list-${r.id}-${i}`, url));
 		push(suffixes, ...(r.inline_domains ?? []));
@@ -194,13 +193,17 @@ export function build(cfg, data) {
 		const act = r.action == 'block' ? { action: 'reject' } : { outbound: target };
 		const matchers = filter([
 			length(sets) ? { rule_set: sets } : null,
+			length(ipsets) ? { rule_set: ipsets, by_ip: true } : null,
 			length(suffixes) ? { domain_suffix: suffixes } : null,
 			length(cidrs) ? { ip_cidr: cidrs } : null,
 		], (m) => m != null);
-		for (let m in matchers)
-			push(route_rules, { ...m, ...act });
+		for (let m in matchers) {
+			let rule = { ...m, ...act };
+			delete rule.by_ip;
+			push(route_rules, rule);
+		}
 
-		const dns_matchers = filter(matchers, (m) => !m.ip_cidr);
+		const dns_matchers = filter(matchers, (m) => !m.ip_cidr && !m.by_ip);
 		for (let m in dns_matchers) {
 			if (r.action == 'block')
 				push(dns_rules, { ...m, action: 'reject' });

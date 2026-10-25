@@ -1,7 +1,7 @@
 // Remote lists: sing-box fetches .srs/.json rule-sets itself; plain-text domain/CIDR lists and
 // the service subnet lists (needed in nft, which cannot read rule-sets) are fetched here.
 
-import { readfile, popen } from 'fs';
+import { readfile, writefile, popen } from 'fs';
 import { mkdir_p } from 'we1ssconnect.util';
 
 const ITDOG_SUBNETS = 'https://raw.githubusercontent.com/itdoginfo/allow-domains/main/Subnets/IPv4/';
@@ -50,10 +50,48 @@ export function fetch_cached(url, dir, via_proxy) {
 	return readfile(file);
 };
 
-// Fills inline_domains/inline_subnets of each rule and returns the subnets nft must intercept.
-export function resolve(cfg, fetch) {
+// The same data as runetfreedom's geosite.dat/geoip.dat, one .srs per category.
+export const CATEGORY_BASE = 'https://raw.githubusercontent.com/runetfreedom/russia-v2ray-rules-dat/release/sing-box/';
+
+export function category_url(category) {
+	const m = match(category, /^(geosite|geoip):(.+)$/);
+	return `${CATEGORY_BASE}rule-set-${m[1]}/${m[1]}-${m[2]}.srs`;
+};
+
+// CIDRs of a compiled rule-set, read back with this router's sing-box.
+export function srs_cidrs(content) {
+	const dir = '/tmp/we1ss-srs-' + time();
+	mkdir_p(dir);
+	writefile(dir + '/in.srs', content ?? '');
+	let cidrs = [];
+	if (system(`sing-box rule-set decompile ${dir}/in.srs -o ${dir}/out.json >/dev/null 2>&1`) == 0) {
+		try {
+			for (let rule in json(readfile(dir + '/out.json')).rules ?? [])
+				push(cidrs, ...(rule.ip_cidr ?? []));
+		}
+		catch (e) {}
+	}
+	system(`rm -rf ${dir}`);
+	return cidrs;
+};
+
+// Fills inline_domains/inline_subnets of each rule, drops categories that are not published,
+// and returns the subnets nft must intercept.
+export function resolve(cfg, fetch, cidrs_of) {
 	let route_subnets = [], missing = [];
 	for (let r in cfg.rules) {
+		let found = [];
+		for (let cat in r.categories ?? []) {
+			const content = fetch(category_url(cat));
+			if (content == null) {
+				push(missing, category_url(cat));
+				continue;
+			}
+			push(found, cat);
+			if ((r.action == 'proxy' || r.action == 'vpn') && substr(cat, 0, 6) == 'geoip:')
+				push(route_subnets, ...(cidrs_of ?? srs_cidrs)(content));
+		}
+		r.categories = found;
 		const plain = filter(r.remote_lists, (u) => !is_rule_set(u));
 		r.remote_lists = filter(r.remote_lists, (u) => is_rule_set(u));
 		r.inline_domains = [];
