@@ -10,6 +10,7 @@ function summary(sid) {
 	const parts = [];
 	[].concat(uci.get('we1ssconnect', sid, 'service') || []).forEach((k) => parts.push(w1.SERVICES[k] || k));
 	[].concat(uci.get('we1ssconnect', sid, 'preset') || []).forEach((k) => parts.push(w1.PRESETS[k] || k));
+	[].concat(uci.get('we1ssconnect', sid, 'category') || []).forEach((k) => parts.push(k));
 	const dom = (uci.get('we1ssconnect', sid, 'domain') || '').split(/\s+/).filter((x) => x);
 	if (dom.length)
 		parts.push(dom.length > 2 ? _('%d domains').format(dom.length) : dom.join(', '));
@@ -94,6 +95,14 @@ return view.extend({
 		o = s.option(form.MultiValue, 'preset', _('Presets'));
 		for (const k in w1.PRESETS)
 			o.value(k, w1.PRESETS[k]);
+		o.modalonly = true;
+
+		o = s.option(form.DynamicList, 'category', _('Categories'),
+			_('geosite:… and geoip:… categories of the rule files, as in Xray and v2rayN: geosite:ru-blocked, geosite:youtube, geoip:telegram. The phone and computer apps understand the same names.'));
+		[ 'geosite:ru-blocked', 'geosite:ru-blocked-all', 'geosite:ru-available-only-inside', 'geosite:youtube', 'geosite:telegram',
+			'geosite:discord', 'geosite:category-ads-all', 'geosite:category-ru', 'geoip:ru', 'geoip:telegram', 'geoip:ru-blocked',
+			'geoip:cloudflare' ].forEach((c) => o.value(c, c));
+		o.validate = (sid, v) => !v || /^geo(site|ip):[a-z0-9][a-z0-9._!-]*$/i.test(v) || _('Use geosite:name or geoip:name');
 		o.modalonly = true;
 
 		o = s.option(form.TextValue, 'domain', _('Domains'),

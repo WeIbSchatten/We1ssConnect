@@ -189,5 +189,8 @@
  "Unknown link type: %s": "неизвестный тип ссылки: %s",
  "To keep the tunnel working, these were stopped and their autostart turned off: %s. Nothing was removed; turn them back on under System → Startup after disconnecting here.": "Чтобы туннель работал, остановлены и выключены из автозапуска: %s. Ничего не удалено; вернуть их можно в «Система → Загрузка», отключив здесь We1ssConnect.",
  "Another client is active: %s": "Работает другой клиент: %s",
- "running or starts at boot": "запущен или включён в автозапуск"
+ "running or starts at boot": "запущен или включён в автозапуск",
+ "Categories": "Категории",
+ "geosite:… and geoip:… categories of the rule files, as in Xray and v2rayN: geosite:ru-blocked, geosite:youtube, geoip:telegram. The phone and computer apps understand the same names.": "Категории geosite:… и geoip:… файлов правил, как в Xray и v2rayN: geosite:ru-blocked, geosite:youtube, geoip:telegram. Приложения на телефоне и компьютере понимают те же названия.",
+ "Use geosite:name or geoip:name": "Укажите geosite:название или geoip:название"
 }

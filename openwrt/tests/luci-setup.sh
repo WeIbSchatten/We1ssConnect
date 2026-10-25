@@ -43,10 +43,14 @@ EOF
 vless://u@h:443?type=xhttp&security=reality&pbk=k#Финляндия XHTTP
 trojan://pw@192.0.2.10:443#Германия" > /dev/null
 	uci set we1ssconnect.r_youtube.enabled=1
+	uci add_list we1ssconnect.r_youtube.category=geoip:telegram
 	uci set we1ssconnect.r_ru.enabled=1
 	uci commit we1ssconnect
 	ubus call we1ssconnect set_enabled '{"enabled": true}' > /dev/null
 	sleep 3
 	we1ssconnect status
+	# The geoip category was downloaded and its subnets loaded for interception.
+	nft get element inet we1ssconnect route4 '{ 149.154.167.50 }' > /dev/null 2>&1 || { echo 'FAIL geoip:telegram subnets are not in route4'; exit 1; }
+	echo 'ok   geoip:telegram subnets are intercepted'
 	;;
 esac
