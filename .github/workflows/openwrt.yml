@@ -109,8 +109,7 @@ jobs:
           ip="$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' owrt)"
           docker exec owrt netstat -lnt | grep -E ':80 |:443 ' || true
           for i in $(seq 1 30); do curl -sf -o /dev/null "http://$ip/cgi-bin/luci/" && break; sleep 1; done
-          curl -sS -o /dev/null -w 'LuCI answers %{http_code}
-' "http://$ip/cgi-bin/luci/"
+          echo "LuCI answers $(curl -sS -o /dev/null -w '%{http_code}' "http://$ip/cgi-bin/luci/")"
           mkdir -p /tmp/pw && cp openwrt/tests/luci-e2e.mjs /tmp/pw/ && cd /tmp/pw
           npm init -y > /dev/null && npm install playwright@1.56.1 > /dev/null
           npx playwright install --with-deps chromium > /dev/null
