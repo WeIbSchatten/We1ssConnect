@@ -2,7 +2,7 @@
   "expo": {
     "name": "We1ssConnect",
     "slug": "we1ssconnect",
-    "version": "1.9.1",
+    "version": "1.9.2",
     "scheme": "we1ssconnect",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
