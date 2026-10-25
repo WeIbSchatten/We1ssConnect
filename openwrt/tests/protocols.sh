@@ -77,8 +77,17 @@ for name in HY2 WS GRPC TROJAN REALITY TUIC; do
 	if [ "$code" = 204 ]; then pass "$name carries a request"; else fail "$name carries a request (got $code)"; fi
 done
 
+# Every server answered above, so a fresh delay test must give each of them a positive delay.
+we1ssconnect ping > $dir/ping.json
+for name in HY2 WS GRPC TROJAN REALITY TUIC; do
+	id=$(id_of $name)
+	d=$(ucode -e "import { readfile } from 'fs'; print(json(readfile('$dir/ping.json')).delays['$id'] ?? -1);")
+	if [ "$d" -gt 0 ] 2> /dev/null; then pass "$name has a delay ($d ms)"; else fail "$name has a delay (got $d)"; fi
+done
+
 kill $client_pid $server_pid $xray_pid 2> /dev/null
 if [ "$fails" -gt 0 ]; then
+	echo "--- ping.json"; cat $dir/ping.json
 	echo "--- client.log"; grep -v 'inbound connection' $dir/client.log | tail -n 30
 	echo "--- xray.log"; tail -n 20 $dir/xray.log
 	echo "--- server.log"; tail -n 20 $dir/server.log
