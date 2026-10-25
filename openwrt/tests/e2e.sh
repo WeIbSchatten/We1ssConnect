@@ -72,6 +72,8 @@ check "selective: the listed domain loads" '[ "$(fetch https://www.gstatic.com/g
 check "selective: and it went through the tunnel" 'sleep 1; tunneled www.gstatic.com'
 check "selective: an unlisted site loads" '[ "$(fetch https://example.com/)" = 200 ]'
 check "selective: but not through the tunnel" '! tunneled example.com'
+in_lan nslookup example.com 192.168.77.1 > $dir/selective-dns.txt 2>&1
+grep -o 'connection to [^ ]*' $dir/server.log | sort | uniq -c > $dir/selective-tunnel.txt
 check "selective: a client with its own DNS server still gets FakeIP" 'in_lan nslookup www.gstatic.com 8.8.8.8 | grep -q "198\.1[89]\."'
 
 uci set we1ssconnect.main.mode=global
@@ -93,7 +95,9 @@ check "bypass device: nothing goes through the tunnel even in global mode" '[ "$
 kill $client_pid $server_pid "$(cat $dir/dnsmasq.pid)" 2> /dev/null
 we1ssconnect cleanup > /dev/null
 if [ "$fails" -gt 0 ]; then
-	for f in prepare.json apply.json client.log server.log; do echo "--- $f"; tail -n 30 "$dir/$f"; done
+	for f in selective-dns.txt selective-tunnel.txt; do echo "--- $f"; cat "$dir/$f"; done
+	echo "--- tunnel summary (last run)"; grep -o 'connection to [^ ]*' $dir/server.log | sort | uniq -c
+	echo "--- client.log"; grep -v 'inbound connection from' $dir/client.log | tail -n 25
 	nft list table inet we1ssconnect 2> /dev/null | head -60
 fi
 echo "e2e: $fails failed"
