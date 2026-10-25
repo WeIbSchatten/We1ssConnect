@@ -63,7 +63,14 @@ start() {
 	client_pid=$!
 	for i in $(seq 1 20); do curl -s -o /dev/null http://127.0.0.1:9090/ && break; sleep 1; done
 }
-tunneled() { grep -q "inbound connection to $1" $dir/server.log; }
+# Without FakeIP the server sees the address the client dialled, not the sniffed domain.
+tunneled() {
+	grep -q "inbound connection to $1:" $dir/server.log && return 0
+	for ip in $(in_lan nslookup "$1" 192.168.77.1 2> /dev/null | awk '/^Address: / { print $2 }'); do
+		grep -q "inbound connection to $ip:" $dir/server.log && return 0
+	done
+	return 1
+}
 fetch() { in_lan curl -s -o /dev/null -m 15 -w '%{http_code}' "$1"; }
 
 start
