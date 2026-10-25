@@ -1,0 +1,9 @@
+{
+  "title": "Справка",
+  "icon": "LifeBuoy",
+  "pages": [
+    "faq",
+    "history",
+    "develop"
+  ]
+}

@@ -1,0 +1,43 @@
+---
+title: First connection
+description: Add a subscription or keys, choose a server and turn the tunnel on at the router.
+---
+
+## 1. Add servers
+
+Open **Services → We1ssConnect → Servers**:
+
+- **Add subscription** — paste a subscription link from the We1ssBoard panel or any other one with
+  share links. The router downloads the list and refreshes it by itself (every 12 hours by default;
+  change it in the settings).
+- **Add keys** — paste share links, one per line. They go to the "My keys" group.
+
+Keys sing-box cannot serve (XHTTP, for example) show up greyed out with the reason. They do not get
+in the way of the others.
+
+## 2. Choose a server
+
+- **Auto** — the balancer tests every server every 3 minutes and takes the fastest.
+- Click a server to pin it. Switching does not restart the tunnel.
+
+**Test delay** measures every server: through the server when the tunnel is on, by connect time
+when it is off.
+
+## 3. Choose what goes through the tunnel
+
+The **Routing** tab already has example rules, switched off: YouTube through the tunnel, Russian
+sites directly, ad blocking. Turn on the ones you need or add your own ([details](./routing.mdx)).
+
+The overview has the mode switch:
+
+- **By lists** — only the sites and services from the rules go through the tunnel;
+- **All traffic** — everything goes through the tunnel except direct rules and bypassed devices.
+
+## 4. Connect
+
+On **Overview** press **Connect**. In a few seconds the state turns to "Connected" and shows the
+current server, the exit IP with the country flag, city and ISP. The middle of the IP is hidden;
+click it to see the whole address. The **Speed test** is there too.
+
+If something is off, open **Diagnostics**: it shows which part does not work
+([troubleshooting](./troubleshooting.mdx)).

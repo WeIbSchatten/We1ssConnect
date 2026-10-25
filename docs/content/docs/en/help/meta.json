@@ -1,0 +1,9 @@
+{
+  "title": "Help",
+  "icon": "LifeBuoy",
+  "pages": [
+    "faq",
+    "history",
+    "develop"
+  ]
+}

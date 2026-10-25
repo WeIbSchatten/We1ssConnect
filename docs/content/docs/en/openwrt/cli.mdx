@@ -1,0 +1,34 @@
+---
+title: The we1ssconnect command
+description: Manage the client over SSH and from scripts — servers, subscriptions, server choice, diagnostics.
+---
+
+Every command prints JSON, so scripts can read it with `jsonfilter` or `jq`.
+
+| Command | What it does |
+| --- | --- |
+| `we1ssconnect status` | state, current server, traffic and warnings |
+| `we1ssconnect servers` | servers, subscriptions and groups |
+| `we1ssconnect import '<link>'` | add keys; `-` reads them from stdin |
+| `we1ssconnect rm <id>` | remove a server |
+| `we1ssconnect select <id\|auto>` | pin a server or go back to Auto, without a restart |
+| `we1ssconnect ping` | delay of every server |
+| `we1ssconnect sub-add <url> [name]` | add a subscription and download it |
+| `we1ssconnect sub-update [id\|all]` | refresh subscriptions |
+| `we1ssconnect sub-rm <id>` | remove a subscription and its servers |
+| `we1ssconnect ip` | exit IP through the tunnel |
+| `we1ssconnect speedtest` | download speed through the tunnel |
+| `we1ssconnect diag` | diagnostics |
+| `we1ssconnect log [lines]` | sing-box log |
+| `we1ssconnect update-check` / `update` | check for and install an update |
+
+The service is managed the usual way: `/etc/init.d/we1ssconnect start|stop|restart`. To start it at
+boot: `uci set we1ssconnect.main.enabled=1 && uci commit we1ssconnect`.
+
+Example: add a subscription and pin its first server.
+
+```sh
+we1ssconnect sub-add 'https://panel.example.com/sub/abc' 'My subscription'
+id=$(we1ssconnect servers | jsonfilter -e '@.servers[0].id')
+we1ssconnect select "$id"
+```

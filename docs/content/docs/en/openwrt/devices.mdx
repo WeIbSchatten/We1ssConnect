@@ -1,0 +1,17 @@
+---
+title: Devices
+description: Send all traffic of one device through the tunnel, or leave a device out entirely.
+---
+
+The **Devices** tab is per-app routing from the phone, for whole devices on the network.
+
+| Mode | What happens |
+| --- | --- |
+| **Everything through the tunnel** | all the device's traffic goes through Auto, even in "by lists" mode. Handy for a TV or a set-top box |
+| **Nothing through the tunnel** | the device is left out entirely, even in "all traffic" mode. Handy for a work computer or banking apps |
+
+Direct rules still apply to "everything through the tunnel" devices: Russian sites stay direct if
+that preset is on, for example.
+
+A device is chosen by its IP address; the list suggests the DHCP leases. Give the device a static
+lease (**Network → DHCP and DNS → Static Leases**), or it may get another address after reconnecting.

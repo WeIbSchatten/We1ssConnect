@@ -1,0 +1,49 @@
+---
+title: Settings
+description: Every setting of the OpenWrt client — DNS, network, connection, lists and subscriptions.
+---
+
+Settings take effect after **Save & Apply**; the tunnel restarts.
+
+## DNS
+
+| Setting | Default | What it does |
+| --- | --- | --- |
+| DNS protocol | DNS over HTTPS | DoH, DoT or plain UDP |
+| DNS server | 1.1.1.1 | resolver for everything not sent directly; an address or a DoH URL |
+| DNS for direct sites | 77.88.8.8 | for direct rules, so Russian sites open from their nearest servers |
+| Bootstrap DNS | 77.88.8.8 | resolves the DNS server's name when it is not an address |
+| Catch hard-coded DNS | on | devices with a DNS server set by hand (8.8.8.8 and the like) are answered by the router too; without it "by lists" rules do not work for them |
+| Point dnsmasq at the tunnel | on | turn off only if you configure dnsmasq yourself: `server=127.0.0.42` |
+
+## Network
+
+| Setting | Default | What it does |
+| --- | --- | --- |
+| LAN interfaces | br-lan | which interfaces' traffic is handled; add the guest network if you want |
+| IPv6 | off | resolve and route IPv6 |
+| Keep NTP direct | on | time sync stays out of the tunnel |
+| Block QUIC through the tunnel | off | browsers fall back to TCP; sometimes fixes YouTube |
+| Proxy for the LAN | off | a SOCKS5/HTTP proxy on the router (port 2080) for apps that need one |
+
+## Connection
+
+| Setting | Default | What it does |
+| --- | --- | --- |
+| Chrome fingerprint for Reality | on | Reality servers on Xray 26.9.8+ drop some fingerprints |
+| Fragment TLS | off | splits the TLS ClientHello so DPI cannot read the server name; not for Reality or QUIC |
+| Delay test URL | gstatic.com/generate_204 | what Auto measures servers with |
+| Test interval | 3 min | how often Auto tests the servers again |
+| Switch threshold | 50 ms | Auto moves to another server only when it is this much faster |
+
+## Lists and subscriptions
+
+| Setting | Default |
+| --- | --- |
+| Refresh lists | daily |
+| Download lists through the tunnel | off |
+| Refresh subscriptions | every 12 hours |
+
+Where the data lives: settings in `/etc/config/we1ssconnect`, servers in
+`/etc/we1ssconnect/servers.json`, the generated sing-box config in
+`/var/run/we1ssconnect/config.json`.

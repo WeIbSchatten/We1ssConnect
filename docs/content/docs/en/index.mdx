@@ -1,0 +1,59 @@
+---
+title: Overview
+description: We1ssConnect is a VPN client for Android, Windows, Linux and OpenWrt routers, made first of all for the We1ssBoard panel.
+icon: House
+---
+
+We1ssConnect is a client for Xray-core servers, made first of all for the
+[We1ssBoard](https://weibschatten.github.io/We1ssBoard/docs) panel. It connects with a subscription
+or share links, picks the fastest server by itself, shows which country you exit through, and lets
+you decide which traffic uses the VPN.
+
+<Cards>
+  <Card icon={<Smartphone />} title="Android" href="./guide/install.mdx">
+    APKs for arm64 and armv7, a quick settings tile, per-app routing.
+  </Card>
+  <Card icon={<Monitor />} title="Windows and Linux" href="./desktop.mdx">
+    The same screens over the system proxy, an installer for Windows.
+  </Card>
+  <Card icon={<Router />} title="OpenWrt routers" href="./openwrt/index.mdx">
+    A package for OpenWrt 24.10 and 25.12 on sing-box: one tunnel for every device at home.
+  </Card>
+</Cards>
+
+## Features
+
+- **Protocols**: VLESS (Reality, Vision, XHTTP), VMess, Trojan, Shadowsocks, Hysteria2; on the
+  router also TUIC, WireGuard and AnyTLS.
+- **Ping before and during the connection**: every server's delay is tested before you connect
+  and stays live.
+- **Automatic choice**: the balancer takes the lowest-delay server (on phones and computers it can
+  also rotate) and steps around a server that stops answering. A server you pin switches without
+  reconnecting.
+- **Your IP and country**: the exit IP (middle hidden), flag, city, ISP, speed and traffic.
+- **Routing**: per app on the phone; by lists, per device and through VPN interfaces on the router;
+  "Russian sites directly" and "Block ads" presets.
+- **Against blocking**: TLS fragmentation, the Reality fix for Xray 26.9.8+, DNS over HTTPS.
+- **Subscriptions**: traffic and expiry from the panel, auto-update, in-app updates.
+
+## Getting started
+
+1. [Install the app](./guide/install.mdx) or [the router package](./openwrt/install.mdx).
+2. [Add servers](./guide/quickstart.mdx): a subscription link from the panel, share links or a QR
+   code.
+3. Press the big connect button.
+
+## Requirements
+
+| | |
+| --- | --- |
+| Android | 8.0 or newer, ARM64 or ARMv7 |
+| Computer | Windows 10/11 or Linux with WebKitGTK 4.1, 64-bit ([details](./desktop.mdx)) |
+| Router | OpenWrt 24.10 or 25.12, about 25 MB of free flash ([details](./openwrt/index.mdx)) |
+
+<Callout>
+  We1ssConnect is free. Its cores are [Xray-core](https://github.com/XTLS/Xray-core) (MPL-2.0),
+  [libXray](https://github.com/XTLS/libXray) (MIT) and, on the router,
+  [sing-box](https://github.com/SagerNet/sing-box) (GPL-3.0) from the OpenWrt packages; see
+  [NOTICE.md](https://github.com/WeIbSchatten/We1ssConnect/blob/main/NOTICE.md).
+</Callout>

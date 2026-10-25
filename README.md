@@ -1,4 +1,4 @@
-<p align="center"><img src="docs/assets/logo.svg" width="96" alt="We1ssConnect"></p>
+<p align="center"><img src="docs/public/mark.svg" width="96" alt="We1ssConnect"></p>
 
 <h1 align="center">We1ssConnect</h1>
 
@@ -6,8 +6,8 @@
 
 <p align="center">
   <a href="https://github.com/WeIbSchatten/We1ssConnect/releases/latest">Скачать / Download</a> ·
-  <a href="https://weibschatten.github.io/We1ssConnect/#/ru/">Документация</a> ·
-  <a href="https://weibschatten.github.io/We1ssConnect/#/en/">Documentation</a>
+  <a href="https://weibschatten.github.io/We1ssConnect/ru/docs/">Документация</a> ·
+  <a href="https://weibschatten.github.io/We1ssConnect/docs/">Documentation</a>
 </p>
 
 ## Возможности
@@ -45,8 +45,8 @@ npm run desktop:web
 cd desktop && wails build -s            # Linux: add -tags webkit2_41
 ```
 
-Подробности: [для разработчиков](https://weibschatten.github.io/We1ssConnect/#/ru/develop) ·
-details: [for developers](https://weibschatten.github.io/We1ssConnect/#/en/develop).
+Подробности: [для разработчиков](https://weibschatten.github.io/We1ssConnect/ru/docs/help/develop/) ·
+details: [for developers](https://weibschatten.github.io/We1ssConnect/docs/help/develop/).
 
 ## Лицензии · Third-party software
 

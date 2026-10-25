@@ -1,0 +1,53 @@
+---
+title: Routing
+description: Routing rules on the router — service lists, presets, domains, subnets and remote lists; where to send traffic and server groups.
+---
+
+A rule says **what** (services, domains, subnets) goes **where**. Rules are checked from top to
+bottom and the first match wins; drag rows to change the order.
+
+## Where to send
+
+| Action | What happens |
+| --- | --- |
+| **Through the tunnel** | through Auto, a server group or one server |
+| **Through a router interface** | through a VPN already set up on the router: WireGuard, AmneziaWG, OpenVPN and others |
+| **Directly** | around the tunnel; addresses come from the DNS for direct sites (Yandex by default) |
+| **Block** | the site does not open; the DNS query is refused |
+
+## What a rule can match
+
+- **Services** — community lists from
+  [itdoginfo/allow-domains](https://github.com/itdoginfo/allow-domains): YouTube, Telegram, Discord,
+  Meta, X, TikTok, Google AI, "Blocked in Russia", "Russian services from abroad" and more. They
+  refresh themselves. For services whose apps connect by IP (Telegram, Discord, Meta, X, Cloudflare
+  and others) the router loads their subnets too.
+- **Presets** — "Russian sites and IPs" (`.ru`, `.su`, `.рф`, the `category-ru` list and Russian IP
+  ranges) and "Ads and trackers" (`category-ads-all`). The same lists as in the app.
+- **Domains** — one per line; a domain also covers its subdomains.
+- **IP addresses and subnets** — such as `149.154.160.0/20`.
+- **Remote lists** — URLs of sing-box rule-sets (`.srs`, `.json`) or plain text lists of domains and
+  subnets. Lines like `example.com`, `*.example.com`, `domain:example.com`,
+  `DOMAIN-SUFFIX,example.com`, addresses, subnets and `#` comments are understood.
+
+## How it works
+
+In **by lists** mode the router answers DNS queries for domains of "through the tunnel" rules with
+service addresses from `198.18.0.0/15` (FakeIP). Connections to them and to the rules' subnets are
+captured and handed to sing-box, which knows which domain stands behind which address. All other
+traffic never touches sing-box, so the router spends nothing on it.
+
+In **all traffic** mode everything except the local network is captured, and the domain is read
+from the connection itself.
+
+## Server groups
+
+A group is a small Auto of its own over some servers: only Finnish ones, say. Point a rule at the
+group and that service always goes through one country. A group takes the servers of the chosen
+subscriptions and the ones you tick, optionally filtered by name with a regular expression
+(`finland|helsinki`).
+
+## Lists and GitHub
+
+Lists download from GitHub once a day (change it in the settings). If your ISP blocks GitHub, turn on
+**Settings → Lists and subscriptions → Download lists through the tunnel**.

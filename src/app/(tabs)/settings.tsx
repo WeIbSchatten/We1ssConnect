@@ -205,7 +205,7 @@ export default function Settings() {
           first
           icon="book-outline"
           title={t('docs')}
-          onPress={() => void Linking.openURL(`https://weibschatten.github.io/We1ssConnect/#/${lang}/`)}
+          onPress={() => void Linking.openURL(`https://weibschatten.github.io/We1ssConnect${lang === 'ru' ? '/ru' : ''}/docs/`)}
         />
       </Card>
       <View style={{ height: 24 }} />

@@ -1,0 +1,11 @@
+{
+  "title": "Возможности",
+  "icon": "Sparkles",
+  "pages": [
+    "servers",
+    "balancer",
+    "routing",
+    "settings",
+    "tile"
+  ]
+}

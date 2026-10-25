@@ -1,0 +1,8 @@
+{
+  "title": "Начало работы",
+  "icon": "Rocket",
+  "pages": [
+    "install",
+    "quickstart"
+  ]
+}
