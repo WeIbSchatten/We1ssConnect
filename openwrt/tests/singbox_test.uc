@@ -154,7 +154,7 @@ test('stored servers are fixed at build time: QUIC without uTLS, WebSocket witho
 	const c = build(settings({ fragment: true }), stored).config;
 	eq(find(c.outbounds, 's-h').tls, { enabled: true, server_name: 'h', alpn: ['h3'] });
 	eq(find(c.outbounds, 's-w').tls.alpn, ['http/1.1']);
-	eq(find(c.outbounds, 's-w').tls.utls, { enabled: true, fingerprint: 'chrome' });
+	eq(find(c.outbounds, 's-w').tls.utls, { enabled: true, fingerprint: 'firefox' }, 'the link fingerprint stays');
 	eq(find(c.outbounds, 's-g').tls.alpn, ['h2', 'http/1.1'], 'gRPC keeps h2');
 	check(c, 'stored servers');
 });

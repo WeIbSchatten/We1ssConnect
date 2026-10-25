@@ -28,7 +28,7 @@ rpub=$(echo "$reality" | awk -F': *' '/Password|PublicKey/ { print $NF; exit }')
 xtls="\"security\":\"tls\",\"tlsSettings\":{\"serverName\":\"test.local\",\"certificates\":[{\"certificateFile\":\"$dir/cert.pem\",\"keyFile\":\"$dir/key.pem\"}]"
 
 cat > $dir/xray.json <<EOF
-{"log":{"loglevel":"warning"},
+{"log":{"loglevel":"debug"},
  "inbounds":[
   {"listen":"127.0.0.1","port":8443,"protocol":"hysteria","settings":{"version":2,"clients":[{"auth":"hypw","email":"u"}]},
    "streamSettings":{"network":"hysteria",$xtls,"alpn":["h3"]},"hysteriaSettings":{"version":2},"finalmask":{"udp":[{"type":"salamander","settings":{"password":"obfspass"}}]}}},
@@ -90,12 +90,15 @@ for name in HY2 WS GRPC TROJAN REALITY TUIC; do
 	if [ "$d" -gt 0 ] 2> /dev/null; then pass "$name has a delay ($d ms)"; else fail "$name has a delay (got $d)"; fi
 done
 
+cp /var/run/we1ssconnect/config.json $dir/config.json
 kill $client_pid $server_pid $xray_pid 2> /dev/null
 we1ssconnect cleanup > /dev/null
 if [ "$fails" -gt 0 ]; then
 	echo "--- ping.json"; cat $dir/ping.json
 	echo "--- client.log"; grep -v 'inbound connection' $dir/client.log | tail -n 30
-	echo "--- xray.log"; tail -n 20 $dir/xray.log
+	echo "--- reality keys"; echo "$reality"
+	echo "--- REALITY outbound"; ucode -e "import { readfile } from 'fs'; for (let o in json(readfile('$dir/config.json')).outbounds) if (o.tls?.reality) printf('%J\n', o);"
+	echo "--- xray.log"; grep -Eiv "accepted|deprecated" $dir/xray.log | tail -n 40
 	echo "--- server.log"; tail -n 20 $dir/server.log
 fi
 echo "protocols: $fails failed"
