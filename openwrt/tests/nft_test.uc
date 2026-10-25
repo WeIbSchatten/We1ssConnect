@@ -32,8 +32,9 @@ test('selective: FakeIP, listed subnets and DNS go to TPROXY', () => {
 test('the rule order keeps LAN traffic and bypassed devices away from the tunnel', () => {
 	const t = render(base({ devices: [{ ip: '192.168.1.50', mode: 'tunnel' }, { ip: '192.168.1.60', mode: 'bypass' }] }));
 	const pos = (s) => index(t, s);
-	ok(pos('iifname != { "br-lan" } return') < pos('ip daddr @fakeip4 meta'), 'other interfaces first');
-	ok(pos('ip daddr @fakeip4 meta') < pos('ip saddr @bypass4 return'), 'FakeIP before the bypass list');
+	const lan_fakeip = '\n\t\tip daddr @fakeip4 meta';
+	ok(pos('iifname != { "br-lan" } return') < pos(lan_fakeip), 'other interfaces first');
+	ok(pos(lan_fakeip) < pos('ip saddr @bypass4 return'), 'FakeIP before the bypass list');
 	ok(pos('ip saddr @bypass4 return') < pos('th dport 53'), 'bypassed devices keep their own DNS');
 	ok(pos('ip daddr @reserved4 return') < pos('ip saddr @tunnel4'), 'LAN stays direct for tunnel devices');
 	nft_check(t, 'devices');

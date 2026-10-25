@@ -21,21 +21,22 @@ function list(v) {
 function lines(v) {
 	let out = [];
 	for (let item in list(v))
-		for (let x in split(item, /[\s,]+/))
+		for (let x in split(item, /[[:space:],]+/))
 			if (x != '')
 				push(out, x);
 	return out;
 }
 
-function name_matches(name, pattern, errors, owner) {
+// Returns a regexp, true (no filter) or null (bad filter, reported once).
+function compile_filter(pattern, errors, owner) {
 	if (!pattern)
 		return true;
 	try {
-		return match(name, regexp(pattern, 'i')) != null;
+		return regexp(pattern, 'i');
 	}
 	catch (e) {
 		push(errors, `${owner}: bad filter ${pattern}`);
-		return false;
+		return null;
 	}
 }
 
@@ -55,12 +56,13 @@ export function normalize(sections, data, runtime) {
 			push(subscriptions, { id, name: s.name || id, url: s.url, enabled: s.enabled != '0', filter: s.filter, user_agent: s.user_agent });
 		else if (s['.type'] == 'group') {
 			const subs = list(s.subscription), explicit = list(s.server);
+			const re = compile_filter(s.filter, errors, `group ${s.name || id}`);
 			let members = [];
 			for (let srv in data.servers) {
 				if (!srv.ok)
 					continue;
 				const wanted = index(explicit, srv.id) >= 0 || index(subs, srv.source) >= 0;
-				if (wanted && name_matches(srv.name, s.filter, errors, `group ${s.name || id}`))
+				if (wanted && re && (re === true || match(srv.name, re)))
 					push(members, srv.id);
 			}
 			push(groups, { id, name: s.name || id, servers: members, selected: s.selected });
