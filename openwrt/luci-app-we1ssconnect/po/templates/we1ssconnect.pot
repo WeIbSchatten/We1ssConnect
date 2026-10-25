@@ -1,0 +1,557 @@
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8\n"
+
+msgid "Like per-app routing on the phone: a device can send everything through the tunnel, or nothing at all. Give such devices a static DHCP lease so their address does not change."
+msgstr ""
+
+msgid "Devices"
+msgstr ""
+
+msgid "Device"
+msgstr ""
+
+msgid "Name"
+msgstr ""
+
+msgid "IP address"
+msgstr ""
+
+msgid "Traffic"
+msgstr ""
+
+msgid "Everything through the tunnel"
+msgstr ""
+
+msgid "Nothing through the tunnel"
+msgstr ""
+
+msgid "sing-box installed"
+msgstr ""
+
+msgid "Config accepted by sing-box"
+msgstr ""
+
+msgid "sing-box running"
+msgstr ""
+
+msgid "Interception rules loaded"
+msgstr ""
+
+msgid "TPROXY kernel module"
+msgstr ""
+
+msgid "Policy routing"
+msgstr ""
+
+msgid "dnsmasq forwards to sing-box"
+msgstr ""
+
+msgid "DNS answers through sing-box"
+msgstr ""
+
+msgid "Request through the tunnel"
+msgstr ""
+
+msgid "Diagnostics"
+msgstr ""
+
+msgid "Run again"
+msgstr ""
+
+msgid "Check for updates"
+msgstr ""
+
+msgid "Checks"
+msgstr ""
+
+msgid "sing-box log"
+msgstr ""
+
+msgid "The log is empty."
+msgstr ""
+
+msgid "Up to date"
+msgstr ""
+
+msgid "Version %s is available."
+msgstr ""
+
+msgid "Updating in the background; reload the page in a minute."
+msgstr ""
+
+msgid "Update"
+msgstr ""
+
+msgid "Error"
+msgstr ""
+
+msgid "Connected"
+msgstr ""
+
+msgid "Starting…"
+msgstr ""
+
+msgid "Off"
+msgstr ""
+
+msgid "Disconnect"
+msgstr ""
+
+msgid "Connect"
+msgstr ""
+
+msgid "By lists"
+msgstr ""
+
+msgid "All traffic"
+msgstr ""
+
+msgid "Auto"
+msgstr ""
+
+msgid "No servers yet"
+msgstr ""
+
+msgid "Auto · lowest delay"
+msgstr ""
+
+msgid "Pinned"
+msgstr ""
+
+msgid "Choose a server →"
+msgstr ""
+
+msgid "Downloaded"
+msgstr ""
+
+msgid "Uploaded"
+msgstr ""
+
+msgid "Connections"
+msgstr ""
+
+msgid "Servers"
+msgstr ""
+
+msgid "Version"
+msgstr ""
+
+msgid "Tunnel"
+msgstr ""
+
+msgid "Everything goes through the tunnel except direct rules and bypassed devices."
+msgstr ""
+
+msgid "Only sites and services from routing rules go through the tunnel."
+msgstr ""
+
+msgid "Server"
+msgstr ""
+
+msgid "Exit IP"
+msgstr ""
+
+msgid "Speed test"
+msgstr ""
+
+msgid "Connect to see the exit IP."
+msgstr ""
+
+msgid "Checking…"
+msgstr ""
+
+msgid "No answer through the tunnel."
+msgstr ""
+
+msgid "Click to show the whole address"
+msgstr ""
+
+msgid "Refresh"
+msgstr ""
+
+msgid "Measuring for up to 15 seconds…"
+msgstr ""
+
+msgid "%s Mbit/s"
+msgstr ""
+
+msgid "Through the tunnel"
+msgstr ""
+
+msgid "Through a router interface"
+msgstr ""
+
+msgid "Directly"
+msgstr ""
+
+msgid "Block"
+msgstr ""
+
+msgid "Rules are checked from top to bottom; the first match wins. Drag rows to change the order."
+msgstr ""
+
+msgid "Routing rules"
+msgstr ""
+
+msgid "Routing rule"
+msgstr ""
+
+msgid "Rule"
+msgstr ""
+
+msgid "On"
+msgstr ""
+
+msgid "Where to send"
+msgstr ""
+
+msgid "Auto (lowest delay)"
+msgstr ""
+
+msgid "Group: %s"
+msgstr ""
+
+msgid "missing: %s"
+msgstr ""
+
+msgid "Interface"
+msgstr ""
+
+msgid "A VPN already set up on the router: WireGuard, AmneziaWG, OpenVPN…"
+msgstr ""
+
+msgid "Services"
+msgstr ""
+
+msgid "Community lists of itdoginfo/allow-domains, refreshed automatically."
+msgstr ""
+
+msgid "Presets"
+msgstr ""
+
+msgid "Domains"
+msgstr ""
+
+msgid "One per line; a domain also covers its subdomains."
+msgstr ""
+
+msgid "IP addresses and subnets"
+msgstr ""
+
+msgid "One per line, such as 149.154.160.0/20."
+msgstr ""
+
+msgid "Remote lists"
+msgstr ""
+
+msgid "URLs of sing-box rule-sets (.srs, .json) or plain lists of domains and subnets."
+msgstr ""
+
+msgid "Matches"
+msgstr ""
+
+msgid "%d domains"
+msgstr ""
+
+msgid "%d subnets"
+msgstr ""
+
+msgid "%d remote lists"
+msgstr ""
+
+msgid "Server groups"
+msgstr ""
+
+msgid "A group balances its servers by lowest delay. Point a rule at a group to keep, say, one country for one service."
+msgstr ""
+
+msgid "Server group"
+msgstr ""
+
+msgid "Subscriptions"
+msgstr ""
+
+msgid "My keys"
+msgstr ""
+
+msgid "Name filter"
+msgstr ""
+
+msgid "Regular expression, such as finland|helsinki."
+msgstr ""
+
+msgid "not supported"
+msgstr ""
+
+msgid "in use"
+msgstr ""
+
+msgid "Remove"
+msgstr ""
+
+msgid "%s of %s"
+msgstr ""
+
+msgid "%s used"
+msgstr ""
+
+msgid "until %s"
+msgstr ""
+
+msgid "updated %s"
+msgstr ""
+
+msgid "Panel page"
+msgstr ""
+
+msgid "Remove the subscription and its servers?"
+msgstr ""
+
+msgid "lowest delay, switches when a server stops answering"
+msgstr ""
+
+msgid "Tap a server to pin it, or choose Auto. Switching does not restart the tunnel."
+msgstr ""
+
+msgid "Test delay"
+msgstr ""
+
+msgid "Add keys"
+msgstr ""
+
+msgid "Add subscription"
+msgstr ""
+
+msgid "Refresh subscriptions"
+msgstr ""
+
+msgid "No servers yet: add a We1ssBoard subscription or paste keys."
+msgstr ""
+
+msgid "One share link per line: VLESS, VMess, Trojan, Shadowsocks, Hysteria2, TUIC, WireGuard, SOCKS, AnyTLS."
+msgstr ""
+
+msgid "Cancel"
+msgstr ""
+
+msgid "Added: %d"
+msgstr ""
+
+msgid "Add"
+msgstr ""
+
+msgid "Name (optional)"
+msgstr ""
+
+msgid "A We1ssBoard subscription link or any other one with share links (plain or base64)."
+msgstr ""
+
+msgid "Changes apply after Save & Apply; the tunnel restarts."
+msgstr ""
+
+msgid "DNS"
+msgstr ""
+
+msgid "Network"
+msgstr ""
+
+msgid "Connection"
+msgstr ""
+
+msgid "Lists and subscriptions"
+msgstr ""
+
+msgid "Advanced"
+msgstr ""
+
+msgid "DNS protocol"
+msgstr ""
+
+msgid "DNS over HTTPS"
+msgstr ""
+
+msgid "DNS over TLS"
+msgstr ""
+
+msgid "Plain UDP"
+msgstr ""
+
+msgid "DNS server"
+msgstr ""
+
+msgid "Resolver for everything not sent directly. Address or DoH URL."
+msgstr ""
+
+msgid "DNS for direct sites"
+msgstr ""
+
+msgid "Used for direct rules, so Russian sites reach their nearest servers."
+msgstr ""
+
+msgid "Yandex (77.88.8.8)"
+msgstr ""
+
+msgid "Bootstrap DNS"
+msgstr ""
+
+msgid "Resolves the DNS server name when it is not an address."
+msgstr ""
+
+msgid "Catch hard-coded DNS"
+msgstr ""
+
+msgid "Devices that use their own DNS server (8.8.8.8 and the like) are answered by the router too."
+msgstr ""
+
+msgid "Point dnsmasq at the tunnel"
+msgstr ""
+
+msgid "Turn off only if you configure dnsmasq yourself (server=127.0.0.42)."
+msgstr ""
+
+msgid "LAN interfaces"
+msgstr ""
+
+msgid "Traffic from these interfaces is handled. Usually br-lan."
+msgstr ""
+
+msgid "IPv6"
+msgstr ""
+
+msgid "Resolve and route IPv6 too. Many servers have no IPv6, so it is off by default."
+msgstr ""
+
+msgid "Keep NTP direct"
+msgstr ""
+
+msgid "Time sync stays out of the tunnel (helps smart speakers)."
+msgstr ""
+
+msgid "Block QUIC through the tunnel"
+msgstr ""
+
+msgid "Browsers fall back to TCP; sometimes fixes YouTube."
+msgstr ""
+
+msgid "Proxy for the LAN"
+msgstr ""
+
+msgid "SOCKS5/HTTP proxy on the router for apps and devices that need one."
+msgstr ""
+
+msgid "Proxy port"
+msgstr ""
+
+msgid "Chrome fingerprint for Reality"
+msgstr ""
+
+msgid "Reality servers on Xray 26.9.8 and newer drop some fingerprints; chrome always works."
+msgstr ""
+
+msgid "Fragment TLS"
+msgstr ""
+
+msgid "Splits the TLS ClientHello so DPI cannot read the server name in one packet (not for Reality)."
+msgstr ""
+
+msgid "Delay test URL"
+msgstr ""
+
+msgid "Test interval"
+msgstr ""
+
+msgid "Switch threshold, ms"
+msgstr ""
+
+msgid "Auto moves to another server only when it is this much faster."
+msgstr ""
+
+msgid "Refresh lists"
+msgstr ""
+
+msgid "every 6 hours"
+msgstr ""
+
+msgid "every 12 hours"
+msgstr ""
+
+msgid "daily"
+msgstr ""
+
+msgid "every 3 days"
+msgstr ""
+
+msgid "Download lists through the tunnel"
+msgstr ""
+
+msgid "Useful when GitHub is blocked."
+msgstr ""
+
+msgid "hourly"
+msgstr ""
+
+msgid "every 3 hours"
+msgstr ""
+
+msgid "never"
+msgstr ""
+
+msgid "Log level"
+msgstr ""
+
+msgid "Control API port"
+msgstr ""
+
+msgid "Local sing-box API used by this page (127.0.0.1 only)."
+msgstr ""
+
+msgid "Blocked in Russia"
+msgstr ""
+
+msgid "Russian services from abroad"
+msgstr ""
+
+msgid "Blocked in Ukraine"
+msgstr ""
+
+msgid "Geo-blocked services"
+msgstr ""
+
+msgid "Blocked sites"
+msgstr ""
+
+msgid "Adult sites"
+msgstr ""
+
+msgid "News"
+msgstr ""
+
+msgid "Anime"
+msgstr ""
+
+msgid "Russian sites and IPs"
+msgstr ""
+
+msgid "Ads and trackers"
+msgstr ""
+
+msgid "no answer"
+msgstr ""
+
+msgid "ms"
+msgstr ""
+
+msgid "Failed"
+msgstr ""
+
+msgid "We1ssConnect"
+msgstr ""
+
+msgid "Overview"
+msgstr ""
+
+msgid "Routing"
+msgstr ""
+
+msgid "Settings"
+msgstr ""

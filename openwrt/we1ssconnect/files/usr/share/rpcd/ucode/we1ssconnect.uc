@@ -7,6 +7,8 @@ import * as svc from 'we1ssconnect.service';
 return {
 	we1ssconnect: {
 		status: { call: () => svc.status() },
+		set_enabled: { args: { enabled: false }, call: (req) => svc.set_enabled(req.args.enabled) },
+		set_mode: { args: { mode: 'selective' }, call: (req) => svc.set_mode(req.args.mode) },
 		servers: { call: () => svc.servers() },
 		ping: { call: () => svc.ping() },
 		select: { args: { id: 'auto' }, call: (req) => svc.select(req.args.id) },

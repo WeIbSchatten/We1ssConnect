@@ -356,3 +356,24 @@ export function self_update() {
 	sh(`(sleep 1; wget -qO- https://raw.githubusercontent.com/${REPO}/main/openwrt/install.sh | sh) >/tmp/we1ssconnect-update.log 2>&1 &`);
 	return { ok: true, log: '/tmp/we1ssconnect-update.log' };
 };
+
+function set_main(key, value) {
+	let c = cursor();
+	c.load('we1ssconnect');
+	c.set('we1ssconnect', 'main', key, value);
+	c.commit('we1ssconnect');
+}
+
+export function set_enabled(on) {
+	set_main('enabled', on ? '1' : '0');
+	sh(on ? '/etc/init.d/we1ssconnect enable; /etc/init.d/we1ssconnect restart' : '/etc/init.d/we1ssconnect stop');
+	return status();
+};
+
+export function set_mode(mode) {
+	if (mode != 'selective' && mode != 'global')
+		return { ok: false, error: 'mode must be selective or global' };
+	set_main('mode', mode);
+	restart_if_running();
+	return { ok: true };
+};
