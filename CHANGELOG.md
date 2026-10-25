@@ -4,7 +4,7 @@ The full history with details is in the documentation:
 [русский](https://weibschatten.github.io/We1ssConnect/ru/docs/help/history/) ·
 [English](https://weibschatten.github.io/We1ssConnect/docs/help/history/).
 
-## Unreleased
+## 1.9.1
 
 - OpenWrt: other clients (podkop, Passwall, Passwall2, OpenClash, Nikki, https-dns-proxy) no longer block the install; installing and Connect stop the active ones and turn off their autostart instead of requiring their removal, and the overview says what was stopped.
 
