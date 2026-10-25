@@ -1,6 +1,6 @@
 // Every action of the router client, shared by the `we1ssconnect` CLI and the rpcd object.
 
-import { readfile, writefile, popen, stat } from 'fs';
+import { readfile, writefile, popen, stat, unlink } from 'fs';
 import { cursor } from 'uci';
 import * as store from 'we1ssconnect.store';
 import * as sub from 'we1ssconnect.subscription';
@@ -11,6 +11,7 @@ import * as nft from 'we1ssconnect.nft';
 import * as dnsmasq from 'we1ssconnect.dnsmasq';
 import * as clash from 'we1ssconnect.clash';
 import * as takeover from 'we1ssconnect.takeover';
+import * as xray from 'we1ssconnect.xray';
 import { mkdir_p } from 'we1ssconnect.util';
 
 export const VERSION = '0.0.0-dev';
@@ -78,6 +79,85 @@ function sync_cron(interval) {
 	}
 }
 
+const XRAY_STATE = TMP_DIR + '/xray-install.json';
+const XRAY_PID = TMP_DIR + '/xray-install.pid';
+const XRAY_WAIT = 'REALITY servers: downloading Xray, they switch to it when it is ready';
+
+function xray_version(path) {
+	return match(sh(q(path) + ' version').out, /^Xray ([0-9.]+)/)?.[1];
+}
+
+// Ours (the pinned release) first, then the feed's xray-core if it is new enough.
+function xray_binary() {
+	for (let p in [ xray.PATH, '/usr/bin/xray' ])
+		if (stat(p) && xray.version_ok(xray_version(p)))
+			return p;
+	return null;
+}
+
+function read_json(file) {
+	try {
+		return json(readfile(file) ?? 'null');
+	}
+	catch (e) {
+		return null;
+	}
+}
+
+// Downloads the pinned Xray release and checks it against the SHA-256 in the release's .dgst.
+export function xray_install() {
+	const done = (r) => {
+		writefile(XRAY_STATE, sprintf('%J', { ...r, time: time() }));
+		return r;
+	};
+	mkdir_p(TMP_DIR);
+	const arch = match(readfile('/etc/openwrt_release') ?? '', /DISTRIB_ARCH='([^']+)'/)?.[1];
+	const zip = xray.asset(arch);
+	if (!zip)
+		return done({ ok: false, error: `no Xray build for ${arch ?? 'this router'}` });
+	const l = load_cfg();
+	const proxy = (l.cfg.lists.via_tunnel && sh('pidof sing-box').code == 0) ? `-x ${SVC_PROXY} ` : '';
+	const url = `https://github.com/XTLS/Xray-core/releases/download/v${xray.PINNED}/${zip}`;
+	const tmp = TMP_DIR + '/xray-dl';
+	sh(`rm -rf ${tmp}`);
+	mkdir_p(tmp);
+	let r = sh(`curl -fsSL -m 600 ${proxy}-o ${tmp}/x.zip ${q(url)} && curl -fsSL -m 60 ${proxy}-o ${tmp}/x.dgst ${q(url + '.dgst')}`);
+	if (r.code != 0)
+		return done({ ok: false, error: 'download failed: ' + r.out });
+	const want = match(readfile(tmp + '/x.dgst') ?? '', /SHA2-256= *([0-9a-f]{64})/)?.[1];
+	if (!want || want != match(sh(`sha256sum ${tmp}/x.zip`).out, /^([0-9a-f]{64})/)?.[1])
+		return done({ ok: false, error: 'checksum mismatch' });
+	if (sh('command -v unzip').code != 0)
+		sh('if command -v apk > /dev/null; then apk add unzip; else opkg update && opkg install unzip; fi');
+	r = sh(`unzip -o -q ${tmp}/x.zip xray -d ${tmp}`);
+	if (r.code != 0)
+		return done({ ok: false, error: 'unzip: ' + r.out });
+	const dir = replace(xray.PATH, /\/[^\/]+$/, '');
+	mkdir_p(dir);
+	const need = stat(tmp + '/xray').size - (stat(xray.PATH)?.size ?? 0);
+	const free = int(sh(`df -k ${dir} | awk 'NR == 2 { print $4 }'`).out) * 1024;
+	if (!(free >= need + 1048576))
+		return done({ ok: false, error: sprintf('not enough flash: Xray needs %d MB, %d MB free', need / 1048576 + 1, free / 1048576) });
+	r = sh(`mv ${tmp}/xray ${xray.PATH}.new && chmod 755 ${xray.PATH}.new && mv ${xray.PATH}.new ${xray.PATH}`);
+	sh(`rm -rf ${tmp}`);
+	const version = xray_version(xray.PATH);
+	if (r.code != 0 || !xray.version_ok(version))
+		return done({ ok: false, error: r.code != 0 ? r.out : 'the downloaded Xray does not run' });
+	return done({ ok: true, version, path: xray.PATH });
+};
+
+// Installs Xray in the background and restarts the service once it is in place.
+function start_xray_install() {
+	const pid = int(trim(readfile(XRAY_PID) ?? '0'));
+	if (pid > 0 && sh(`kill -0 ${pid}`).code == 0)
+		return XRAY_WAIT;
+	const last = read_json(XRAY_STATE);
+	if (last && !last.ok && time() - last.time < 3600)
+		return `REALITY servers: Xray is not installed: ${last.error}`;
+	sh(`sh -c 'echo $$ > ${XRAY_PID}; /usr/bin/we1ssconnect xray-install > /dev/null && /etc/init.d/we1ssconnect restart; rm -f ${XRAY_PID}' > /dev/null 2>&1 &`);
+	return XRAY_WAIT;
+}
+
 // Builds and checks everything before the service touches the network: a config sing-box
 // rejects leaves nft and dnsmasq as they are.
 export function prepare() {
@@ -87,17 +167,36 @@ export function prepare() {
 	const l = load_cfg();
 	const cfg = l.cfg;
 	const res = lists.resolve(cfg, (url) => lists.fetch_cached(url, TMP_DIR + '/lists', null));
-	const built = singbox.build(cfg, l.data);
+	const tuned = map(filter(l.data.servers, (s) => s.ok), (s) => ({ ...s, outbound: singbox.tune_outbound(s.outbound, cfg) }));
+	let xray_bin = null, xr = null, xray_note = null, xcheck = null;
+	if (length(filter(tuned, xray.wanted))) {
+		xray_bin = xray_binary();
+		if (xray_bin)
+			xr = xray.build(cfg, tuned);
+		else
+			xray_note = start_xray_install();
+	}
+	const built = singbox.build(cfg, l.data, xr?.ports);
 	writefile(RUN_DIR + '/config.json', sprintf('%.J\n', built.config));
 	const check = sh(`sing-box check -c ${RUN_DIR}/config.json`);
+	if (xr) {
+		writefile(RUN_DIR + '/xray.json', sprintf('%.J\n', xr.config));
+		xcheck = sh(`${q(xray_bin)} run -test -c ${RUN_DIR}/xray.json`);
+	}
+	else
+		unlink(RUN_DIR + '/xray.json');
 	const rules = nft.render({
 		mode: cfg.mode, ifaces: cfg.ifaces, route_subnets: res.route_subnets, devices: cfg.devices,
 		intercept_dns: cfg.intercept_dns, exclude_ntp: cfg.exclude_ntp, ipv6: cfg.ipv6,
 	});
 	writefile(RUN_DIR + '/rules.nft', rules);
+	const xray_ok = xcheck == null || xcheck.code == 0;
 	const status = {
-		ok: check.code == 0, error: check.code == 0 ? null : check.out,
-		warnings: [ ...l.errors, ...built.errors, ...map(res.missing, (u) => `list not downloaded: ${u}`) ],
+		ok: check.code == 0 && xray_ok,
+		error: check.code != 0 ? check.out : (xray_ok ? null : 'xray: ' + xcheck.out),
+		xray: xr ? xray_bin : null,
+		warnings: [ ...l.errors, ...built.errors, ...map(res.missing, (u) => `list not downloaded: ${u}`),
+			...(xray_note ? [ xray_note ] : []) ],
 		mode: cfg.mode, ipv6: cfg.ipv6, manage_dnsmasq: cfg.manage_dnsmasq, prepared: time(),
 	};
 	writefile(RUN_DIR + '/status.json', sprintf('%J', status));
@@ -178,12 +277,25 @@ export function servers() {
 export function ping() {
 	const l = load_cfg();
 	if (status().running) {
-		const r = clash.group_delay(api(l.cfg), 'auto', l.cfg.urltest.url, 5000);
-		if (r.error)
-			return r;
-		let out = {};
+		// One request per server in parallel: sing-box's Clash API has no group delay endpoint.
+		const a = api(l.cfg);
+		const url = replace(l.cfg.urltest.url, /[^A-Za-z0-9._~-]/g, (c) => sprintf('%%%02X', ord(c)));
+		let script = '';
 		for (let s in store.usable(l.data))
-			out[s.id] = r[singbox.server_tag(s.id)] ?? -1;
+			script += sprintf('(echo "%s $(curl -s -m 8 -H %s %s)") &\n', s.id, q('Authorization: Bearer ' + a.secret),
+				q(`http://127.0.0.1:${a.port}/proxies/${singbox.server_tag(s.id)}/delay?timeout=5000&url=${url}`));
+		let out = {};
+		for (let line in split(sh(script + 'wait').out, '\n')) {
+			const m = match(line, /^([0-9a-f]+) (.*)$/);
+			if (!m)
+				continue;
+			let d = -1;
+			try {
+				d = json(m[2])?.delay ?? -1;
+			}
+			catch (e) {}
+			out[m[1]] = d > 0 ? d : -1;
+		}
 		return { via: 'tunnel', delays: out };
 	}
 	// Each line: "<id> ms <value>" from ping, "<id> s <value>" from curl's connect time.
@@ -321,9 +433,13 @@ export function diagnostics() {
 	add('sing-box', ver.code == 0, split(ver.out, '\n')[0]);
 	add('config', st.ok == true, st.error ?? (st.prepared ? '' : 'not built yet'));
 	add('service', sh('pidof sing-box').code == 0);
+	if (st.xray)
+		add('xray', sh('pidof xray').code == 0, xray_version(st.xray) ?? '');
 	add('nftables', sh(`nft list table inet ${nft.TABLE}`).code == 0);
 	add('tproxy module', sh('grep -q nft_tproxy /proc/modules || ls /lib/modules/*/nft_tproxy.ko').code == 0);
-	add('policy routing', index(sh('ip rule').out, `lookup ${nft.ROUTE_TABLE}`) >= 0);
+	// The table may print by name (podkop calls 105 "podkop" in rt_tables), so check mark and route.
+	const marked = index(sh('ip rule').out, `fwmark ${replace(nft.FWMARK, /^0x0*/, '0x')}/`) >= 0;
+	add('policy routing', marked && index(sh(`ip route show table ${nft.ROUTE_TABLE}`).out, 'local default dev lo') >= 0);
 	if (l.cfg.manage_dnsmasq) {
 		let c = cursor();
 		c.load('dhcp');
@@ -342,7 +458,7 @@ export function diagnostics() {
 };
 
 export function logs(lines) {
-	return { log: sh(`logread -e sing-box -e we1ssconnect | tail -n ${int(lines ?? 200)}`).out };
+	return { log: sh(`logread -e sing-box -e xray -e we1ssconnect | tail -n ${int(lines ?? 200)}`).out };
 };
 
 export function update_check() {

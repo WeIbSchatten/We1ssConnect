@@ -19,6 +19,20 @@ const SERVICES = {
 
 const PRESETS = { ru: _('Russian sites and IPs'), ads: _('Ads and trackers') };
 
+// The service reports config problems in English (singbox.uc, config.uc); most specific first.
+const WARNINGS = [
+	[ /^selective mode: no rule sends traffic through the tunnel$/, () => _('Selective mode, but no enabled rule sends traffic through the tunnel: turn a rule on or switch to global mode.') ],
+	[ /^global mode needs at least one server$/, () => _('Global mode needs at least one server.') ],
+	[ /^REALITY servers: downloading Xray, they switch to it when it is ready$/, () => _('Downloading Xray for the REALITY servers; they switch to it when it is ready.') ],
+	[ /^REALITY servers: Xray is not installed: (.+)$/, (m) => _('Xray for the REALITY servers is not installed: %s. Reconnecting tries again after an hour; or run we1ssconnect xray-install.').format(m[1]) ],
+	[ /^selected server (.+) is gone; using Auto$/, (m) => _('The selected server %s is gone; using Auto.').format(m[1]) ],
+	[ /^group (.+) has no usable servers$/, (m) => _('Group %s has no usable servers.').format(m[1]) ],
+	[ /^rule (.+): target (.+) is not available$/, (m) => _('Rule %s: target %s is not available.').format(m[1], m[2]) ],
+	[ /^rule (.+): no interface$/, (m) => _('Rule %s: no VPN interface chosen.').format(m[1]) ],
+	[ /^rule (.+): bad category (.+)$/, (m) => _('Rule %s: unknown category %s.').format(m[1], m[2]) ],
+	[ /^(.+): bad filter (.+)$/, (m) => _('%s: invalid filter %s.').format(m[1], m[2]) ],
+];
+
 const CSS = `
 .w1-wrap { max-width: 1100px; }
 .w1-head { display: flex; align-items: center; gap: 12px; margin: 4px 0 16px; }
@@ -87,6 +101,15 @@ return baseclass.extend({
 
 	SERVICES: SERVICES,
 	PRESETS: PRESETS,
+
+	warning: function(text) {
+		for (const [ re, tr ] of WARNINGS) {
+			const m = String(text).match(re);
+			if (m)
+				return tr(m);
+		}
+		return text;
+	},
 
 	style: function() {
 		if (!document.getElementById('w1-css'))

@@ -21,6 +21,7 @@ Every command prints JSON, so scripts can read it with `jsonfilter` or `jq`.
 | `we1ssconnect diag` | diagnostics |
 | `we1ssconnect log [lines]` | sing-box log |
 | `we1ssconnect update-check` / `update` | check for and install an update |
+| `we1ssconnect xray-install` | download Xray for REALITY servers (normally done automatically) |
 
 The service is managed the usual way: `/etc/init.d/we1ssconnect start|stop|restart`. To start it at
 boot: `uci set we1ssconnect.main.enabled=1 && uci commit we1ssconnect`.

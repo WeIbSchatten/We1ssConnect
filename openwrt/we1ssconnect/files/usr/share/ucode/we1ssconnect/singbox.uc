@@ -50,17 +50,32 @@ function dns_remote(cfg, global) {
 	return s;
 }
 
-function tune_outbound(ob, cfg) {
+const QUIC_TYPES = { hysteria2: true, tuic: true };
+
+// Applied at build time, so servers stored by older versions are fixed too.
+export function tune_outbound(ob, cfg) {
 	let o = { ...ob };
-	if (o.tls) {
-		o.tls = { ...o.tls };
-		if (cfg.force_chrome_fp && (o.tls.utls || o.tls.reality))
-			o.tls.utls = { enabled: true, fingerprint: 'chrome' };
-		if (cfg.fragment && !o.tls.reality && o.type != 'hysteria2' && o.type != 'tuic')
-			o.tls.fragment = true;
+	if (!o.tls)
+		return o;
+	o.tls = { ...o.tls };
+	if (QUIC_TYPES[o.type]) {
+		// sing-box refuses uTLS on QUIC ("unsupported usage for uTLS"); links carry fp anyway.
+		delete o.tls.utls;
+		return o;
+	}
+	if (cfg.force_chrome_fp && (o.tls.utls || o.tls.reality))
+		o.tls.utls = { enabled: true, fingerprint: 'chrome' };
+	if (cfg.fragment && !o.tls.reality)
+		o.tls.fragment = true;
+	// WebSocket and HTTPUpgrade need HTTP/1.1: offered h2, Xray picks it and rejects the upgrade.
+	const t = o.transport?.type;
+	if ((t == 'ws' || t == 'httpupgrade') && o.tls.alpn) {
+		o.tls.alpn = filter(o.tls.alpn, (a) => a != 'h2' && a != 'h3');
+		if (!length(o.tls.alpn))
+			delete o.tls.alpn;
 	}
 	return o;
-}
+};
 
 // "auto" → main selector (follows the pinned server); "group:<id>"; "server:<id>".
 function resolve_target(target, known) {
@@ -87,7 +102,8 @@ function balanced(tag_auto, tag_sel, members, chosen, cfg) {
 }
 
 // Returns { config, errors }; errors name settings that point at missing servers or groups.
-export function build(cfg, data) {
+// via_xray: { <server id>: port } of servers that go through the local Xray (xray.uc).
+export function build(cfg, data, via_xray) {
 	const global = cfg.mode == 'global';
 	let errors = [], outbounds = [], endpoints = [];
 	let known = { main: false, groups: {}, servers: {} };
@@ -96,7 +112,10 @@ export function build(cfg, data) {
 	for (let s in data.servers) {
 		if (!s.ok)
 			continue;
-		const ob = { ...tune_outbound(s.outbound, cfg), tag: server_tag(s.id) };
+		const port = via_xray?.[s.id];
+		const ob = port
+			? { type: 'socks', tag: server_tag(s.id), server: '127.0.0.1', server_port: port, version: '5' }
+			: { ...tune_outbound(s.outbound, cfg), tag: server_tag(s.id) };
 		push(s.endpoint ? endpoints : outbounds, ob);
 		push(all, ob.tag);
 		known.servers[s.id] = true;
@@ -154,7 +173,7 @@ export function build(cfg, data) {
 	if (length(bypass))
 		push(route_rules, { source_ip_cidr: bypass, outbound: 'direct' });
 
-	let dns_rules = [];
+	let dns_rules = [], tunnel_rules = 0;
 	for (let r in cfg.rules) {
 		let target = null;
 		if (r.action == 'proxy') {
@@ -197,6 +216,8 @@ export function build(cfg, data) {
 			length(suffixes) ? { domain_suffix: suffixes } : null,
 			length(cidrs) ? { ip_cidr: cidrs } : null,
 		], (m) => m != null);
+		if ((r.action == 'proxy' || r.action == 'vpn') && length(matchers))
+			tunnel_rules++;
 		for (let m in matchers) {
 			let rule = { ...m, ...act };
 			delete rule.by_ip;
@@ -219,6 +240,10 @@ export function build(cfg, data) {
 		push(route_rules, { source_ip_cidr: tunnel, outbound: 'main' });
 	if (cfg.lan_proxy.enabled && known.main)
 		push(route_rules, { inbound: ['lan-in'], outbound: 'main' });
+
+	// The most common "nothing works": switched on in selective mode with every rule off.
+	if (!global && !tunnel_rules && !length(tunnel))
+		push(errors, 'selective mode: no rule sends traffic through the tunnel');
 
 	let final = 'direct';
 	if (global) {

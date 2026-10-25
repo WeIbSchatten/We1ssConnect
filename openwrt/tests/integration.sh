@@ -45,9 +45,11 @@ check "prepare builds a config sing-box accepts" 'we1ssconnect prepare > /tmp/we
 check "the status file has no hard error" 'ucode -e "import { readfile } from \"fs\"; exit(json(readfile(\"/var/run/we1ssconnect/status.json\")).ok ? 0 : 1);"'
 check "cron refreshes subscriptions every 6 hours" 'grep -q "^0 \*/6 \* \* \* /usr/bin/we1ssconnect sub-update all" /etc/crontabs/root'
 
+# podkop names table 105 in rt_tables, so ip rule prints "lookup podkop" (as on a real router).
+mkdir -p /etc/iproute2 && echo '105 podkop' >> /etc/iproute2/rt_tables
 check "apply-net loads the nft table" 'we1ssconnect apply-net > /tmp/we1ss-it/apply.json; nft list table inet we1ssconnect > /tmp/we1ss-it/table.nft'
 check "the listed subnet is in route4" 'grep -q "203.0.113.0/24" /tmp/we1ss-it/table.nft'
-check "marked packets go to the local TPROXY route" 'ip rule | grep -q "lookup 105"'
+check "marked packets go to the local TPROXY route" 'ip rule | grep -q "fwmark 0x100000/0x100000"'
 check "dnsmasq forwards to sing-box" '[ "$(uci -q get dhcp.@dnsmasq[0].server)" = "127.0.0.42" ]'
 
 sing-box run -c /var/run/we1ssconnect/config.json -D /var/run/we1ssconnect > /tmp/we1ss-it/client.log 2>&1 &
@@ -62,6 +64,7 @@ check "pinning a server switches the selector without a restart" \
 	'we1ssconnect select "$id" > /tmp/we1ss-it/select.json; curl -s -H "Authorization: Bearer $(cat /var/run/we1ssconnect/secret)" http://127.0.0.1:9090/proxies/main > /tmp/we1ss-it/main.json; grep -q "\"now\": *\"s-$id\"" /tmp/we1ss-it/main.json'
 check "the pin is saved in UCI" '[ "$(uci get we1ssconnect.main.selected)" = "$id" ]'
 check "the exit IP is found through the tunnel" 'we1ssconnect ip | grep -q "\"ip\""'
+check "diagnostics accept the routing table under podkop's name" 'we1ssconnect diag | grep -A1 "\"name\": \"policy routing\"" | grep -q "\"ok\": true"'
 check "diagnostics see the running service" 'we1ssconnect diag > /tmp/we1ss-it/diag.json; grep -A1 "\"name\": \"tunnel\"" /tmp/we1ss-it/diag.json | grep -q "\"ok\": true"'
 
 kill $client_pid $server_pid 2> /dev/null

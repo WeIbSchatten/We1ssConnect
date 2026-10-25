@@ -35,19 +35,6 @@ export function proxies(api) {
 	return r.error ? r : (r.body?.proxies ?? {});
 };
 
-// Delay of every member of a urltest/selector group, measured now.
-export function group_delay(api, group, url, timeout_ms) {
-	const r = call(api, 'GET', `/group/${group}/delay?url=${url}&timeout=${timeout_ms}`);
-	return r.error ? r : (r.body ?? {});
-};
-
-export function delay(api, tag, url, timeout_ms) {
-	const r = call(api, 'GET', `/proxies/${tag}/delay?url=${url}&timeout=${timeout_ms}`);
-	if (r.error)
-		return r;
-	return r.status == 200 ? { delay: r.body?.delay } : { delay: -1 };
-};
-
 export function select(api, selector, tag) {
 	const r = call(api, 'PUT', `/proxies/${selector}`, { name: tag });
 	return r.error ? r : { ok: r.status == 204 || r.status == 200 };

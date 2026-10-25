@@ -12,6 +12,12 @@ Usually a server with a broken key is to blame. Such keys are flagged on import,
 through, remove the suspect server or refresh the subscription. The full error is on the overview
 and in `we1ssconnect status`.
 
+## Connected, but everything goes direct
+
+After the install the mode is selective and every rule is off, so nothing goes through the tunnel.
+The overview warns about it. Turn the rules you need on under **Routing**, or switch to **global**
+mode.
+
 ## A listed site does not open
 
 - Check that the rule is on and sits above direct rules that could catch it first.
@@ -48,3 +54,7 @@ To go back to podkop, say: press **Disconnect** in We1ssConnect, then turn podko
 ```
 
 If another client runs again, diagnostics shows "Another client is active".
+
+Right after switching from podkop, devices remember its DNS answers, 198.18.x.x addresses, for up
+to a minute. The log shows them as `missing fakeip record` and those sites do not open. Reconnect
+the device's Wi-Fi or wait a minute.

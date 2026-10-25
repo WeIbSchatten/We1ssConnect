@@ -19,7 +19,8 @@ endef
 define Package/we1ssconnect/description
   Routes LAN traffic through VLESS, VMess, Trojan, Shadowsocks, Hysteria2, TUIC and
   WireGuard servers with sing-box: by lists, all traffic, per device or through the
-  router's own VPN interfaces, with an automatic lowest-delay balancer.
+  router's own VPN interfaces, with an automatic lowest-delay balancer. REALITY servers
+  go through Xray, downloaded on first use.
 endef
 
 define Package/we1ssconnect/conffiles
@@ -59,6 +60,8 @@ define Package/we1ssconnect/prerm
 [ -n "$$IPKG_INSTROOT" ] && exit 0
 /etc/init.d/we1ssconnect stop
 /etc/init.d/we1ssconnect disable
+# Xray for REALITY servers was downloaded by the service, so the package does not own it.
+rm -rf /usr/share/we1ssconnect
 exit 0
 endef
 

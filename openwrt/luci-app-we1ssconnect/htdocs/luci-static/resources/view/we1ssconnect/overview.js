@@ -61,7 +61,7 @@ return view.extend({
 				? E('div', { class: 'w1-alert' }, [ _('Version %s is available.').format(this.update.latest), ' ',
 					E('button', { class: 'cbi-button cbi-button-action', click: ui.createHandlerFn(this, () => w1.update().then(() => w1.notify({}, _('Updating in the background; reload the page in a minute.')))) }, _('Update')) ])
 				: '',
-			warnings.length ? E('div', { class: 'w1-alert' }, warnings.map((x) => E('div', {}, x))) : '',
+			warnings.length ? E('div', { class: 'w1-alert' }, warnings.map((x) => E('div', {}, w1.warning(x)))) : '',
 			(st.taken_over || []).length ? E('div', { class: 'w1-card w1-muted', style: 'margin-bottom:12px' },
 				_('To keep the tunnel working, these were stopped and their autostart turned off: %s. Nothing was removed; turn them back on under System → Startup after disconnecting here.').format(st.taken_over.join(', '))) : '',
 			E('div', { class: 'w1-grid' }, [

@@ -21,6 +21,7 @@ description: Управление клиентом по SSH и из скрипт
 | `we1ssconnect diag` | диагностика |
 | `we1ssconnect log [строк]` | журнал sing-box |
 | `we1ssconnect update-check` / `update` | проверить и установить обновление |
+| `we1ssconnect xray-install` | скачать Xray для серверов REALITY (обычно это происходит само) |
 
 Служба управляется как обычно: `/etc/init.d/we1ssconnect start|stop|restart`. Включить её
 при загрузке — `uci set we1ssconnect.main.enabled=1 && uci commit we1ssconnect`.
