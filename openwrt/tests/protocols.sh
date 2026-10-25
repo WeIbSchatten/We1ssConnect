@@ -62,6 +62,8 @@ tuic://$uuid:tupw@127.0.0.1:8448?congestion_control=bbr&alpn=h3&sni=test.local&a
 uci set we1ssconnect.main.enabled=1
 uci commit we1ssconnect
 we1ssconnect prepare > $dir/prepare.json || { echo "FAIL prepare"; cat $dir/prepare.json; exit 1; }
+# Rules loaded, so the service counts as running and select switches sing-box live.
+we1ssconnect apply-net > /dev/null
 sing-box run -c /var/run/we1ssconnect/config.json -D /var/run/we1ssconnect > $dir/client.log 2>&1 &
 client_pid=$!
 for i in $(seq 1 20); do curl -s -o /dev/null http://127.0.0.1:9090/ && break; sleep 1; done
@@ -73,6 +75,8 @@ for name in HY2 WS GRPC TROJAN REALITY TUIC; do
 	id=$(id_of $name)
 	we1ssconnect select "$id" > /dev/null
 	sleep 1
+	now=$(curl -s -H "Authorization: Bearer $(cat /var/run/we1ssconnect/secret)" http://127.0.0.1:9090/proxies/main | ucode -e "import { readfile } from 'fs'; print(json(readfile('/dev/stdin')).now);")
+	[ "$now" = "s-$id" ] || fail "$name is pinned (selector shows $now)"
 	code=$(curl -s -o /dev/null -w '%{http_code}' -m 12 -x socks5h://127.0.0.1:2081 https://www.gstatic.com/generate_204)
 	if [ "$code" = 204 ]; then pass "$name carries a request"; else fail "$name carries a request (got $code)"; fi
 done
@@ -86,6 +90,7 @@ for name in HY2 WS GRPC TROJAN REALITY TUIC; do
 done
 
 kill $client_pid $server_pid $xray_pid 2> /dev/null
+we1ssconnect cleanup > /dev/null
 if [ "$fails" -gt 0 ]; then
 	echo "--- ping.json"; cat $dir/ping.json
 	echo "--- client.log"; grep -v 'inbound connection' $dir/client.log | tail -n 30
