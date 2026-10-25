@@ -1,6 +1,7 @@
 import { test, eq, ok, done } from 't';
 import { normalize } from 'we1ssconnect.config';
-import { parse_plain, is_rule_set, resolve } from 'we1ssconnect.lists';
+import { readfile, writefile } from 'fs';
+import { parse_plain, is_rule_set, resolve, srs_cidrs } from 'we1ssconnect.lists';
 
 const DATA = { subscriptions: {}, servers: [
 	{ id: 'a', name: 'Finland 1', source: 'sub1', ok: true },
@@ -78,6 +79,40 @@ test('resolve inlines plain lists and collects the subnets nft must intercept', 
 	ok(index(asked, 'https://raw.githubusercontent.com/itdoginfo/allow-domains/main/Subnets/IPv4/youtube.lst') < 0, 'youtube has no subnet list');
 	eq(cfg.rules[1].inline_subnets, ['7.7.7.0/24'], 'direct rules keep their CIDRs for sing-box');
 	eq(res.missing, ['https://x/missing.txt']);
+});
+
+test('srs_cidrs reads the subnets of a rule-set compiled by this sing-box', () => {
+	writefile('/tmp/we1ss-rs.json', '{"version":2,"rules":[{"ip_cidr":["1.2.3.0/24","5.6.0.0/16"]},{"domain_suffix":["example.com"]}]}');
+	eq(system('sing-box rule-set compile /tmp/we1ss-rs.json -o /tmp/we1ss-rs.srs'), 0);
+	eq(srs_cidrs(readfile('/tmp/we1ss-rs.srs')), ['1.2.3.0/24', '5.6.0.0/16']);
+	eq(srs_cidrs('not a rule-set'), []);
+});
+
+test('categories come from their own list and from the domain and subnet fields', () => {
+	const r = normalize([{ '.type': 'rule', '.name': 'r1', name: 'Blocked', category: ['geosite:RU-Blocked', 'geoip:telegram', 'geosite:google@cn'],
+		domain: 'geosite:youtube\nexample.com', subnet: 'geoip:ru 10.0.0.0/8' }], DATA);
+	eq(r.cfg.rules[0].categories, ['geosite:ru-blocked', 'geoip:telegram', 'geosite:youtube', 'geoip:ru']);
+	eq(r.cfg.rules[0].domains, ['example.com']);
+	eq(r.cfg.rules[0].subnets, ['10.0.0.0/8']);
+	eq(r.errors, ['rule Blocked: bad category geosite:google@cn']);
+});
+
+test('categories become runetfreedom rule-sets; geoip ones of tunnel rules also feed nft', () => {
+	let cfg = normalize([
+		{ '.type': 'rule', '.name': 'r1', name: 'TG', category: ['geosite:telegram', 'geoip:telegram', 'geosite:no-such-thing'] },
+		{ '.type': 'rule', '.name': 'r2', action: 'direct', category: 'geoip:ru' },
+	], DATA).cfg;
+	let decompiled = [];
+	const fetch = (url) => index(url, 'no-such-thing') >= 0 ? null : 'SRS ' + url;
+	const cidrs = (content) => {
+		push(decompiled, content);
+		return index(content, 'geoip-telegram') >= 0 ? ['91.108.4.0/22', '149.154.160.0/20'] : ['5.0.0.0/8'];
+	};
+	const res = resolve(cfg, fetch, cidrs);
+	eq(cfg.rules[0].categories, ['geosite:telegram', 'geoip:telegram'], 'the unknown category is dropped');
+	eq(res.missing, ['https://raw.githubusercontent.com/runetfreedom/russia-v2ray-rules-dat/release/sing-box/rule-set-geosite/geosite-no-such-thing.srs']);
+	eq(res.route_subnets, ['91.108.4.0/22', '149.154.160.0/20']);
+	eq(decompiled, ['SRS https://raw.githubusercontent.com/runetfreedom/russia-v2ray-rules-dat/release/sing-box/rule-set-geoip/geoip-telegram.srs'], 'direct rules need no nft subnets');
 });
 
 done();

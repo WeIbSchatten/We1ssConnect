@@ -1,3 +1,4 @@
+import { parseEntries, usesGeo } from './rules';
 import type { DnsProvider, Server, Settings, XrayOutbound } from './types';
 
 /** Server outbounds are tagged "s-<id>"; the observatory and balancer select them by prefix. */
@@ -44,7 +45,24 @@ const FRAGMENT_OUTBOUND = {
 
 /** Geo rule files the routing presets need. */
 export function needsGeo(settings: Settings): boolean {
-  return settings.ruDirect || settings.blockAds;
+  return settings.ruDirect || settings.blockAds || usesGeo(settings.customRules);
+}
+
+// Block first, then through the VPN, then direct: a proxy entry can carve an exception out of
+// a direct one (geoip:ru direct, geosite:youtube through the VPN).
+function customRules(settings: Settings): Record<string, unknown>[] {
+  const targets: [keyof Settings['customRules'], Record<string, string>][] = [
+    ['block', { outboundTag: 'block' }],
+    ['proxy', { balancerTag: BALANCER }],
+    ['direct', { outboundTag: 'direct' }],
+  ];
+  const rules: Record<string, unknown>[] = [];
+  for (const [key, target] of targets) {
+    const { domain, ip } = parseEntries(settings.customRules[key]);
+    if (domain.length) rules.push({ type: 'field', domain, ...target });
+    if (ip.length) rules.push({ type: 'field', ip, ...target });
+  }
+  return rules;
 }
 
 function isTcpTls(out: XrayOutbound): boolean {
@@ -105,6 +123,8 @@ export function buildVpnConfig(servers: Server[], fallback: Server, settings: Se
     { type: 'field', inboundTag: ['tun-in'], port: '53', outboundTag: 'dns-out' },
   ];
   if (settings.bypassLan) rules.push({ type: 'field', ip: PRIVATE_IPS, outboundTag: 'direct' });
+  const custom = customRules(settings);
+  rules.push(...custom);
   if (settings.blockAds) rules.push({ type: 'field', domain: ['geosite:category-ads-all'], outboundTag: 'block' });
   if (settings.ruDirect) {
     rules.push({ type: 'field', domain: RU_DOMAINS, outboundTag: 'direct' });
@@ -141,7 +161,7 @@ export function buildVpnConfig(servers: Server[], fallback: Server, settings: Se
     },
     routing: {
       // geoip rules need an address; sniffed domains are resolved only when no domain rule matched.
-      domainStrategy: settings.ruDirect ? 'IPIfNonMatch' : 'AsIs',
+      domainStrategy: settings.ruDirect || custom.some((r) => r.ip) ? 'IPIfNonMatch' : 'AsIs',
       balancers: [
         {
           tag: BALANCER,

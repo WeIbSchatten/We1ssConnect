@@ -86,6 +86,8 @@ export default function Settings() {
         ? t('appModeExclude')
         : t('appModeAll');
   const count = settings.appMode === 'all' ? '' : ` · ${t('appsSelected', { n: settings.apps.length })}`;
+  const rules = settings.customRules;
+  const ruleCount = rules.proxy.length + rules.direct.length + rules.block.length;
 
   return (
     <ScrollView contentContainerStyle={styles.page}>
@@ -98,6 +100,12 @@ export default function Settings() {
         {toggle('bypassLan', 'home-outline', t('bypassLan'), t('bypassLanHint'), true, Platform.OS === 'web')}
         {toggle('ruDirect', 'flag-outline', t('ruDirect'), t('ruDirectHint'), true)}
         {toggle('blockAds', 'ban-outline', t('blockAds'), t('blockAdsHint'), true)}
+        <Row
+          icon="list-outline"
+          title={t('rules')}
+          subtitle={ruleCount ? t('rulesCount', { proxy: rules.proxy.length, direct: rules.direct.length, block: rules.block.length }) : t('rulesNone')}
+          onPress={() => router.push('/rules')}
+        />
         <Row
           icon="cloud-download-outline"
           title={geoBusy ? t('pinging') : t('geoUpdate')}
