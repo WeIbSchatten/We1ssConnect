@@ -9,7 +9,7 @@ fs.mkdirSync(out, { recursive: true });
 const pages = [
 	['overview', 'Подключено'],
 	['servers', 'Нидерланды'],
-	['routing', 'Правила маршрутизации'],
+	['routing', 'Через туннель'],
 	['devices', 'Устройства'],
 	['settings', 'Протокол DNS'],
 	['diagnostics', 'sing-box запущен'],

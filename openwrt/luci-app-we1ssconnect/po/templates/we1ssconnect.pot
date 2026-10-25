@@ -175,6 +175,15 @@ msgstr ""
 msgid "%s Mbit/s"
 msgstr ""
 
+msgid "%d domains"
+msgstr ""
+
+msgid "%d subnets"
+msgstr ""
+
+msgid "%d remote lists"
+msgstr ""
+
 msgid "Through the tunnel"
 msgstr ""
 
@@ -248,15 +257,6 @@ msgid "URLs of sing-box rule-sets (.srs, .json) or plain lists of domains and su
 msgstr ""
 
 msgid "Matches"
-msgstr ""
-
-msgid "%d domains"
-msgstr ""
-
-msgid "%d subnets"
-msgstr ""
-
-msgid "%d remote lists"
 msgstr ""
 
 msgid "Server groups"

@@ -1,5 +1,6 @@
 'use strict';
 'require view';
+'require dom';
 'require poll';
 'require ui';
 'require we1ssconnect.common as w1';

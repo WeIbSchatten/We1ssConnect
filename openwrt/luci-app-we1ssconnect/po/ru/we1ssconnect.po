@@ -176,6 +176,15 @@ msgstr "Замер, до 15 секунд…"
 msgid "%s Mbit/s"
 msgstr "%s Мбит/с"
 
+msgid "%d domains"
+msgstr "доменов: %d"
+
+msgid "%d subnets"
+msgstr "подсетей: %d"
+
+msgid "%d remote lists"
+msgstr "удалённых списков: %d"
+
 msgid "Through the tunnel"
 msgstr "Через туннель"
 
@@ -250,15 +259,6 @@ msgstr "Ссылки на rule-set sing-box (.srs, .json) или на прост
 
 msgid "Matches"
 msgstr "Что включает"
-
-msgid "%d domains"
-msgstr "доменов: %d"
-
-msgid "%d subnets"
-msgstr "подсетей: %d"
-
-msgid "%d remote lists"
-msgstr "удалённых списков: %d"
 
 msgid "Server groups"
 msgstr "Группы серверов"
