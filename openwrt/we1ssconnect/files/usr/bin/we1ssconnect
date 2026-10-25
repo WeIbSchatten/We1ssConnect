@@ -22,6 +22,7 @@ const USAGE = `We1ssConnect ${svc.VERSION} for OpenWrt
   update-check            latest release on GitHub
   update                  install the latest release
   take-over               stop other clients (podkop, Passwall…) and their autostart
+  xray-install            download Xray, which carries the REALITY servers
   prepare | apply-net | cleanup   used by /etc/init.d/we1ssconnect
 `;
 
@@ -53,6 +54,7 @@ case 'prepare':
 	break;
 case 'apply-net': result = svc.apply_net(); break;
 case 'take-over': result = svc.take_over(); break;
+case 'xray-install': result = svc.xray_install(); break;
 case 'cleanup': result = svc.cleanup(); break;
 default:
 	print(USAGE);

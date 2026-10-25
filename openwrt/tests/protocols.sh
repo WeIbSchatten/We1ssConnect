@@ -60,13 +60,27 @@ trojan://trpw@127.0.0.1:8446?security=tls&sni=test.local&allowInsecure=1&alpn=h2
 vless://$uuid@127.0.0.1:8447?type=tcp&security=reality&pbk=$rpub&sid=ab12&sni=www.microsoft.com&fp=chrome&flow=xtls-rprx-vision#REALITY
 tuic://$uuid:tupw@127.0.0.1:8448?congestion_control=bbr&alpn=h3&sni=test.local&allow_insecure=1&fp=chrome#TUIC" > $dir/import.json
 
+rm -rf /usr/share/we1ssconnect /tmp/we1ssconnect/xray-install.*
+# The first start finds no Xray for the REALITY server and downloads it in the background,
+# as on a router.
+we1ssconnect prepare > $dir/prepare.json || { echo "FAIL prepare"; cat $dir/prepare.json; exit 1; }
+grep -q 'downloading Xray' $dir/prepare.json && pass "the first start downloads Xray" || fail "the first start downloads Xray: $(cat $dir/prepare.json)"
+# Disabled meanwhile, so the restart that follows the download is a no-op without procd here.
+for i in $(seq 1 180); do [ -f /tmp/we1ssconnect/xray-install.json ] && [ ! -f /tmp/we1ssconnect/xray-install.pid ] && break; sleep 1; done
+xray_ver=$(/usr/share/we1ssconnect/xray version 2> /dev/null | head -n 1)
+case "$xray_ver" in "Xray 26.10.21 "*) pass "Xray 26.10.21 installed" ;; *) fail "Xray installed (got '$xray_ver', $(cat /tmp/we1ssconnect/xray-install.json 2> /dev/null))" ;; esac
+
 uci set we1ssconnect.main.enabled=1
 uci commit we1ssconnect
 we1ssconnect prepare > $dir/prepare.json || { echo "FAIL prepare"; cat $dir/prepare.json; exit 1; }
+xray_bin=$(ucode -e "import { readfile } from 'fs'; print(json(readfile('/var/run/we1ssconnect/status.json')).xray ?? '');")
+[ "$xray_bin" = /usr/share/we1ssconnect/xray ] && pass "REALITY goes through the installed Xray" || fail "status.json xray is '$xray_bin'"
 # Rules loaded, so the service counts as running and select switches sing-box live.
 we1ssconnect apply-net > /dev/null
 sing-box run -c /var/run/we1ssconnect/config.json -D /var/run/we1ssconnect > $dir/client.log 2>&1 &
 client_pid=$!
+[ -n "$xray_bin" ] && "$xray_bin" run -c /var/run/we1ssconnect/xray.json > $dir/xray-client.log 2>&1 &
+xray_client_pid=$!
 for i in $(seq 1 20); do curl -s -o /dev/null http://127.0.0.1:9090/ && break; sleep 1; done
 
 id_of() {
@@ -90,16 +104,17 @@ for name in HY2 WS GRPC TROJAN REALITY TUIC; do
 	if [ "$d" -gt 0 ] 2> /dev/null; then pass "$name has a delay ($d ms)"; else fail "$name has a delay (got $d)"; fi
 done
 
-cp /var/run/we1ssconnect/config.json $dir/config.json
-kill $client_pid $server_pid $xray_pid 2> /dev/null
+cp /var/run/we1ssconnect/config.json /var/run/we1ssconnect/xray.json $dir/ 2> /dev/null
+kill $client_pid $xray_client_pid $server_pid $xray_pid 2> /dev/null
 we1ssconnect cleanup > /dev/null
 if [ "$fails" -gt 0 ]; then
 	echo "--- ping.json"; cat $dir/ping.json
 	echo "--- client.log"; grep -v 'inbound connection' $dir/client.log | tail -n 30
 	echo "--- reality keys"; echo "$reality"
-	echo "--- REALITY outbound"; ucode -e "import { readfile } from 'fs'; for (let o in json(readfile('$dir/config.json')).outbounds) if (o.tls?.reality) printf('%J\n', o);"
+	echo "--- xray.json (client)"; cat $dir/xray.json
 	echo "--- xray.log"; grep -Eiv "accepted|deprecated" $dir/xray.log | tail -n 40
 	echo "--- server.log"; tail -n 20 $dir/server.log
+	echo "--- xray-client.log"; tail -n 20 $dir/xray-client.log
 fi
 echo "protocols: $fails failed"
 [ "$fails" -eq 0 ]

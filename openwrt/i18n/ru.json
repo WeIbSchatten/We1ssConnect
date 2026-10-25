@@ -200,5 +200,8 @@
  "Rule %s: target %s is not available.": "Правило %s: цель %s недоступна.",
  "Rule %s: no VPN interface chosen.": "Правило %s: не выбран VPN-интерфейс.",
  "Rule %s: unknown category %s.": "Правило %s: неизвестная категория %s.",
- "%s: invalid filter %s.": "%s: неверный фильтр %s."
+ "%s: invalid filter %s.": "%s: неверный фильтр %s.",
+ "Xray running for REALITY servers": "Xray для серверов REALITY запущен",
+ "Downloading Xray for the REALITY servers; they switch to it when it is ready.": "Скачивается Xray для серверов REALITY; они перейдут на него, когда он будет готов.",
+ "Xray for the REALITY servers is not installed: %s. Reconnecting tries again after an hour; or run we1ssconnect xray-install.": "Xray для серверов REALITY не установлен: %s. Повторная попытка — при переподключении через час; или выполните we1ssconnect xray-install."
 }

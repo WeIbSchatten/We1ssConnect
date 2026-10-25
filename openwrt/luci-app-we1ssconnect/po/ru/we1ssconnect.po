@@ -35,6 +35,9 @@ msgstr "sing-box принял конфигурацию"
 msgid "sing-box running"
 msgstr "sing-box запущен"
 
+msgid "Xray running for REALITY servers"
+msgstr "Xray для серверов REALITY запущен"
+
 msgid "Interception rules loaded"
 msgstr "Правила перехвата загружены"
 
@@ -559,6 +562,12 @@ msgstr "Выборочный режим, но ни одно включённое
 
 msgid "Global mode needs at least one server."
 msgstr "Для глобального режима нужен хотя бы один сервер."
+
+msgid "Downloading Xray for the REALITY servers; they switch to it when it is ready."
+msgstr "Скачивается Xray для серверов REALITY; они перейдут на него, когда он будет готов."
+
+msgid "Xray for the REALITY servers is not installed: %s. Reconnecting tries again after an hour; or run we1ssconnect xray-install."
+msgstr "Xray для серверов REALITY не установлен: %s. Повторная попытка — при переподключении через час; или выполните we1ssconnect xray-install."
 
 msgid "The selected server %s is gone; using Auto."
 msgstr "Выбранного сервера %s больше нет; используется «Авто»."

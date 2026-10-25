@@ -53,7 +53,7 @@ function dns_remote(cfg, global) {
 const QUIC_TYPES = { hysteria2: true, tuic: true };
 
 // Applied at build time, so servers stored by older versions are fixed too.
-function tune_outbound(ob, cfg) {
+export function tune_outbound(ob, cfg) {
 	let o = { ...ob };
 	if (!o.tls)
 		return o;
@@ -75,7 +75,7 @@ function tune_outbound(ob, cfg) {
 			delete o.tls.alpn;
 	}
 	return o;
-}
+};
 
 // "auto" → main selector (follows the pinned server); "group:<id>"; "server:<id>".
 function resolve_target(target, known) {
@@ -102,7 +102,8 @@ function balanced(tag_auto, tag_sel, members, chosen, cfg) {
 }
 
 // Returns { config, errors }; errors name settings that point at missing servers or groups.
-export function build(cfg, data) {
+// via_xray: { <server id>: port } of servers that go through the local Xray (xray.uc).
+export function build(cfg, data, via_xray) {
 	const global = cfg.mode == 'global';
 	let errors = [], outbounds = [], endpoints = [];
 	let known = { main: false, groups: {}, servers: {} };
@@ -111,7 +112,10 @@ export function build(cfg, data) {
 	for (let s in data.servers) {
 		if (!s.ok)
 			continue;
-		const ob = { ...tune_outbound(s.outbound, cfg), tag: server_tag(s.id) };
+		const port = via_xray?.[s.id];
+		const ob = port
+			? { type: 'socks', tag: server_tag(s.id), server: '127.0.0.1', server_port: port, version: '5' }
+			: { ...tune_outbound(s.outbound, cfg), tag: server_tag(s.id) };
 		push(s.endpoint ? endpoints : outbounds, ob);
 		push(all, ob.tag);
 		known.servers[s.id] = true;

@@ -34,6 +34,9 @@ msgstr ""
 msgid "sing-box running"
 msgstr ""
 
+msgid "Xray running for REALITY servers"
+msgstr ""
+
 msgid "Interception rules loaded"
 msgstr ""
 
@@ -557,6 +560,12 @@ msgid "Selective mode, but no enabled rule sends traffic through the tunnel: tur
 msgstr ""
 
 msgid "Global mode needs at least one server."
+msgstr ""
+
+msgid "Downloading Xray for the REALITY servers; they switch to it when it is ready."
+msgstr ""
+
+msgid "Xray for the REALITY servers is not installed: %s. Reconnecting tries again after an hour; or run we1ssconnect xray-install."
 msgstr ""
 
 msgid "The selected server %s is gone; using Auto."

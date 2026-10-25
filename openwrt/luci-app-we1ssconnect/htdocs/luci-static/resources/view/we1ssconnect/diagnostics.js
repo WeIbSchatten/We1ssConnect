@@ -6,6 +6,7 @@
 
 const CHECK_NAMES = {
 	'sing-box': _('sing-box installed'), config: _('Config accepted by sing-box'), service: _('sing-box running'),
+	xray: _('Xray running for REALITY servers'),
 	nftables: _('Interception rules loaded'), 'tproxy module': _('TPROXY kernel module'), 'policy routing': _('Policy routing'),
 	'dnsmasq → sing-box': _('dnsmasq forwards to sing-box'), 'DNS through sing-box': _('DNS answers through sing-box'),
 	tunnel: _('Request through the tunnel'),
