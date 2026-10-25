@@ -4,6 +4,10 @@ The full history with details is in the documentation:
 [русский](https://weibschatten.github.io/We1ssConnect/ru/docs/help/history/) ·
 [English](https://weibschatten.github.io/We1ssConnect/docs/help/history/).
 
+## 1.9.3
+
+- OpenWrt: REALITY servers on Xray 26.9.8+ panels work through a local Xray, downloaded on first use; Hysteria2, TUIC and WebSocket work against the panel's Xray; delay test results; a warning when selective mode sends nothing through the tunnel; translated LuCI warnings; diagnostics after podkop.
+
 ## 1.9.2
 
 - geosite:/geoip: categories in routing rules on every client: "Own rules" (through VPN, directly, block) on Android and desktop, a Categories field on the router. The router reads the same data as runetfreedom .srs rule-sets, and the apps now take geosite.dat from runetfreedom too, so ru-blocked and the other Russian categories work everywhere.
