@@ -7,6 +7,7 @@ fails=0
 pass() { echo "ok   $1"; }
 fail() { echo "FAIL $1"; fails=$((fails + 1)); }
 dir=/tmp/we1ss-proto
+export WE1SS_STATE_DIR=/etc/we1ssconnect
 rm -rf $dir /etc/we1ssconnect /var/run/we1ssconnect
 mkdir -p $dir
 cp "$1/we1ssconnect/files/etc/config/we1ssconnect" /etc/config/we1ssconnect
@@ -29,7 +30,7 @@ cat > $dir/xray.json <<EOF
 {"log":{"loglevel":"warning"},
  "inbounds":[
   {"listen":"127.0.0.1","port":8443,"protocol":"hysteria","settings":{"version":2,"clients":[{"auth":"hypw","email":"u"}]},
-   "streamSettings":{"network":"hysteria",$xtls,"alpn":["h3"]},"hysteriaSettings":{"version":2},"finalmask":{"udp":[{"type":"salamander","settings":{"password":"ob"}}]}}},
+   "streamSettings":{"network":"hysteria",$xtls,"alpn":["h3"]},"hysteriaSettings":{"version":2},"finalmask":{"udp":[{"type":"salamander","settings":{"password":"obfspass"}}]}}},
   {"listen":"127.0.0.1","port":8444,"protocol":"vless","settings":{"clients":[{"id":"$uuid"}],"decryption":"none"},
    "streamSettings":{"network":"ws",$xtls},"wsSettings":{"path":"/ws"}}},
   {"listen":"127.0.0.1","port":8445,"protocol":"vless","settings":{"clients":[{"id":"$uuid"}],"decryption":"none"},
@@ -51,7 +52,7 @@ EOF
 sing-box run -c $dir/server.json > $dir/server.log 2>&1 &
 server_pid=$!
 
-we1ssconnect import "hysteria2://hypw@127.0.0.1:8443/?sni=test.local&insecure=1&obfs=salamander&obfs-password=ob&fp=chrome#HY2
+we1ssconnect import "hysteria2://hypw@127.0.0.1:8443/?sni=test.local&insecure=1&obfs=salamander&obfs-password=obfspass&fp=chrome#HY2
 vless://$uuid@127.0.0.1:8444?type=ws&security=tls&sni=test.local&allowInsecure=1&alpn=h2%2Chttp%2F1.1&fp=chrome&path=%2Fws&host=test.local#WS
 vless://$uuid@127.0.0.1:8445?type=grpc&serviceName=svc&security=tls&sni=test.local&allowInsecure=1&alpn=h2%2Chttp%2F1.1&fp=chrome#GRPC
 trojan://trpw@127.0.0.1:8446?security=tls&sni=test.local&allowInsecure=1&alpn=h2%2Chttp%2F1.1&fp=chrome#TROJAN
