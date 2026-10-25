@@ -6,11 +6,11 @@ set -eu
 root="$(cd "$(dirname "$0")/.." && pwd)"
 deps="sing-box ucode-mod-fs ucode-mod-uci ucode-mod-ubus ucode-mod-uloop nftables kmod-nft-tproxy"
 
+mkdir -p /var/lock
 if command -v apk > /dev/null; then
 	apk update > /dev/null
 	apk add $deps > /dev/null
 else
-	mkdir -p /var/lock
 	opkg update > /dev/null
 	opkg install $deps > /dev/null
 fi
