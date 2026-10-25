@@ -100,6 +100,10 @@ jobs:
           sudo modprobe -a nft_tproxy nf_tproxy_ipv4 nf_tproxy_ipv6 nft_socket
           docker run -d --name owrt --privileged -v "$PWD/openwrt:/src:ro" owrt-luci /sbin/init
           for i in $(seq 1 30); do docker exec owrt ubus list we1ssconnect > /dev/null 2>&1 && break; sleep 1; done
+          # OpenWrt's boot drops the address Docker gave eth0; put it and the default route back.
+          net='{{range .NetworkSettings.Networks}}{{.IPAddress}}/{{.IPPrefixLen}} {{.Gateway}}{{end}}'
+          read -r addr gw <<< "$(docker inspect -f "$net" owrt)"
+          docker exec owrt sh -c "ip link set eth0 up; ip addr replace $addr dev eth0; ip route replace default via $gw"
           docker exec owrt sh /src/tests/luci-setup.sh configure
       - uses: actions/setup-node@v7
         with:
