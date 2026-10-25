@@ -33,7 +33,7 @@ set-top boxes, laptops, smart speakers. Nothing needs installing on each device.
 | | |
 | --- | --- |
 | OpenWrt | 24.10 (`.ipk` packages) or 25.12 (`.apk` packages) |
-| Flash | about 25 MB free: that is what sing-box takes |
+| Flash | about 25 MB free: that is what sing-box takes; about 30 MB more for Xray with REALITY servers |
 | RAM | 128 MB or more, 256 MB is comfortable |
 | CPU | any that OpenWrt builds the `sing-box` package for |
 
@@ -41,13 +41,26 @@ sing-box does not fit on routers with 16 MB of flash.
 
 ## How it differs from the app
 
-The router runs the **sing-box** package from OpenWrt, not Xray. That brings two limits:
+The router runs the **sing-box** package from OpenWrt; Xray comes in only for REALITY servers (see
+below). That brings two limits:
 
 - keys with the **XHTTP** transport are imported but marked "not supported" and stay out of the
   tunnel;
 - Auto has only the **lowest delay** mode; there is no round robin.
 
 Everything else works as on the phone.
+
+### REALITY servers
+
+Xray 26.9.8 and later (the panel ships 26.10.21) turn away REALITY clients without the
+post-quantum X25519MLKEM768 key share, and sing-box does not send one. So the router carries REALITY
+servers through Xray: on the first connect with such a server We1ssConnect downloads Xray from
+GitHub, checks its checksum and runs it next to sing-box. Every other server stays in sing-box.
+
+While Xray downloads, the overview shows a warning, and REALITY servers only work with servers on
+Xray older than 26.9.8. If the `xray-core` package 26.3.27 or later is installed (on OpenWrt 25.12:
+`apk add xray-core`), it is used and nothing is downloaded. To download by hand:
+`we1ssconnect xray-install`.
 
 ## How it differs from podkop
 
