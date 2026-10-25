@@ -15,7 +15,10 @@ export function active(name) {
 	const script = `/etc/init.d/${name}`;
 	if (!stat(script))
 		return false;
-	return system(`${script} enabled >/dev/null 2>&1`) == 0 || system(`${script} running >/dev/null 2>&1`) == 0;
+	if (system(`${script} enabled >/dev/null 2>&1`) == 0)
+		return true;
+	// Only procd scripts know "running"; a classic rc.common one prints its help and exits 0.
+	return match(readfile(script) ?? '', /USE_PROCD=1/) != null && system(`${script} running >/dev/null 2>&1`) == 0;
 };
 
 function stop_and_disable(name) {
