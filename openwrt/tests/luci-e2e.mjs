@@ -17,14 +17,15 @@ const pages = [
 
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
-const errors = [];
-page.on('pageerror', (e) => errors.push(`${page.url()}: ${e.message}`));
-page.on('console', (m) => { if (m.type() === 'error') errors.push(`${page.url()}: ${m.text()}`); });
-
 await page.goto(`${base}/cgi-bin/luci/`);
 await page.fill('input[name="luci_username"]', 'root');
 await page.fill('input[name="luci_password"]', 'test');
 await Promise.all([page.waitForNavigation(), page.press('input[name="luci_password"]', 'Enter')]);
+
+// From here on: LuCI's own login form answers 403 and probes uci before the session exists.
+const errors = [];
+page.on('pageerror', (e) => errors.push(`${page.url()}: ${e.message}`));
+page.on('console', (m) => { if (m.type() === 'error') errors.push(`${page.url()}: ${m.text()}`); });
 
 let failed = 0;
 for (const [name, text] of pages) {
