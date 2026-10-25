@@ -1,0 +1,18 @@
+{
+	"luci-app-we1ssconnect": {
+		"description": "Grant access to We1ssConnect",
+		"read": {
+			"ubus": {
+				"we1ssconnect": [ "status", "servers", "diagnostics", "logs", "update_check" ],
+				"luci-rpc": [ "getDHCPLeases" ]
+			},
+			"uci": [ "we1ssconnect" ]
+		},
+		"write": {
+			"ubus": {
+				"we1ssconnect": [ "set_enabled", "set_mode", "ping", "select", "import", "remove", "sub_add", "sub_update", "sub_remove", "exit_info", "speedtest", "update" ]
+			},
+			"uci": [ "we1ssconnect" ]
+		}
+	}
+}

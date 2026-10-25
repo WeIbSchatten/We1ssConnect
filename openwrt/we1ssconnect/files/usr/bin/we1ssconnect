@@ -1,0 +1,61 @@
+#!/usr/bin/ucode
+// we1ssconnect <command> [args]; prints JSON. Run without arguments for the command list.
+
+import { readfile } from 'fs';
+import * as svc from 'we1ssconnect.service';
+
+const USAGE = `We1ssConnect ${svc.VERSION} for OpenWrt
+
+  status                  service state, current server, traffic
+  servers                 servers, subscriptions and groups
+  import <link|->         add share links (one per line; "-" reads stdin)
+  rm <server-id>          remove a server
+  select <server-id|auto> pin a server or go back to Auto (no restart)
+  ping                    test every server's delay
+  sub-add <url> [name]    add a subscription and download it
+  sub-update [id|all]     refresh subscriptions
+  sub-rm <id>             remove a subscription and its servers
+  ip                      exit IP through the tunnel
+  speedtest               download speed through the tunnel
+  diag                    diagnostics
+  log [lines]             recent sing-box log
+  update-check            latest release on GitHub
+  update                  install the latest release
+  prepare | apply-net | cleanup   used by /etc/init.d/we1ssconnect
+`;
+
+const cmd = ARGV[0], arg = ARGV[1], arg2 = ARGV[2];
+let result = null;
+
+switch (cmd) {
+case 'status': result = svc.status(); break;
+case 'servers': result = svc.servers(); break;
+case 'import': result = svc.import_links(arg == '-' || arg == null ? readfile('/dev/stdin') : arg); break;
+case 'rm': result = svc.remove_server(arg); break;
+case 'select': result = svc.select(arg ?? 'auto'); break;
+case 'ping': result = svc.ping(); break;
+case 'sub-add': result = svc.sub_add(arg2, arg); break;
+case 'sub-update': result = svc.sub_update(arg ?? 'all'); break;
+case 'sub-rm': result = svc.sub_remove(arg); break;
+case 'ip': result = svc.exit_info(); break;
+case 'speedtest': result = svc.speedtest(); break;
+case 'diag': result = svc.diagnostics(); break;
+case 'log': print(svc.logs(arg).log, '\n'); exit(0);
+case 'update-check': result = svc.update_check(); break;
+case 'update': result = svc.self_update(); break;
+case 'prepare':
+	result = svc.prepare();
+	if (!result.ok) {
+		warn(`we1ssconnect: sing-box rejected the config: ${result.error}\n`);
+		exit(1);
+	}
+	break;
+case 'apply-net': result = svc.apply_net(); break;
+case 'cleanup': result = svc.cleanup(); break;
+default:
+	print(USAGE);
+	exit(cmd == null || cmd == 'help' ? 0 : 2);
+}
+
+printf('%.J\n', result);
+exit((result?.ok === false || result?.error) ? 1 : 0);

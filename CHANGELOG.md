@@ -4,6 +4,11 @@ The full history with details is in the documentation:
 [русский](https://weibschatten.github.io/We1ssConnect/#/ru/history) ·
 [English](https://weibschatten.github.io/We1ssConnect/#/en/history).
 
+## Unreleased
+
+- OpenWrt 24.10 and 25.12 client (`.ipk` and `.apk`) on the feed's sing-box: subscriptions and keys, the Auto balancer with pinning without a restart, routing by lists (community services, presets, domains, subnets, remote lists), global mode, per-device and VPN-interface rules, LuCI pages in Russian and English, one-line installer.
+- Versions now follow the We1ssBoard panel's MAJOR.MINOR.
+
 ## 1.2.0
 
 - Subscription screen: traffic, expiry, the panel page, copy link, refresh, servers.

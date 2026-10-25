@@ -2,7 +2,7 @@
 
 <h1 align="center">We1ssConnect</h1>
 
-<p align="center">VPN-клиент для Android, Windows и Linux на ядре Xray · VPN client for Android, Windows and Linux on the Xray core</p>
+<p align="center">VPN-клиент для Android, Windows, Linux и роутеров OpenWrt · VPN client for Android, Windows, Linux and OpenWrt routers</p>
 
 <p align="center">
   <a href="https://github.com/WeIbSchatten/We1ssConnect/releases/latest">Скачать / Download</a> ·
@@ -21,6 +21,16 @@
 - Плитка в шторке, автообновление подписок, обновление приложения из него самого.
 - Тёмная, светлая и AMOLED-темы, русский и английский язык.
 
+## Роутеры OpenWrt
+
+Клиент для OpenWrt 24.10 и 25.12 на sing-box из фида: подписки We1ssBoard и ключи, балансировщик
+«Авто» по задержке, маршрутизация по спискам, весь трафик, по устройствам и через VPN-интерфейсы
+роутера, страницы в LuCI. Установка по SSH:
+
+```sh
+wget -qO- https://raw.githubusercontent.com/WeIbSchatten/We1ssConnect/main/openwrt/install.sh | sh
+```
+
 ## Features
 
 - Xray-core inside the app: VLESS (Reality, Vision, XHTTP), VMess, Trojan, Shadowsocks, Hysteria2.
@@ -31,6 +41,12 @@
 - DNS (Cloudflare, Google, Quad9, DoH), IPv6, TLS fragmentation, mux, the Reality fix for Xray 26.9.8+.
 - Quick settings tile, subscription auto-update, in-app updates.
 - Dark, light and AMOLED themes, Russian and English.
+
+## OpenWrt routers
+
+A client for OpenWrt 24.10 and 25.12 on the feed's sing-box: We1ssBoard subscriptions and keys,
+the lowest-delay Auto balancer, routing by lists, all traffic, per device and through the
+router's VPN interfaces, LuCI pages. Install over SSH with the command above.
 
 ## Сборка · Building
 

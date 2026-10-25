@@ -1,0 +1,38 @@
+{
+	"admin/services/we1ssconnect": {
+		"title": "We1ssConnect",
+		"order": 60,
+		"action": { "type": "firstchild" },
+		"depends": { "acl": [ "luci-app-we1ssconnect" ], "uci": { "we1ssconnect": true } }
+	},
+	"admin/services/we1ssconnect/overview": {
+		"title": "Overview",
+		"order": 10,
+		"action": { "type": "view", "path": "we1ssconnect/overview" }
+	},
+	"admin/services/we1ssconnect/servers": {
+		"title": "Servers",
+		"order": 20,
+		"action": { "type": "view", "path": "we1ssconnect/servers" }
+	},
+	"admin/services/we1ssconnect/routing": {
+		"title": "Routing",
+		"order": 30,
+		"action": { "type": "view", "path": "we1ssconnect/routing" }
+	},
+	"admin/services/we1ssconnect/devices": {
+		"title": "Devices",
+		"order": 40,
+		"action": { "type": "view", "path": "we1ssconnect/devices" }
+	},
+	"admin/services/we1ssconnect/settings": {
+		"title": "Settings",
+		"order": 50,
+		"action": { "type": "view", "path": "we1ssconnect/settings" }
+	},
+	"admin/services/we1ssconnect/diagnostics": {
+		"title": "Diagnostics",
+		"order": 60,
+		"action": { "type": "view", "path": "we1ssconnect/diagnostics" }
+	}
+}

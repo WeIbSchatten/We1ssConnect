@@ -1,0 +1,570 @@
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8\n"
+"Language: ru\n"
+
+msgid "Like per-app routing on the phone: a device can send everything through the tunnel, or nothing at all. Give such devices a static DHCP lease so their address does not change."
+msgstr "Как маршрутизация по приложениям на телефоне: устройство может отправлять всё через туннель или ничего. Закрепите за такими устройствами статический адрес DHCP, чтобы он не менялся."
+
+msgid "Devices"
+msgstr "Устройства"
+
+msgid "Device"
+msgstr "Устройство"
+
+msgid "Name"
+msgstr "Название"
+
+msgid "IP address"
+msgstr "IP-адрес"
+
+msgid "Traffic"
+msgstr "Трафик"
+
+msgid "Everything through the tunnel"
+msgstr "Всё через туннель"
+
+msgid "Nothing through the tunnel"
+msgstr "Ничего через туннель"
+
+msgid "sing-box installed"
+msgstr "sing-box установлен"
+
+msgid "Config accepted by sing-box"
+msgstr "sing-box принял конфигурацию"
+
+msgid "sing-box running"
+msgstr "sing-box запущен"
+
+msgid "Interception rules loaded"
+msgstr "Правила перехвата загружены"
+
+msgid "TPROXY kernel module"
+msgstr "Модуль ядра TPROXY"
+
+msgid "Policy routing"
+msgstr "Маршрутизация по меткам"
+
+msgid "dnsmasq forwards to sing-box"
+msgstr "dnsmasq передаёт запросы sing-box"
+
+msgid "DNS answers through sing-box"
+msgstr "DNS отвечает через sing-box"
+
+msgid "Request through the tunnel"
+msgstr "Запрос через туннель"
+
+msgid "Diagnostics"
+msgstr "Диагностика"
+
+msgid "Run again"
+msgstr "Проверить снова"
+
+msgid "Check for updates"
+msgstr "Проверить обновления"
+
+msgid "Checks"
+msgstr "Проверки"
+
+msgid "sing-box log"
+msgstr "Журнал sing-box"
+
+msgid "The log is empty."
+msgstr "Журнал пуст."
+
+msgid "Up to date"
+msgstr "Установлена последняя версия"
+
+msgid "Version %s is available."
+msgstr "Доступна версия %s."
+
+msgid "Updating in the background; reload the page in a minute."
+msgstr "Обновление идёт в фоне; обновите страницу через минуту."
+
+msgid "Update"
+msgstr "Обновить"
+
+msgid "Error"
+msgstr "Ошибка"
+
+msgid "Connected"
+msgstr "Подключено"
+
+msgid "Starting…"
+msgstr "Запуск…"
+
+msgid "Off"
+msgstr "Выключено"
+
+msgid "Disconnect"
+msgstr "Отключить"
+
+msgid "Connect"
+msgstr "Подключить"
+
+msgid "By lists"
+msgstr "По спискам"
+
+msgid "All traffic"
+msgstr "Весь трафик"
+
+msgid "Auto"
+msgstr "Авто"
+
+msgid "No servers yet"
+msgstr "Серверов пока нет"
+
+msgid "Auto · lowest delay"
+msgstr "Авто · по задержке"
+
+msgid "Pinned"
+msgstr "Закреплён"
+
+msgid "Choose a server →"
+msgstr "Выбрать сервер →"
+
+msgid "Downloaded"
+msgstr "Скачано"
+
+msgid "Uploaded"
+msgstr "Отправлено"
+
+msgid "Connections"
+msgstr "Соединения"
+
+msgid "Servers"
+msgstr "Серверы"
+
+msgid "Version"
+msgstr "Версия"
+
+msgid "Tunnel"
+msgstr "Туннель"
+
+msgid "Everything goes through the tunnel except direct rules and bypassed devices."
+msgstr "Через туннель идёт всё, кроме прямых правил и исключённых устройств."
+
+msgid "Only sites and services from routing rules go through the tunnel."
+msgstr "Через туннель идут только сайты и сервисы из правил маршрутизации."
+
+msgid "Server"
+msgstr "Сервер"
+
+msgid "Exit IP"
+msgstr "Внешний IP"
+
+msgid "Speed test"
+msgstr "Проверка скорости"
+
+msgid "Connect to see the exit IP."
+msgstr "Подключитесь, чтобы увидеть внешний IP."
+
+msgid "Checking…"
+msgstr "Проверка…"
+
+msgid "No answer through the tunnel."
+msgstr "Нет ответа через туннель."
+
+msgid "Click to show the whole address"
+msgstr "Нажмите, чтобы показать адрес полностью"
+
+msgid "Refresh"
+msgstr "Обновить"
+
+msgid "Measuring for up to 15 seconds…"
+msgstr "Замер, до 15 секунд…"
+
+msgid "%s Mbit/s"
+msgstr "%s Мбит/с"
+
+msgid "%d domains"
+msgstr "доменов: %d"
+
+msgid "%d subnets"
+msgstr "подсетей: %d"
+
+msgid "%d remote lists"
+msgstr "удалённых списков: %d"
+
+msgid "Through the tunnel"
+msgstr "Через туннель"
+
+msgid "Through a router interface"
+msgstr "Через интерфейс роутера"
+
+msgid "Directly"
+msgstr "Напрямую"
+
+msgid "Block"
+msgstr "Блокировать"
+
+msgid "Rules are checked from top to bottom; the first match wins. Drag rows to change the order."
+msgstr "Правила проверяются сверху вниз, срабатывает первое подходящее. Порядок меняется перетаскиванием строк."
+
+msgid "Routing rules"
+msgstr "Правила маршрутизации"
+
+msgid "Routing rule"
+msgstr "Правило маршрутизации"
+
+msgid "Rule"
+msgstr "Правило"
+
+msgid "On"
+msgstr "Вкл."
+
+msgid "Where to send"
+msgstr "Куда отправлять"
+
+msgid "Auto (lowest delay)"
+msgstr "Авто (по задержке)"
+
+msgid "Group: %s"
+msgstr "Группа: %s"
+
+msgid "missing: %s"
+msgstr "нет: %s"
+
+msgid "Interface"
+msgstr "Интерфейс"
+
+msgid "A VPN already set up on the router: WireGuard, AmneziaWG, OpenVPN…"
+msgstr "VPN, уже настроенный на роутере: WireGuard, AmneziaWG, OpenVPN…"
+
+msgid "Services"
+msgstr "Сервисы"
+
+msgid "Community lists of itdoginfo/allow-domains, refreshed automatically."
+msgstr "Списки сообщества itdoginfo/allow-domains, обновляются автоматически."
+
+msgid "Presets"
+msgstr "Пресеты"
+
+msgid "Domains"
+msgstr "Домены"
+
+msgid "One per line; a domain also covers its subdomains."
+msgstr "По одному в строке; домен включает и свои поддомены."
+
+msgid "IP addresses and subnets"
+msgstr "IP-адреса и подсети"
+
+msgid "One per line, such as 149.154.160.0/20."
+msgstr "По одной в строке, например 149.154.160.0/20."
+
+msgid "Remote lists"
+msgstr "Удалённые списки"
+
+msgid "URLs of sing-box rule-sets (.srs, .json) or plain lists of domains and subnets."
+msgstr "Ссылки на rule-set sing-box (.srs, .json) или на простые списки доменов и подсетей."
+
+msgid "Matches"
+msgstr "Что включает"
+
+msgid "Server groups"
+msgstr "Группы серверов"
+
+msgid "A group balances its servers by lowest delay. Point a rule at a group to keep, say, one country for one service."
+msgstr "Группа балансирует свои серверы по задержке. Направьте правило на группу, чтобы, например, один сервис всегда шёл через одну страну."
+
+msgid "Server group"
+msgstr "Группа серверов"
+
+msgid "Subscriptions"
+msgstr "Подписки"
+
+msgid "My keys"
+msgstr "Мои ключи"
+
+msgid "Name filter"
+msgstr "Фильтр по названию"
+
+msgid "Regular expression, such as finland|helsinki."
+msgstr "Регулярное выражение, например finland|helsinki."
+
+msgid "not supported"
+msgstr "не поддерживается"
+
+msgid "in use"
+msgstr "используется"
+
+msgid "Remove"
+msgstr "Удалить"
+
+msgid "%s of %s"
+msgstr "%s из %s"
+
+msgid "%s used"
+msgstr "использовано %s"
+
+msgid "until %s"
+msgstr "до %s"
+
+msgid "updated %s"
+msgstr "обновлено %s"
+
+msgid "Panel page"
+msgstr "Страница в панели"
+
+msgid "Remove the subscription and its servers?"
+msgstr "Удалить подписку и её серверы?"
+
+msgid "lowest delay, switches when a server stops answering"
+msgstr "по задержке, переключается, если сервер перестал отвечать"
+
+msgid "Tap a server to pin it, or choose Auto. Switching does not restart the tunnel."
+msgstr "Нажмите на сервер, чтобы закрепить его, или выберите «Авто». Переключение не перезапускает туннель."
+
+msgid "Test delay"
+msgstr "Проверить задержку"
+
+msgid "Add keys"
+msgstr "Добавить ключи"
+
+msgid "Add subscription"
+msgstr "Добавить подписку"
+
+msgid "Refresh subscriptions"
+msgstr "Обновить подписки"
+
+msgid "No servers yet: add a We1ssBoard subscription or paste keys."
+msgstr "Серверов пока нет: добавьте подписку We1ssBoard или вставьте ключи."
+
+msgid "One share link per line: VLESS, VMess, Trojan, Shadowsocks, Hysteria2, TUIC, WireGuard, SOCKS, AnyTLS."
+msgstr "По одной ссылке в строке: VLESS, VMess, Trojan, Shadowsocks, Hysteria2, TUIC, WireGuard, SOCKS, AnyTLS."
+
+msgid "Cancel"
+msgstr "Отмена"
+
+msgid "Added: %d"
+msgstr "Добавлено: %d"
+
+msgid "Add"
+msgstr "Добавить"
+
+msgid "Name (optional)"
+msgstr "Название (необязательно)"
+
+msgid "A We1ssBoard subscription link or any other one with share links (plain or base64)."
+msgstr "Ссылка на подписку We1ssBoard или любую другую со ссылками на ключи (обычную или base64)."
+
+msgid "Changes apply after Save & Apply; the tunnel restarts."
+msgstr "Изменения вступают в силу после «Сохранить и применить»; туннель перезапускается."
+
+msgid "DNS"
+msgstr "DNS"
+
+msgid "Network"
+msgstr "Сеть"
+
+msgid "Connection"
+msgstr "Подключение"
+
+msgid "Lists and subscriptions"
+msgstr "Списки и подписки"
+
+msgid "Advanced"
+msgstr "Дополнительно"
+
+msgid "DNS protocol"
+msgstr "Протокол DNS"
+
+msgid "DNS over HTTPS"
+msgstr "DNS через HTTPS"
+
+msgid "DNS over TLS"
+msgstr "DNS через TLS"
+
+msgid "Plain UDP"
+msgstr "Обычный UDP"
+
+msgid "DNS server"
+msgstr "DNS-сервер"
+
+msgid "Resolver for everything not sent directly. Address or DoH URL."
+msgstr "Резолвер для всего, что не идёт напрямую. Адрес или ссылка DoH."
+
+msgid "DNS for direct sites"
+msgstr "DNS для прямых сайтов"
+
+msgid "Used for direct rules, so Russian sites reach their nearest servers."
+msgstr "Используется для прямых правил, чтобы российские сайты открывались с ближайших серверов."
+
+msgid "Yandex (77.88.8.8)"
+msgstr "Яндекс (77.88.8.8)"
+
+msgid "Bootstrap DNS"
+msgstr "Начальный DNS"
+
+msgid "Resolves the DNS server name when it is not an address."
+msgstr "Определяет адрес DNS-сервера, если он указан именем."
+
+msgid "Catch hard-coded DNS"
+msgstr "Перехватывать свой DNS устройств"
+
+msgid "Devices that use their own DNS server (8.8.8.8 and the like) are answered by the router too."
+msgstr "Устройствам со своим DNS-сервером (8.8.8.8 и подобные) тоже отвечает роутер."
+
+msgid "Point dnsmasq at the tunnel"
+msgstr "Направить dnsmasq в туннель"
+
+msgid "Turn off only if you configure dnsmasq yourself (server=127.0.0.42)."
+msgstr "Выключайте, только если настраиваете dnsmasq сами (server=127.0.0.42)."
+
+msgid "LAN interfaces"
+msgstr "Интерфейсы LAN"
+
+msgid "Traffic from these interfaces is handled. Usually br-lan."
+msgstr "Обрабатывается трафик с этих интерфейсов. Обычно br-lan."
+
+msgid "IPv6"
+msgstr "IPv6"
+
+msgid "Resolve and route IPv6 too. Many servers have no IPv6, so it is off by default."
+msgstr "Получать и маршрутизировать IPv6. У многих серверов нет IPv6, поэтому по умолчанию выключено."
+
+msgid "Keep NTP direct"
+msgstr "NTP напрямую"
+
+msgid "Time sync stays out of the tunnel (helps smart speakers)."
+msgstr "Синхронизация времени идёт мимо туннеля (помогает умным колонкам)."
+
+msgid "Block QUIC through the tunnel"
+msgstr "Блокировать QUIC в туннеле"
+
+msgid "Browsers fall back to TCP; sometimes fixes YouTube."
+msgstr "Браузеры переходят на TCP; иногда помогает с YouTube."
+
+msgid "Proxy for the LAN"
+msgstr "Прокси для локальной сети"
+
+msgid "SOCKS5/HTTP proxy on the router for apps and devices that need one."
+msgstr "Прокси SOCKS5/HTTP на роутере для приложений и устройств, которым он нужен."
+
+msgid "Proxy port"
+msgstr "Порт прокси"
+
+msgid "Chrome fingerprint for Reality"
+msgstr "Отпечаток Chrome для Reality"
+
+msgid "Reality servers on Xray 26.9.8 and newer drop some fingerprints; chrome always works."
+msgstr "Серверы Reality на Xray 26.9.8 и новее отклоняют часть отпечатков; chrome работает всегда."
+
+msgid "Fragment TLS"
+msgstr "Фрагментация TLS"
+
+msgid "Splits the TLS ClientHello so DPI cannot read the server name in one packet (not for Reality)."
+msgstr "Делит TLS ClientHello, чтобы DPI не прочитал имя сервера в одном пакете (не для Reality)."
+
+msgid "Delay test URL"
+msgstr "Адрес проверки задержки"
+
+msgid "Test interval"
+msgstr "Интервал проверки"
+
+msgid "Switch threshold, ms"
+msgstr "Порог переключения, мс"
+
+msgid "Auto moves to another server only when it is this much faster."
+msgstr "«Авто» переходит на другой сервер, только если тот быстрее на эту величину."
+
+msgid "Refresh lists"
+msgstr "Обновлять списки"
+
+msgid "every 6 hours"
+msgstr "каждые 6 часов"
+
+msgid "every 12 hours"
+msgstr "каждые 12 часов"
+
+msgid "daily"
+msgstr "раз в сутки"
+
+msgid "every 3 days"
+msgstr "раз в 3 дня"
+
+msgid "Download lists through the tunnel"
+msgstr "Скачивать списки через туннель"
+
+msgid "Useful when GitHub is blocked."
+msgstr "Помогает, если GitHub заблокирован."
+
+msgid "hourly"
+msgstr "каждый час"
+
+msgid "every 3 hours"
+msgstr "каждые 3 часа"
+
+msgid "never"
+msgstr "никогда"
+
+msgid "Log level"
+msgstr "Уровень журнала"
+
+msgid "Control API port"
+msgstr "Порт API управления"
+
+msgid "Local sing-box API used by this page (127.0.0.1 only)."
+msgstr "Локальный API sing-box, которым пользуется эта страница (только 127.0.0.1)."
+
+msgid "Blocked in Russia"
+msgstr "Заблокированное в России"
+
+msgid "Russian services from abroad"
+msgstr "Российские сервисы из-за границы"
+
+msgid "Blocked in Ukraine"
+msgstr "Заблокированное в Украине"
+
+msgid "Geo-blocked services"
+msgstr "Сервисы с геоблокировкой"
+
+msgid "Blocked sites"
+msgstr "Заблокированные сайты"
+
+msgid "Adult sites"
+msgstr "Сайты для взрослых"
+
+msgid "News"
+msgstr "Новости"
+
+msgid "Anime"
+msgstr "Аниме"
+
+msgid "Russian sites and IPs"
+msgstr "Российские сайты и IP"
+
+msgid "Ads and trackers"
+msgstr "Реклама и трекеры"
+
+msgid "no answer"
+msgstr "нет ответа"
+
+msgid "ms"
+msgstr "мс"
+
+msgid "%s transport is not supported by sing-box"
+msgstr "транспорт %s не поддерживается sing-box"
+
+msgid "Shadowsocks plugin %s is not supported by sing-box"
+msgstr "плагин Shadowsocks %s не поддерживается sing-box"
+
+msgid "Missing: %s"
+msgstr "не хватает: %s"
+
+msgid "Unknown link type: %s"
+msgstr "неизвестный тип ссылки: %s"
+
+msgid "Failed"
+msgstr "Не удалось"
+
+msgid "We1ssConnect"
+msgstr "We1ssConnect"
+
+msgid "Overview"
+msgstr "Обзор"
+
+msgid "Routing"
+msgstr "Маршрутизация"
+
+msgid "Settings"
+msgstr "Настройки"
