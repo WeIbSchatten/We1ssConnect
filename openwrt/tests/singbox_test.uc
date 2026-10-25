@@ -46,6 +46,13 @@ function find(list, tag) {
 	return null;
 }
 
+test('sing-box check rejects a broken config', () => {
+	writefile('/tmp/we1ss-bad.json', '{"outbounds":[{"type":"nope","tag":"x"}]}');
+	const p = popen('sing-box check -c /tmp/we1ss-bad.json 2>&1');
+	p.read('all');
+	ok(p.close() != 0);
+});
+
 test('selective mode: lists through the tunnel, the rest direct', () => {
 	const cfg = settings({ rules: [
 		{ id: 'r1', name: 'YouTube', action: 'proxy', target: 'auto', services: ['youtube'], domains: ['example.org'] },

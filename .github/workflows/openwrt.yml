@@ -19,6 +19,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+      - name: Load the TPROXY modules nft -c needs
+        run: sudo modprobe -a nft_tproxy nf_tproxy_ipv4 nf_tproxy_ipv6 nft_socket
       - name: Test on OpenWrt ${{ matrix.release }}
         run: |
           docker run --rm --cap-add NET_ADMIN -v "$PWD/openwrt:/src" \
