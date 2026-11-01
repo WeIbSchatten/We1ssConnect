@@ -63,6 +63,9 @@ release shares the panel's `MAJOR.MINOR` (panel 1.9.x → clients 1.9.x), and pa
 independent, so a client fix does not need a panel release. The workflow checks this with
 `scripts/check-version-series.sh` before building and refuses any other version.
 
+The series moves when the panel does: with We1ssBoard 1.10 on `main`, the next client release is
+1.10.0, and the script refuses 1.9.x. Clients 1.9.x keep working with panel 1.10.x until then.
+
 ## Licenses
 
 [Xray-core](https://github.com/XTLS/Xray-core) (MPL-2.0) and
