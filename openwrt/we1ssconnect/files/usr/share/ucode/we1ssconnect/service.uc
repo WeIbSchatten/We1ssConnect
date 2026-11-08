@@ -83,6 +83,7 @@ function sync_cron(cfg) {
 	}
 }
 
+const XRAY_UNPACKED = 33 * 1048576;
 const XRAY_STATE = TMP_DIR + '/xray-install.json';
 const XRAY_PID = TMP_DIR + '/xray-install.pid';
 const XRAY_WAIT = 'REALITY servers: downloading Xray, they switch to it when it is ready';
@@ -110,7 +111,9 @@ function read_json(file) {
 
 // Downloads the pinned Xray release and checks it against the SHA-256 in the release's .dgst.
 export function xray_install() {
+	// The download dir is in RAM (/tmp) and holds ~45 MB, so every outcome removes it.
 	const done = (r) => {
+		sh(`rm -rf ${TMP_DIR}/xray-dl`);
 		writefile(XRAY_STATE, sprintf('%J', { ...r, time: time() }));
 		return r;
 	};
@@ -119,15 +122,27 @@ export function xray_install() {
 	const zip = xray.asset(arch);
 	if (!zip)
 		return done({ ok: false, error: `no Xray build for ${arch ?? 'this router'}` });
+	const dir = replace(xray.PATH, /\/[^\/]+$/, '');
+	mkdir_p(dir);
+	// Checked before the 13 MB download: on 64 MB-flash routers it can never fit.
+	const free = int(sh(`df -k ${dir} | awk 'NR == 2 { print $4 }'`).out) * 1024;
+	if (!stat(xray.PATH) && free < XRAY_UNPACKED)
+		return done({ ok: false, error: sprintf('not enough flash for Xray: it needs %d MB, %d MB free', XRAY_UNPACKED / 1048576, free / 1048576) });
 	const l = load_cfg();
-	const proxy = (l.cfg.lists.via_tunnel && sh('pidof sing-box').code == 0) ? `-x ${SVC_PROXY} ` : '';
+	const running = sh('pidof sing-box').code == 0;
 	const url = `https://github.com/XTLS/Xray-core/releases/download/v${xray.PINNED}/${zip}`;
 	const tmp = TMP_DIR + '/xray-dl';
-	sh(`rm -rf ${tmp}`);
-	mkdir_p(tmp);
-	let r = sh(`curl -fsSL -m 600 ${proxy}-o ${tmp}/x.zip ${q(url)} && curl -fsSL -m 60 ${proxy}-o ${tmp}/x.dgst ${q(url + '.dgst')}`);
+	let r = null;
+	for (let via in !running ? [null] : (l.cfg.lists.via_tunnel ? [SVC_PROXY] : [SVC_PROXY, null])) {
+		const proxy = via ? `-x ${via} ` : '';
+		sh(`rm -rf ${tmp}`);
+		mkdir_p(tmp);
+		r = sh(`curl -fsSL --connect-timeout 10 -m 600 ${proxy}-o ${tmp}/x.zip ${q(url)} && curl -fsSL -m 60 ${proxy}-o ${tmp}/x.dgst ${q(url + '.dgst')}`);
+		if (r.code == 0)
+			break;
+	}
 	if (r.code != 0)
-		return done({ ok: false, error: 'download failed: ' + r.out });
+		return done({ ok: false, error: 'download failed: ' + (r.out || `curl exit ${r.code}`) });
 	const want = match(readfile(tmp + '/x.dgst') ?? '', /SHA2-256= *([0-9a-f]{64})/)?.[1];
 	if (!want || want != match(sh(`sha256sum ${tmp}/x.zip`).out, /^([0-9a-f]{64})/)?.[1])
 		return done({ ok: false, error: 'checksum mismatch' });
@@ -136,12 +151,9 @@ export function xray_install() {
 	r = sh(`unzip -o -q ${tmp}/x.zip xray -d ${tmp}`);
 	if (r.code != 0)
 		return done({ ok: false, error: 'unzip: ' + r.out });
-	const dir = replace(xray.PATH, /\/[^\/]+$/, '');
-	mkdir_p(dir);
 	const need = stat(tmp + '/xray').size - (stat(xray.PATH)?.size ?? 0);
-	const free = int(sh(`df -k ${dir} | awk 'NR == 2 { print $4 }'`).out) * 1024;
 	if (!(free >= need + 1048576))
-		return done({ ok: false, error: sprintf('not enough flash: Xray needs %d MB, %d MB free', need / 1048576 + 1, free / 1048576) });
+		return done({ ok: false, error: sprintf('not enough flash for Xray: it needs %d MB, %d MB free', need / 1048576 + 1, free / 1048576) });
 	r = sh(`mv ${tmp}/xray ${xray.PATH}.new && chmod 755 ${xray.PATH}.new && mv ${xray.PATH}.new ${xray.PATH}`);
 	sh(`rm -rf ${tmp}`);
 	const version = xray_version(xray.PATH);
