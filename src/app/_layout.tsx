@@ -1,3 +1,4 @@
+import { Onest_400Regular, Onest_500Medium, Onest_600SemiBold, Onest_700Bold, useFonts } from '@expo-google-fonts/onest';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
@@ -23,6 +24,9 @@ export default function RootLayout() {
       }),
     [],
   );
+  // Bundled, so this resolves within a frame or two; until then the screen keeps its background.
+  const [fonts] = useFonts({ Onest_400Regular, Onest_500Medium, Onest_600SemiBold, Onest_700Bold });
+  if (!fonts) return null;
   return (
     <>
       <StatusBar style={light ? 'dark' : 'light'} />
