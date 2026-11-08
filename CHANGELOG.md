@@ -4,6 +4,10 @@ The full history with details is in the documentation:
 [русский](https://weibschatten.github.io/We1ssConnect/ru/docs/help/history/) ·
 [English](https://weibschatten.github.io/We1ssConnect/docs/help/history/).
 
+## 1.10.1
+
+- OpenWrt: the Routing page opens again when a rule stores its domains or subnets as a uci list, and the rule editor shows the chosen services, presets and group servers as checkboxes on every LuCI theme (it showed them as unticked switches on proton2025, and "null" under Matches).
+
 ## 1.10.0
 
 - A connect button that shows its state in motion, Onest type, smoother controls.
