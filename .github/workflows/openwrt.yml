@@ -87,7 +87,8 @@ jobs:
             format: ipk
           - release: "25.12"
             format: apk
-    runs-on: ubuntu-latest
+    # Playwright 1.56 cannot install its browser deps on ubuntu-latest (26.04) yet.
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
       - uses: actions/download-artifact@v7
