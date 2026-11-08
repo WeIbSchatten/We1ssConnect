@@ -10,7 +10,7 @@ const pages = [
 	// luci-base 25.12 translates "Connected" as "Подключён" and wins over our catalog.
 	['overview', /Подключ(ено|ён)/],
 	['servers', 'Нидерланды'],
-	['routing', 'geoip:telegram'],
+	['routing', 'market.example'],
 	['devices', 'Устройства'],
 	['settings', 'Протокол DNS'],
 	['diagnostics', 'sing-box запущен'],
@@ -72,6 +72,17 @@ const pinned = await page.locator('.w1-row.w1-selected').innerText();
 if (/Нидерланды/.test(pinned)) console.log('ok   servers: the clicked server is pinned');
 else { console.log(`FAIL servers: selected row is "${pinned}"`); failed++; }
 await page.screenshot({ path: `${out}/servers-pinned.png`, fullPage: true });
+
+// The rule editor shows the rule's services ticked and a summary, never "null".
+await page.goto(`${base}/cgi-bin/luci/admin/services/we1ssconnect/routing`);
+await page.locator('tr.cbi-section-table-row').filter({ hasText: 'market.example' }).locator('.cbi-button-edit').first().click();
+const modal = page.locator('.modal');
+await modal.waitFor({ timeout: 20000 });
+const youtube = await modal.locator('.w1-checklist input[value="youtube"]').isChecked().catch(() => false);
+const modalText = await modal.innerText();
+if (youtube && !/\bnull\b/.test(modalText)) console.log('ok   routing: the rule editor shows its services and summary');
+else { console.log(`FAIL routing editor: youtube ticked=${youtube}, null shown=${/\bnull\b/.test(modalText)}`); failed++; }
+await page.screenshot({ path: `${out}/routing-editor.png`, fullPage: true });
 
 await page.setViewportSize({ width: 390, height: 844 });
 await page.goto(`${base}/cgi-bin/luci/admin/services/we1ssconnect/overview`);

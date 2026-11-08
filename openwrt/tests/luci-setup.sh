@@ -44,6 +44,9 @@ vless://u@h:443?type=xhttp&security=reality&pbk=k#Финляндия XHTTP
 trojan://pw@192.0.2.10:443#Германия" > /dev/null
 	uci set we1ssconnect.r_youtube.enabled=1
 	uci add_list we1ssconnect.r_youtube.category=geoip:telegram
+	# Lists, not LuCI text: the routing page used to crash on them.
+	uci add_list we1ssconnect.r_youtube.domain=market.example
+	uci add_list we1ssconnect.r_youtube.subnet=198.51.100.0/24
 	uci set we1ssconnect.r_ru.enabled=1
 	uci commit we1ssconnect
 	ubus call we1ssconnect set_enabled '{"enabled": true}' > /dev/null

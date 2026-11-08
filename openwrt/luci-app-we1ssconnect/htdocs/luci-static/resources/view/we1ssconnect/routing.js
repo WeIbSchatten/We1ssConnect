@@ -5,16 +5,21 @@
 'require tools.widgets as widgets';
 'require we1ssconnect.common as w1';
 
+// Domains and subnets are text in LuCI, but may be uci lists (uci add_list, older configs).
+function entries(sid, option) {
+	return [].concat(uci.get('we1ssconnect', sid, option) || []).join('\n').split(/\s+/).filter((x) => x);
+}
+
 // What a rule matches, in words; also the row title of rules without a name.
 function summary(sid) {
 	const parts = [];
 	[].concat(uci.get('we1ssconnect', sid, 'service') || []).forEach((k) => parts.push(w1.SERVICES[k] || k));
 	[].concat(uci.get('we1ssconnect', sid, 'preset') || []).forEach((k) => parts.push(w1.PRESETS[k] || k));
 	[].concat(uci.get('we1ssconnect', sid, 'category') || []).forEach((k) => parts.push(k));
-	const dom = (uci.get('we1ssconnect', sid, 'domain') || '').split(/\s+/).filter((x) => x);
+	const dom = entries(sid, 'domain');
 	if (dom.length)
 		parts.push(dom.length > 2 ? _('%d domains').format(dom.length) : dom.join(', '));
-	const net = (uci.get('we1ssconnect', sid, 'subnet') || '').split(/\s+/).filter((x) => x);
+	const net = entries(sid, 'subnet');
 	if (net.length)
 		parts.push(_('%d subnets').format(net.length));
 	const rl = [].concat(uci.get('we1ssconnect', sid, 'remote_list') || []);
@@ -22,6 +27,20 @@ function summary(sid) {
 		parts.push(_('%d remote lists').format(rl.length));
 	return parts.join(' · ');
 }
+
+// A multiple choice as a wrapping grid of checkboxes. The stock dropdown is drawn by the theme,
+// and some (proton2025) show the chosen items as unticked switches in one overflowing row.
+const ChecklistValue = form.MultiValue.extend({
+	renderWidget: function(section_id, option_index, cfgvalue) {
+		const chosen = L.toArray(cfgvalue != null ? cfgvalue : this.default);
+		return E('div', { class: 'w1-checklist', id: this.cbid(section_id) }, this.keylist.map((k, i) =>
+			E('label', {}, [ E('input', { type: 'checkbox', value: k, checked: chosen.indexOf(k) >= 0 ? '' : null }), this.vallist[i] ])));
+	},
+	formvalue: function(section_id) {
+		const box = this.map.findElement('id', this.cbid(section_id));
+		return box ? Array.prototype.map.call(box.querySelectorAll('input:checked'), (i) => i.value) : null;
+	},
+});
 
 const ACTIONS = {
 	proxy: _('Through the tunnel'),
@@ -85,14 +104,13 @@ return view.extend({
 		o.depends('action', 'vpn');
 		o.textvalue = (sid) => uci.get('we1ssconnect', sid, 'action') == 'vpn' ? (uci.get('we1ssconnect', sid, 'interface') || '—') : '—';
 
-		o = s.option(form.MultiValue, 'service', _('Services'),
+		o = s.option(ChecklistValue, 'service', _('Services'),
 			_('Community lists of itdoginfo/allow-domains, refreshed automatically.'));
 		for (const k in w1.SERVICES)
 			o.value(k, w1.SERVICES[k]);
-		o.display_size = 6;
 		o.modalonly = true;
 
-		o = s.option(form.MultiValue, 'preset', _('Presets'));
+		o = s.option(ChecklistValue, 'preset', _('Presets'));
 		for (const k in w1.PRESETS)
 			o.value(k, w1.PRESETS[k]);
 		o.modalonly = true;
@@ -109,10 +127,12 @@ return view.extend({
 			_('One per line; a domain also covers its subdomains.'));
 		o.rows = 5;
 		o.modalonly = true;
+		o.cfgvalue = (sid) => entries(sid, 'domain').join('\n');
 
 		o = s.option(form.TextValue, 'subnet', _('IP addresses and subnets'), _('One per line, such as 149.154.160.0/20.'));
 		o.rows = 4;
 		o.modalonly = true;
+		o.cfgvalue = (sid) => entries(sid, 'subnet').join('\n');
 
 		o = s.option(form.DynamicList, 'remote_list', _('Remote lists'),
 			_('URLs of sing-box rule-sets (.srs, .json) or plain lists of domains and subnets.'));
@@ -120,6 +140,8 @@ return view.extend({
 
 		o = s.option(form.DummyValue, '_what', _('Matches'));
 		o.textvalue = (sid) => summary(sid) || '—';
+		// The rule editor shows cfgvalue, not textvalue; without it the field read "null".
+		o.cfgvalue = (sid) => summary(sid) || '—';
 
 		s = m.section(form.GridSection, 'group', _('Server groups'),
 			_('A group balances its servers by lowest delay. Point a rule at a group to keep, say, one country for one service.'));
@@ -131,14 +153,14 @@ return view.extend({
 		o = s.option(form.Value, 'name', _('Name'));
 		o.rmempty = false;
 
-		o = s.option(form.MultiValue, 'subscription', _('Subscriptions'));
+		o = s.option(ChecklistValue, 'subscription', _('Subscriptions'));
 		Object.keys(list.subscriptions || {}).forEach((id) => {
 			const info = list.subscriptions[id];
 			o.value(id, info.title || info.name || id);
 		});
 		o.value('manual', _('My keys'));
 
-		o = s.option(form.MultiValue, 'server', _('Servers'));
+		o = s.option(ChecklistValue, 'server', _('Servers'));
 		servers.forEach((x) => o.value(x.id, x.name));
 		o.modalonly = true;
 
