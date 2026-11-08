@@ -4,7 +4,7 @@
     "slug": "we1ssconnect",
     "version": "1.10.0",
     "scheme": "we1ssconnect",
-    "orientation": "portrait",
+    "orientation": "default",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
     "backgroundColor": "#0a0a0a",

@@ -5,6 +5,7 @@ import { ActivityIndicator, Platform, ScrollView, StyleSheet, TextInput, View } 
 
 import { alert } from '@/components/dialog';
 import { Button, Muted } from '@/components/ui';
+import { column } from '@/lib/layout';
 import { t } from '@/lib/i18n';
 import { addFromText } from '@/lib/subscription';
 import { usePalette } from '@/lib/theme';
@@ -35,7 +36,7 @@ export default function Add() {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.page} keyboardShouldPersistTaps="handled">
+    <ScrollView contentContainerStyle={[styles.page, column]} keyboardShouldPersistTaps="handled">
       <Muted>{t('addHint')}</Muted>
       <TextInput
         value={text}

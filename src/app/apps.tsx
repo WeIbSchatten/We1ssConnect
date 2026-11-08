@@ -4,6 +4,7 @@ import { ActivityIndicator, FlatList, Image, Pressable, StyleSheet, Switch, Text
 import XrayVpn, { type AppMode, type InstalledApp } from 'xray-vpn';
 
 import { Muted, Segmented } from '@/components/ui';
+import { column } from '@/lib/layout';
 import { t } from '@/lib/i18n';
 import { updateSettings, useStore } from '@/lib/store';
 import { usePalette } from '@/lib/theme';
@@ -87,7 +88,7 @@ export default function Apps() {
   return (
     <FlatList
       style={{ backgroundColor: p.bg }}
-      contentContainerStyle={styles.page}
+      contentContainerStyle={[styles.page, column]}
       data={mode === 'all' ? [] : list}
       keyExtractor={(a) => a.id}
       ListHeaderComponent={header}

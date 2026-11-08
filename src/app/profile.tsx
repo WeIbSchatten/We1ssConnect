@@ -6,6 +6,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { alert } from '@/components/dialog';
 import { Button, Card, Muted, Row, SectionTitle } from '@/components/ui';
+import { column } from '@/lib/layout';
 import { protocolLabel, serverAddress } from '@/lib/config';
 import { formatBytes, formatDate, t } from '@/lib/i18n';
 import { openLink } from '@/lib/links';
@@ -64,7 +65,7 @@ export default function ProfileScreen() {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.page}>
+    <ScrollView contentContainerStyle={[styles.page, column]}>
       <Stack.Screen options={{ title: profile.url ? t('subscription') : t('keyGroup') }} />
 
       <Card>
