@@ -17,9 +17,10 @@ config settings 'main'
 	option log_level 'warn'
 
 config rule 'r_youtube'
-	option enabled '0'
+	option enabled '1'
 	option action 'proxy'
 	option target 'auto'
+	list service 'russia_inside'
 	list service 'youtube'
 
 config rule 'r_ru'

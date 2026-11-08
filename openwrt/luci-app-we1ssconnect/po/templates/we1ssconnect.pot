@@ -358,6 +358,9 @@ msgstr ""
 msgid "Added: %d"
 msgstr ""
 
+msgid "Subscriptions added: %d"
+msgstr ""
+
 msgid "Add"
 msgstr ""
 

@@ -82,6 +82,19 @@ export function replace_source(data, source, results) {
 	return fresh;
 };
 
+// People paste the subscription URL into the key field too; those lines become subscriptions.
+export function split_subscriptions(text) {
+	let urls = [], links = [];
+	for (let line in split(trim(text ?? ''), /\r?\n/)) {
+		line = trim(line);
+		if (match(line, /^https?:\/\/\S+$/))
+			push(urls, line);
+		else if (line != '')
+			push(links, line);
+	}
+	return { urls, links: join('\n', links) };
+};
+
 export function add_links(data, text) {
 	let added = [];
 	for (let r in parse_all(text))

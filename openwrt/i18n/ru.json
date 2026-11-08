@@ -111,6 +111,7 @@
  "One share link per line: VLESS, VMess, Trojan, Shadowsocks, Hysteria2, TUIC, WireGuard, SOCKS, AnyTLS.": "По одной ссылке в строке: VLESS, VMess, Trojan, Shadowsocks, Hysteria2, TUIC, WireGuard, SOCKS, AnyTLS.",
  "Cancel": "Отмена",
  "Added: %d": "Добавлено: %d",
+ "Subscriptions added: %d": "Добавлено подписок: %d",
  "Add": "Добавить",
  "Name (optional)": "Название (необязательно)",
  "A We1ssBoard subscription link or any other one with share links (plain or base64).": "Ссылка на подписку We1ssBoard или любую другую со ссылками на ключи (обычную или base64).",
