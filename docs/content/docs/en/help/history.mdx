@@ -3,6 +3,13 @@ title: "Version history"
 description: "What changed in each We1ssConnect version."
 ---
 
+## 1.10.0
+
+- A new connect button: still rings while off, a sweeping arc while connecting, a glow with satellites that orbit faster under heavy traffic once connected. Onest type, smoother toggles.
+- Background mode. Android: the VPN comes back by itself after the system kills the app, also as Always-on VPN; Settings has "Run in the background". Desktop: closing the window keeps the VPN running in the tray.
+- Ad blocking and "Russian sites directly" no longer break the connection when GitHub release downloads fail; ads are also blocked in DNS. QR codes are read again.
+- Router: starts even when GitHub is unreachable (the lists are downloaded by the client, kept on flash and fetched through the tunnel); a pasted subscription URL becomes a subscription; the blocked-in-Russia rule is on after install.
+
 ## 1.9.3
 
 - Router: REALITY servers work with panels on Xray 26.9.8 and later; they go through Xray, which downloads itself on the first connect ([details](../openwrt/index.mdx#reality-servers)).

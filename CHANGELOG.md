@@ -4,6 +4,13 @@ The full history with details is in the documentation:
 [русский](https://weibschatten.github.io/We1ssConnect/ru/docs/help/history/) ·
 [English](https://weibschatten.github.io/We1ssConnect/docs/help/history/).
 
+## 1.10.0
+
+- A connect button that shows its state in motion, Onest type, smoother controls.
+- Background mode: on Android the VPN comes back by itself after the system kills the app (also as Always-on VPN) and Settings lifts battery restrictions; on the desktop closing the window keeps the VPN running in the tray.
+- Ad blocking and "Russian sites directly" no longer break the connection when GitHub release downloads fail: rule files come from raw.githubusercontent.com, and without them the VPN connects and warns. Ads are also blocked in DNS. QR codes are read again in release builds.
+- OpenWrt: sing-box no longer dies at start when GitHub is unreachable — the client downloads the lists itself, keeps them on flash and fetches missing ones through the tunnel; a pasted subscription URL becomes a subscription; the blocked-in-Russia rule is on after install; no hourly Xray download when it cannot fit on the flash.
+
 ## 1.9.3
 
 - OpenWrt: REALITY servers on Xray 26.9.8+ panels work through a local Xray, downloaded on first use; Hysteria2, TUIC and WebSocket work against the panel's Xray; delay test results; a warning when selective mode sends nothing through the tunnel; translated LuCI warnings; diagnostics after podkop.
