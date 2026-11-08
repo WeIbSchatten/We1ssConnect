@@ -49,8 +49,14 @@ trojan://pw@192.0.2.10:443#Германия" > /dev/null
 	ubus call we1ssconnect set_enabled '{"enabled": true}' > /dev/null
 	sleep 3
 	we1ssconnect status
-	# The geoip category was downloaded and its subnets loaded for interception.
-	nft get element inet we1ssconnect route4 '{ 149.154.167.50 }' > /dev/null 2>&1 || { echo 'FAIL geoip:telegram subnets are not in route4'; exit 1; }
+	# The start does not wait on the network: lists-update fetches the geoip category in the
+	# background and restarts with its subnets loaded for interception.
+	i=0
+	until nft get element inet we1ssconnect route4 '{ 149.154.167.50 }' > /dev/null 2>&1; do
+		i=$((i + 1))
+		[ "$i" -le 60 ] || { echo 'FAIL geoip:telegram subnets are not in route4'; exit 1; }
+		sleep 2
+	done
 	echo 'ok   geoip:telegram subnets are intercepted'
 	;;
 esac
