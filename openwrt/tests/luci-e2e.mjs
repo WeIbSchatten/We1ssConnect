@@ -7,7 +7,8 @@ const [base, out] = process.argv.slice(2);
 fs.mkdirSync(out, { recursive: true });
 
 const pages = [
-	['overview', 'Подключено'],
+	// luci-base 25.12 translates "Connected" as "Подключён" and wins over our catalog.
+	['overview', /Подключ(ено|ён)/],
 	['servers', 'Нидерланды'],
 	['routing', 'geoip:telegram'],
 	['devices', 'Устройства'],
