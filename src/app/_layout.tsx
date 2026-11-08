@@ -1,11 +1,13 @@
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { useEffect } from 'react';
 import XrayVpn from 'xray-vpn';
 
-import { DialogHost } from '@/components/dialog';
+import { alert, DialogHost } from '@/components/dialog';
 import '@/lib/desktopStyle';
 import { lang, t } from '@/lib/i18n';
 import { useIsLight, usePalette } from '@/lib/theme';
+import { connect, disconnect, isActive } from '@/lib/vpn';
 
 // Notifications and the quick settings tile are drawn natively and read this.
 XrayVpn.setItem('native.language', lang);
@@ -13,6 +15,14 @@ XrayVpn.setItem('native.language', lang);
 export default function RootLayout() {
   const p = usePalette();
   const light = useIsLight();
+  useEffect(
+    () =>
+      XrayVpn.onTrayToggle?.(() => {
+        if (isActive()) disconnect();
+        else connect().catch((e) => alert(t('error'), (e as Error).message));
+      }),
+    [],
+  );
   return (
     <>
       <StatusBar style={light ? 'dark' : 'light'} />

@@ -9,7 +9,10 @@ import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import android.net.Uri
 import android.net.VpnService
+import android.os.PowerManager
+import android.provider.Settings
 import android.util.Base64
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -102,6 +105,22 @@ class XrayVpnModule : Module() {
       if (payload.requestCode != VPN_REQUEST_CODE) return@OnActivityResult
       permissionPromise?.resolve(payload.resultCode == Activity.RESULT_OK)
       permissionPromise = null
+    }
+
+    // Many vendors stop background apps unless battery optimization is off for them.
+    Function("backgroundAllowed") {
+      (context.getSystemService(Context.POWER_SERVICE) as PowerManager).isIgnoringBatteryOptimizations(context.packageName)
+    }
+
+    Function("allowBackground") {
+      val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, Uri.parse("package:" + context.packageName))
+        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+      try {
+        context.startActivity(intent)
+      } catch (_: Exception) {
+        // Some vendors drop the direct prompt; the app list still opens.
+        context.startActivity(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+      }
     }
 
     Function("start") { config: String, title: String, target: String, appMode: String, apps: List<String> ->

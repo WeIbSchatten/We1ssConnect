@@ -2,7 +2,7 @@ import Constants from 'expo-constants';
 import { router } from 'expo-router';
 import { reloadAppAsync } from 'expo';
 import { useEffect, useState } from 'react';
-import { Linking, Platform, ScrollView, StyleSheet, Switch, View } from 'react-native';
+import { AppState, Linking, Platform, ScrollView, StyleSheet, Switch, View } from 'react-native';
 import XrayVpn from 'xray-vpn';
 
 import { alert } from '@/components/dialog';
@@ -62,6 +62,15 @@ export default function Settings() {
     XrayVpn.xrayVersion().then(setCore, () => setCore('?'));
   }, []);
 
+  // Re-read when the user comes back from the system prompt.
+  const [background, setBackground] = useState(() => XrayVpn.backgroundAllowed?.() ?? true);
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (s) => {
+      if (s === 'active') setBackground(XrayVpn.backgroundAllowed?.() ?? true);
+    });
+    return () => sub.remove();
+  }, []);
+
   /** `live` settings are part of the Xray config, so a running tunnel restarts with them. */
   const toggle = (key: Flag, icon: IconName, title: string, hint: string, live: boolean, first = false) => (
     <Row
@@ -91,6 +100,17 @@ export default function Settings() {
 
   return (
     <ScrollView contentContainerStyle={styles.page}>
+      {!background && (
+        <Card style={styles.group}>
+          <Row
+            first
+            icon="battery-charging-outline"
+            title={t('background')}
+            subtitle={t('backgroundHint')}
+            onPress={() => XrayVpn.allowBackground?.()}
+          />
+        </Card>
+      )}
       <SectionTitle>{t('routing')}</SectionTitle>
       <Card style={styles.group}>
         {/* The desktop routes through the system proxy, which cannot tell programs apart. */}
