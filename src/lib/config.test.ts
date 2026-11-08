@@ -58,6 +58,21 @@ test('presets add ad blocking, RU direct and the RU resolver', () => {
   expect(tags).toEqual(['dns-out', 'direct', 'block', 'direct', 'direct', undefined]);
   expect(config.routing.domainStrategy).toBe('IPIfNonMatch');
   expect(config.dns.servers[0]).toMatchObject({ address: '77.88.8.8', skipFallback: true });
+  // Apps get NXDOMAIN for ad domains, so ads fail even where no domain can be sniffed.
+  expect(config.dns.hosts).toEqual({ 'geosite:category-ads-all': '#3' });
+  expect(JSON.parse(buildVpnConfig(servers, servers[0], settings, { geo: false })).dns.hosts).toBeUndefined();
+});
+
+test('without the rule files the presets keep their suffixes and drop every geo entry', () => {
+  const settings = {
+    ...DEFAULT_SETTINGS, ruDirect: true, blockAds: true,
+    customRules: { proxy: ['geosite:youtube', 'example.org'], direct: ['geoip:ru'], block: [] },
+  };
+  const text = buildVpnConfig(servers, servers[0], settings, { geo: false });
+  expect(text).not.toMatch(/geo(site|ip):/);
+  const config = JSON.parse(text);
+  expect(config.routing.rules).toContainEqual({ type: 'field', domain: ['domain:ru', 'domain:su', 'domain:xn--p1ai'], outboundTag: 'direct' });
+  expect(config.routing.rules).toContainEqual({ type: 'field', domain: ['domain:example.org'], balancerTag: 'main' });
 });
 
 test('fragment dials TLS servers through the fragment outbound; mux skips Vision', () => {

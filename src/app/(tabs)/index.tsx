@@ -93,7 +93,8 @@ export default function Home() {
     }
     setBusy(true);
     try {
-      await connect();
+      const warning = await connect();
+      if (warning) alert(t('warning'), warning);
     } catch (e) {
       alert(t('error'), (e as Error).message);
     } finally {

@@ -50,7 +50,7 @@ export function needsGeo(settings: Settings): boolean {
 
 // Block first, then through the VPN, then direct: a proxy entry can carve an exception out of
 // a direct one (geoip:ru direct, geosite:youtube through the VPN).
-function customRules(settings: Settings): Record<string, unknown>[] {
+function customRules(settings: Settings, geo: boolean): Record<string, unknown>[] {
   const targets: [keyof Settings['customRules'], Record<string, string>][] = [
     ['block', { outboundTag: 'block' }],
     ['proxy', { balancerTag: BALANCER }],
@@ -58,7 +58,9 @@ function customRules(settings: Settings): Record<string, unknown>[] {
   ];
   const rules: Record<string, unknown>[] = [];
   for (const [key, target] of targets) {
-    const { domain, ip } = parseEntries(settings.customRules[key]);
+    const parsed = parseEntries(settings.customRules[key]);
+    const domain = geo ? parsed.domain : parsed.domain.filter((d) => !isGeo(d));
+    const ip = geo ? parsed.ip : parsed.ip.filter((d) => !isGeo(d));
     if (domain.length) rules.push({ type: 'field', domain, ...target });
     if (ip.length) rules.push({ type: 'field', ip, ...target });
   }
@@ -105,30 +107,38 @@ export function prepareOutbound(outbound: XrayOutbound, settings: Settings, tag:
   return out;
 }
 
-function dnsConfig(settings: Settings) {
+function isGeo(entry: string): boolean {
+  return /^(geosite|geoip|ext):/.test(entry);
+}
+
+function dnsConfig(settings: Settings, geo: boolean) {
   const dns = DNS[settings.dns] ?? DNS.cloudflare;
   const servers: unknown[] = [settings.dnsOverHttps ? dns.doh : dns.ip];
-  if (settings.ruDirect) servers.unshift({ address: RU_DNS, domains: RU_DOMAINS, skipFallback: true });
-  return { servers, queryStrategy: settings.ipv6 ? 'UseIP' : 'UseIPv4' };
+  const domains = geo ? RU_DOMAINS : RU_DOMAINS.filter((d) => !isGeo(d));
+  if (settings.ruDirect) servers.unshift({ address: RU_DNS, domains, skipFallback: true });
+  // "#3" answers NXDOMAIN: ads fail even where routing sees only an address.
+  const hosts = settings.blockAds && geo ? { 'geosite:category-ads-all': '#3' } : undefined;
+  return { hosts, servers, queryStrategy: settings.ipv6 ? 'UseIP' : 'UseIPv4' };
 }
 
 /**
  * Full Xray config for the VPN: TUN in, every server out behind one balancer.
  * The observatory keeps measuring all servers, so delays stay live while connected,
  * the balancer can pick the fastest one, and the app can pin any server without a restart.
- * fallback is the server used until the first measurements arrive.
+ * fallback is the server used until the first measurements arrive. geo is false when geoip.dat and
+ * geosite.dat could not be downloaded: their entries are left out so Xray still starts.
  */
-export function buildVpnConfig(servers: Server[], fallback: Server, settings: Settings): string {
+export function buildVpnConfig(servers: Server[], fallback: Server, settings: Settings, { geo = true } = {}): string {
   const rules: Record<string, unknown>[] = [
     { type: 'field', inboundTag: ['tun-in'], port: '53', outboundTag: 'dns-out' },
   ];
   if (settings.bypassLan) rules.push({ type: 'field', ip: PRIVATE_IPS, outboundTag: 'direct' });
-  const custom = customRules(settings);
+  const custom = customRules(settings, geo);
   rules.push(...custom);
-  if (settings.blockAds) rules.push({ type: 'field', domain: ['geosite:category-ads-all'], outboundTag: 'block' });
+  if (settings.blockAds && geo) rules.push({ type: 'field', domain: ['geosite:category-ads-all'], outboundTag: 'block' });
   if (settings.ruDirect) {
-    rules.push({ type: 'field', domain: RU_DOMAINS, outboundTag: 'direct' });
-    rules.push({ type: 'field', ip: ['geoip:ru', RU_DNS], outboundTag: 'direct' });
+    rules.push({ type: 'field', domain: geo ? RU_DOMAINS : RU_DOMAINS.filter((d) => !isGeo(d)), outboundTag: 'direct' });
+    rules.push({ type: 'field', ip: geo ? ['geoip:ru', RU_DNS] : [RU_DNS], outboundTag: 'direct' });
   }
   // Everything else, including Xray's own DNS queries, goes through the balancer.
   rules.push({ type: 'field', network: 'tcp,udp', balancerTag: BALANCER });
@@ -137,7 +147,7 @@ export function buildVpnConfig(servers: Server[], fallback: Server, settings: Se
     log: { loglevel: 'warning' },
     stats: {},
     policy: { system: { statsOutboundUplink: true, statsOutboundDownlink: true } },
-    dns: dnsConfig(settings),
+    dns: dnsConfig(settings, geo),
     inbounds: [
       {
         tag: 'tun-in',
