@@ -44,6 +44,8 @@ uci commit we1ssconnect
 check "prepare builds a config sing-box accepts" 'we1ssconnect prepare > /tmp/we1ss-it/prepare.json'
 check "the status file has no hard error" 'ucode -e "import { readfile } from \"fs\"; exit(json(readfile(\"/var/run/we1ssconnect/status.json\")).ok ? 0 : 1);"'
 check "cron refreshes subscriptions every 6 hours" 'grep -q "^0 \*/6 \* \* \* /usr/bin/we1ssconnect sub-update all" /etc/crontabs/root'
+check "cron refreshes the lists" 'grep -q "/usr/bin/we1ssconnect lists-update" /etc/crontabs/root'
+check "sing-box never downloads a list itself (a failed download stops it)" '! grep -q "\"remote\"" /var/run/we1ssconnect/config.json'
 
 # podkop names table 105 in rt_tables, so ip rule prints "lookup podkop" (as on a real router).
 mkdir -p /etc/iproute2 && echo '105 podkop' >> /etc/iproute2/rt_tables

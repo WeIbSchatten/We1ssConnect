@@ -1,7 +1,7 @@
 import { test, eq, ok, done } from 't';
 import { normalize } from 'we1ssconnect.config';
-import { readfile, writefile } from 'fs';
-import { parse_plain, is_rule_set, resolve, srs_cidrs } from 'we1ssconnect.lists';
+import { readfile, writefile, unlink } from 'fs';
+import { parse_plain, is_rule_set, resolve, srs_cidrs, service_url, service_fallback, compile_plain } from 'we1ssconnect.lists';
 
 const DATA = { subscriptions: {}, servers: [
 	{ id: 'a', name: 'Finland 1', source: 'sub1', ok: true },
@@ -70,15 +70,43 @@ test('resolve inlines plain lists and collects the subnets nft must intercept', 
 		if (index(url, 'telegram.lst') >= 0) return '149.154.160.0/20\n91.108.4.0/22\n';
 		if (index(url, 'my.lst') >= 0) return 'mine.example\n6.6.6.6\n';
 		if (index(url, 'direct.txt') >= 0) return '7.7.7.0/24\n';
+		if (match(url, /\.srs$/)) return 'SRS';
 		return null;
 	};
-	const res = resolve(cfg, fetch);
+	const res = resolve(cfg, fetch, null, (url) => '/lists/' + replace(url, /.*\//, ''));
 	eq(cfg.rules[0].remote_lists, ['https://x/set.srs'], 'rule-sets stay for sing-box');
 	eq(cfg.rules[0].inline_domains, ['mine.example']);
 	eq(res.route_subnets, ['5.5.5.0/24', '6.6.6.6/32', '149.154.160.0/20', '91.108.4.0/22']);
 	ok(index(asked, 'https://raw.githubusercontent.com/itdoginfo/allow-domains/main/Subnets/IPv4/youtube.lst') < 0, 'youtube has no subnet list');
 	eq(cfg.rules[1].inline_subnets, ['7.7.7.0/24'], 'direct rules keep their CIDRs for sing-box');
 	eq(res.missing, ['https://x/missing.txt']);
+	eq(cfg.rule_set_files, {
+		'https://github.com/itdoginfo/allow-domains/releases/latest/download/telegram.srs': '/lists/telegram.srs',
+		'https://github.com/itdoginfo/allow-domains/releases/latest/download/youtube.srs': '/lists/youtube.srs',
+		'https://x/set.srs': '/lists/set.srs',
+	}, 'rule-sets are downloaded here, not by sing-box');
+});
+
+test('a service list GitHub releases cannot serve falls back to its text list on raw', () => {
+	const RAW = 'https://raw.githubusercontent.com/itdoginfo/allow-domains/main/';
+	eq(map(['youtube', 'russia_inside', 'russia_outside', 'ukraine_inside', 'hodca', 'porn'], (s) => service_fallback(service_url(s))), [
+		{ domains: RAW + 'Services/youtube.lst', subnets: null },
+		{ domains: RAW + 'Russia/inside-raw.lst', subnets: null },
+		{ domains: RAW + 'Russia/outside-raw.lst', subnets: null },
+		{ domains: RAW + 'Ukraine/inside-raw.lst', subnets: null },
+		{ domains: RAW + 'Categories/hodca.lst', subnets: null },
+		{ domains: RAW + 'Categories/porn.lst', subnets: null },
+	]);
+	eq(service_fallback(service_url('telegram')).subnets, RAW + 'Subnets/IPv4/telegram.lst', 'apps that connect by IP keep their subnets');
+	eq(service_fallback('https://x/my.srs'), null);
+});
+
+test('compile_plain turns a text list into a rule-set this sing-box reads back', () => {
+	unlink('/tmp/we1ss-plain.srs');
+	ok(compile_plain('youtube.com\n# comment\nytimg.com\n', '91.108.4.0/22\n', '/tmp/we1ss-plain.srs'));
+	eq(srs_cidrs(readfile('/tmp/we1ss-plain.srs')), ['91.108.4.0/22']);
+	eq(system("sing-box rule-set decompile /tmp/we1ss-plain.srs -o /tmp/we1ss-plain.json && grep -c ytimg.com /tmp/we1ss-plain.json >/dev/null"), 0);
+	ok(!compile_plain('', null, '/tmp/we1ss-empty-list.srs'), 'an empty list is not a list');
 });
 
 test('srs_cidrs reads the subnets of a rule-set compiled by this sing-box', () => {

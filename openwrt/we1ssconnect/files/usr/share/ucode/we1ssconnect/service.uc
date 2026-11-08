@@ -19,6 +19,8 @@ export const REPO = 'WeIbSchatten/We1ssConnect';
 export const RUN_DIR = getenv('WE1SS_RUN_DIR') || '/var/run/we1ssconnect';
 const TMP_DIR = '/tmp/we1ssconnect';
 const SVC_PROXY = 'socks5h://127.0.0.1:' + singbox.SVC_PORT;
+// On flash, so the lists survive a reboot and the first start does not depend on GitHub.
+const LIST_DIR = getenv('WE1SS_LIST_DIR') || '/etc/we1ssconnect/lists';
 
 function q(s) {
 	return "'" + replace(`${s}`, "'", "'\\''") + "'";
@@ -66,12 +68,14 @@ function read_status() {
 const CRON_TAG = '# we1ssconnect';
 const CRON = { '1h': '0 * * * *', '3h': '0 */3 * * *', '6h': '0 */6 * * *', '12h': '0 */12 * * *', '1d': '30 4 * * *' };
 
-function sync_cron(interval) {
+function sync_cron(cfg) {
 	const file = '/etc/crontabs/root';
 	const old = readfile(file) ?? '';
 	let kept = filter(split(old, '\n'), (l) => l != '' && index(l, CRON_TAG) < 0);
-	if (CRON[interval])
-		push(kept, `${CRON[interval]} /usr/bin/we1ssconnect sub-update all >/dev/null 2>&1 ${CRON_TAG}`);
+	if (CRON[cfg.sub_update_interval])
+		push(kept, `${CRON[cfg.sub_update_interval]} /usr/bin/we1ssconnect sub-update all >/dev/null 2>&1 ${CRON_TAG}`);
+	if (CRON[cfg.lists.update_interval])
+		push(kept, `${CRON[cfg.lists.update_interval]} /usr/bin/we1ssconnect lists-update >/dev/null 2>&1 ${CRON_TAG}`);
 	const fresh = join('\n', kept) + '\n';
 	if (fresh != old) {
 		writefile(file, fresh);
@@ -166,7 +170,9 @@ export function prepare() {
 	takeover.take_over();
 	const l = load_cfg();
 	const cfg = l.cfg;
-	const res = lists.resolve(cfg, (url) => lists.fetch_cached(url, TMP_DIR + '/lists', null));
+	// Cached copies only, so a blocked GitHub cannot stall the start: apply_net starts
+	// lists-update for the missing ones once the tunnel is up.
+	const res = lists.resolve(cfg, (url) => readfile(lists.cache_file(url, LIST_DIR)), null, (url) => lists.cache_file(url, LIST_DIR));
 	const tuned = map(filter(l.data.servers, (s) => s.ok), (s) => ({ ...s, outbound: singbox.tune_outbound(s.outbound, cfg) }));
 	let xray_bin = null, xr = null, xray_note = null, xcheck = null;
 	if (length(filter(tuned, xray.wanted))) {
@@ -198,9 +204,10 @@ export function prepare() {
 		warnings: [ ...l.errors, ...built.errors, ...map(res.missing, (u) => `list not downloaded: ${u}`),
 			...(xray_note ? [ xray_note ] : []) ],
 		mode: cfg.mode, ipv6: cfg.ipv6, manage_dnsmasq: cfg.manage_dnsmasq, prepared: time(),
+		missing_lists: length(res.missing),
 	};
 	writefile(RUN_DIR + '/status.json', sprintf('%J', status));
-	sync_cron(cfg.sub_update_interval);
+	sync_cron(cfg);
 	return status;
 };
 
@@ -214,6 +221,9 @@ export function apply_net() {
 	let err = null;
 	if (st.manage_dnsmasq)
 		err = dnsmasq.apply(cursor());
+	// Lists missing at start come through the tunnel once it is up; nothing new means no restart.
+	if (st.missing_lists)
+		system('(sleep 15; /usr/bin/we1ssconnect lists-update) >/dev/null 2>&1 &');
 	return { ok: err == null, error: err };
 };
 
@@ -339,13 +349,37 @@ function restart_if_running() {
 		sh('/etc/init.d/we1ssconnect restart');
 }
 
-export function import_links(text) {
-	let data = store.load();
-	const added = store.add_links(data, text);
-	store.save(data);
-	if (length(filter(added, (s) => s.ok)))
+export function lists_update() {
+	const l = load_cfg();
+	const running = status().running;
+	// Tunnel first while it is up: GitHub is often blocked, and each blocked try costs a timeout.
+	const routes = !running ? [null] : (l.cfg.lists.via_tunnel ? [SVC_PROXY] : [SVC_PROXY, null]);
+	let changed = false;
+	const res = lists.resolve(l.cfg, (url) => {
+		const d = lists.fetch_list(url, LIST_DIR, routes);
+		changed ||= d.changed;
+		return d.content;
+	}, null, (url) => lists.cache_file(url, LIST_DIR));
+	if (changed)
 		restart_if_running();
-	return { added: length(filter(added, (s) => s.ok)), skipped: map(filter(added, (s) => !s.ok), (s) => ({ name: s.name, reason: s.reason })) };
+	return { ok: true, changed, missing: res.missing };
+};
+
+export function import_links(text) {
+	const parts = store.split_subscriptions(text);
+	let subs = 0;
+	for (let url in parts.urls) {
+		const r = sub_add(null, url);
+		if (!r.results?.[r.id]?.error)
+			subs++;
+	}
+	let data = store.load();
+	const added = store.add_links(data, parts.links);
+	store.save(data);
+	if (subs || length(filter(added, (s) => s.ok)))
+		restart_if_running();
+	return { added: length(filter(added, (s) => s.ok)), subscriptions: subs,
+		skipped: map(filter(added, (s) => !s.ok), (s) => ({ name: s.name, reason: s.reason })) };
 };
 
 export function remove_server(id) {

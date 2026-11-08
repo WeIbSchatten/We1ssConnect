@@ -359,6 +359,9 @@ msgstr "Отмена"
 msgid "Added: %d"
 msgstr "Добавлено: %d"
 
+msgid "Subscriptions added: %d"
+msgstr "Добавлено подписок: %d"
+
 msgid "Add"
 msgstr "Добавить"
 

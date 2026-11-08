@@ -119,7 +119,9 @@ return view.extend({
 				E('button', { class: 'cbi-button cbi-button-positive', click: ui.createHandlerFn(this, () => w1.importLinks(ta.value).then((r) => {
 					ui.hideModal();
 					const skipped = (r.skipped || []).map((x) => E('li', {}, x.name + ': ' + w1.reason(x.reason)));
-					ui.addNotification(null, [ E('p', {}, _('Added: %d').format(r.added || 0)), skipped.length ? E('ul', {}, skipped) : '' ], skipped.length ? 'warning' : 'info');
+					ui.addNotification(null, [ E('p', {}, _('Added: %d').format(r.added || 0)),
+						r.subscriptions ? E('p', {}, _('Subscriptions added: %d').format(r.subscriptions)) : '',
+						skipped.length ? E('ul', {}, skipped) : '' ], skipped.length ? 'warning' : 'info');
 					return this.refresh();
 				})) }, _('Add'))
 			])

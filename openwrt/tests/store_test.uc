@@ -29,6 +29,14 @@ test('refresh keeps ids by name, drops vanished servers, adds new ones', () => {
 	eq(data.servers[2].reason, 'xhttp transport is not supported by sing-box');
 });
 
+test('a subscription URL pasted among keys is taken as a subscription', () => {
+	eq(store.split_subscriptions('vless://u@h:443#A\n https://sub.example.com:2096/path/abc \ntrojan://p@h:443#B\nhttp://x.example/s'), {
+		urls: ['https://sub.example.com:2096/path/abc', 'http://x.example/s'],
+		links: 'vless://u@h:443#A\ntrojan://p@h:443#B',
+	});
+	eq(store.split_subscriptions('dmxlc3M6Ly91QGg6NDQzI0E='), { urls: [], links: 'dmxlc3M6Ly91QGg6NDQzI0E=' }, 'base64 bodies stay keys');
+});
+
 test('duplicate names map to distinct ids', () => {
 	let data = fresh();
 	const a = store.replace_source(data, 's', [{ ok: true, name: 'X' }, { ok: true, name: 'X' }]);

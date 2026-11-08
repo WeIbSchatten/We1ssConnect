@@ -1,7 +1,7 @@
 // Builds the sing-box config from normalized settings (config.uc) and the server store.
 // Pure: no file or network access, so every branch is unit-tested and `sing-box check`ed.
 
-import { category_url } from 'we1ssconnect.lists';
+import { PRESETS, rule_sets_of } from 'we1ssconnect.lists';
 
 export const TPROXY_PORT = 1602;
 export const DNS_LISTEN = '127.0.0.42';
@@ -10,20 +10,12 @@ export const ROUTING_MARK = 255;
 export const FAKEIP_V4 = '198.18.0.0/15';
 export const FAKEIP_V6 = 'fc00::/18';
 
-const ITDOG = 'https://github.com/itdoginfo/allow-domains/releases/latest/download/';
-
-// Community lists of itdoginfo/allow-domains, downloaded by sing-box at runtime.
+// Community lists of itdoginfo/allow-domains (lists.uc downloads them).
 export const SERVICES = [
 	'russia_inside', 'russia_outside', 'ukraine_inside', 'geoblock', 'block', 'porn', 'news', 'anime',
 	'youtube', 'hdrezka', 'tiktok', 'google_ai', 'google_play', 'google_meet', 'hodca', 'discord',
 	'meta', 'twitter', 'cloudflare', 'cloudfront', 'digitalocean', 'hetzner', 'ovh', 'telegram', 'roblox',
 ];
-
-// The same categories as the apps' presets, from the same source as the user's geosite:/geoip:.
-export const PRESETS = {
-	ru: { categories: ['geosite:category-ru', 'geoip:ru'], domain_suffix: ['ru', 'su', 'xn--p1ai'] },
-	ads: { categories: ['geosite:category-ads-all'] },
-};
 
 export function server_tag(id) {
 	return 's-' + id;
@@ -146,15 +138,15 @@ export function build(cfg, data, via_xray) {
 			push(outbounds, { type: 'direct', tag: 'vpn-' + r.interface, bind_interface: r.interface });
 		}
 
+	// Only lists already on disk: one sing-box would have to download makes it fail to start.
 	let rule_sets = [], rs_seen = {};
-	const download_detour = (cfg.lists.via_tunnel && known.main) ? 'main' : null;
 	function add_rule_set(tag, url) {
+		const path = cfg.rule_set_files?.[url];
+		if (!path)
+			return null;
 		if (!rs_seen[tag]) {
 			rs_seen[tag] = true;
-			let rs = { type: 'remote', tag, format: match(url, /\.json(\?|$)/) ? 'source' : 'binary', url, update_interval: cfg.lists.update_interval };
-			if (download_detour)
-				rs.download_detour = download_detour;
-			push(rule_sets, rs);
+			push(rule_sets, { type: 'local', tag, format: match(url, /\.json(\?|$)/) ? 'source' : 'binary', path });
 		}
 		return tag;
 	}
@@ -194,18 +186,14 @@ export function build(cfg, data, via_xray) {
 			target = 'direct';
 
 		let sets = [], ipsets = [], suffixes = [ ...(r.domains ?? []) ], cidrs = [ ...(r.subnets ?? []) ];
-		for (let svc in r.services ?? [])
-			push(sets, add_rule_set('svc-' + svc, ITDOG + svc + '.srs'));
-		let categories = [ ...(r.categories ?? []) ];
-		for (let p in r.presets ?? []) {
-			push(categories, ...(PRESETS[p]?.categories ?? []));
+		for (let p in r.presets ?? [])
 			push(suffixes, ...(PRESETS[p]?.domain_suffix ?? []));
-		}
 		// geoip sets hold only addresses, so they stay out of the DNS rules.
-		for (let cat in categories)
-			push(substr(cat, 0, 6) == 'geoip:' ? ipsets : sets, add_rule_set(replace(cat, ':', '-'), category_url(cat)));
-		for (let i, url in r.remote_lists ?? [])
-			push(sets, add_rule_set(`list-${r.id}-${i}`, url));
+		for (let rs in rule_sets_of(r)) {
+			const tag = add_rule_set(rs[0], rs[1]);
+			if (tag)
+				push(rs[2] ? ipsets : sets, tag);
+		}
 		push(suffixes, ...(r.inline_domains ?? []));
 		push(cidrs, ...(r.inline_subnets ?? []));
 

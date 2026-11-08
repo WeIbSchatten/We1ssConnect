@@ -2,6 +2,7 @@ import { test, eq, ok, done } from 't';
 import { writefile, popen } from 'fs';
 import { build } from 'we1ssconnect.singbox';
 import { parse } from 'we1ssconnect.links';
+import { rule_sets_of } from 'we1ssconnect.lists';
 
 function settings(extra) {
 	return {
@@ -46,6 +47,34 @@ function find(list, tag) {
 	return null;
 }
 
+// sing-box loads local rule-sets, so every list a test config names must exist on disk.
+let srs_n = 0;
+function downloaded(cfg) {
+	writefile('/tmp/we1ss-empty.json', '{"version":2,"rules":[]}');
+	system('sing-box rule-set compile /tmp/we1ss-empty.json -o /tmp/we1ss-empty.srs');
+	let files = {};
+	for (let r in cfg.rules)
+		for (let rs in rule_sets_of(r)) {
+			const path = sprintf('/tmp/we1ss-rs-%d.srs', srs_n++);
+			system(`cp /tmp/we1ss-empty.srs ${path}`);
+			files[rs[1]] = path;
+		}
+	cfg.rule_set_files = files;
+	return cfg;
+}
+
+test('a list that is not downloaded yet is left out instead of failing sing-box', () => {
+	const cfg = settings({ rules: [
+		{ id: 'r1', name: 'YouTube', action: 'proxy', target: 'auto', services: ['youtube', 'discord'], domains: ['example.org'] },
+	] });
+	downloaded(cfg);
+	delete cfg.rule_set_files[rule_sets_of(cfg.rules[0])[0][1]];
+	const r = build(cfg, DATA);
+	eq(map(r.config.route.rule_set, (s) => s.tag), ['svc-discord'], 'only the downloaded list is used');
+	eq(filter(r.config.route.rules, (x) => x.domain_suffix), [{ domain_suffix: ['example.org'], outbound: 'main' }], 'the rule keeps its other matchers');
+	check(r.config, 'missing lists');
+});
+
 test('sing-box check rejects a broken config', () => {
 	writefile('/tmp/we1ss-bad.json', '{"outbounds":[{"type":"nope","tag":"x"}]}');
 	const p = popen('sing-box check -c /tmp/we1ss-bad.json 2>&1');
@@ -60,7 +89,7 @@ test('selective mode: lists through the tunnel, the rest direct', () => {
 		{ id: 'r3', name: 'Ads', action: 'block', presets: ['ads'] },
 		{ id: 'r4', name: 'Work', action: 'vpn', interface: 'wg0', subnets: ['10.20.0.0/16'] },
 	] });
-	const r = build(cfg, DATA);
+	const r = build(downloaded(cfg), DATA);
 	eq(r.errors, []);
 	const c = r.config;
 	eq(c.route.final, 'direct');
@@ -69,7 +98,8 @@ test('selective mode: lists through the tunnel, the rest direct', () => {
 	eq(find(c.outbounds, 'vpn-wg0').bind_interface, 'wg0');
 	eq(map(c.endpoints, (e) => e.tag), ['s-w4']);
 	eq(map(c.route.rule_set, (s) => s.tag), ['svc-youtube', 'geosite-category-ru', 'geoip-ru', 'geosite-category-ads-all']);
-	eq(filter(c.route.rule_set, (s) => s.tag == 'geoip-ru')[0].url, 'https://raw.githubusercontent.com/runetfreedom/russia-v2ray-rules-dat/release/sing-box/rule-set-geoip/geoip-ru.srs', 'presets use the same source as categories');
+	eq(filter(c.route.rule_set, (s) => s.tag == 'geoip-ru')[0].path, cfg.rule_set_files['https://raw.githubusercontent.com/runetfreedom/russia-v2ray-rules-dat/release/sing-box/rule-set-geoip/geoip-ru.srs'], 'presets use the same source as categories');
+	eq(uniq(map(c.route.rule_set, (s) => s.type)), ['local'], 'sing-box never downloads lists itself: a failed download is fatal for it');
 	ok(index(map(c.route.rules, (x) => x.outbound ?? x.action), 'main') >= 0);
 	eq(filter(c.route.rules, (x) => x.ip_cidr), [{ ip_cidr: ['10.20.0.0/16'], outbound: 'vpn-wg0' }]);
 	eq(filter(c.dns.rules, (x) => x.server == 'dns-fakeip'), [
@@ -97,13 +127,13 @@ test('global mode: everything through the pinned server, DNS through the tunnel'
 });
 
 test('devices, groups, LAN proxy, QUIC block, fragment and the chrome fingerprint', () => {
-	const r = build(settings({
+	const r = build(downloaded(settings({
 		groups: [{ id: 'eu', name: 'EU', servers: ['b2', 'c3', 'gone'] }],
 		rules: [{ id: 'r1', name: 'Discord', action: 'proxy', target: 'group:eu', services: ['discord'] }],
 		devices: [{ name: 'TV', ip: '192.168.1.50', mode: 'tunnel' }, { name: 'Bank PC', ip: '192.168.1.60', mode: 'bypass' }],
 		lan_proxy: { enabled: true, port: 2080 }, block_quic: true, fragment: true, force_chrome_fp: true, ipv6: true,
 		lists: { update_interval: '12h', via_tunnel: true },
-	}), DATA);
+	})), DATA);
 	eq(r.errors, []);
 	const c = r.config;
 	eq(find(c.outbounds, 'auto-eu').outbounds, ['s-b2', 's-c3']);
@@ -119,20 +149,20 @@ test('devices, groups, LAN proxy, QUIC block, fragment and the chrome fingerprin
 	eq(find(c.outbounds, 's-a1').tls.fragment, null, 'no fragment with reality');
 	eq(find(c.outbounds, 's-c3').tls.fragment, true);
 	eq(find(c.outbounds, 's-b2').tls.fragment, null, 'no fragment over QUIC');
-	eq(c.route.rule_set[0].download_detour, 'main');
 	eq(find(c.dns.servers, 'dns-fakeip').inet6_range, 'fc00::/18');
 	eq(c.dns.strategy, 'prefer_ipv4');
 	check(c, 'devices and groups');
 });
 
 test('categories: geosite sets take part in DNS, geoip sets only in routing', () => {
-	const r = build(settings({ rules: [{ id: 'r1', name: 'Blocked', action: 'proxy', target: 'auto', categories: ['geosite:ru-blocked', 'geoip:telegram'] }] }), DATA);
+	const r = build(downloaded(settings({ rules: [{ id: 'r1', name: 'Blocked', action: 'proxy', target: 'auto', categories: ['geosite:ru-blocked', 'geoip:telegram'] }] })), DATA);
 	eq(r.errors, []);
 	const c = r.config;
-	eq(map(c.route.rule_set, (s) => [s.tag, s.url]), [
+	eq(map(rule_sets_of({ categories: ['geosite:ru-blocked', 'geoip:telegram'] }), (s) => [s[0], s[1]]), [
 		['geosite-ru-blocked', 'https://raw.githubusercontent.com/runetfreedom/russia-v2ray-rules-dat/release/sing-box/rule-set-geosite/geosite-ru-blocked.srs'],
 		['geoip-telegram', 'https://raw.githubusercontent.com/runetfreedom/russia-v2ray-rules-dat/release/sing-box/rule-set-geoip/geoip-telegram.srs'],
 	]);
+	eq(map(c.route.rule_set, (s) => s.tag), ['geosite-ru-blocked', 'geoip-telegram']);
 	eq(filter(c.route.rules, (x) => x.rule_set), [
 		{ rule_set: ['geosite-ru-blocked'], outbound: 'main' },
 		{ rule_set: ['geoip-telegram'], outbound: 'main' },
