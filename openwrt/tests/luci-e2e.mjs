@@ -10,7 +10,7 @@ const pages = [
 	// luci-base 25.12 translates "Connected" as "Подключён" and wins over our catalog.
 	['overview', /Подключ(ено|ён)/],
 	['servers', 'Нидерланды'],
-	['routing', 'geoip:telegram'],
+	['routing', 'market.example'],
 	['devices', 'Устройства'],
 	['settings', 'Протокол DNS'],
 	['diagnostics', 'sing-box запущен'],

@@ -5,16 +5,21 @@
 'require tools.widgets as widgets';
 'require we1ssconnect.common as w1';
 
+// Domains and subnets are text in LuCI, but may be uci lists (uci add_list, older configs).
+function entries(sid, option) {
+	return [].concat(uci.get('we1ssconnect', sid, option) || []).join('\n').split(/\s+/).filter((x) => x);
+}
+
 // What a rule matches, in words; also the row title of rules without a name.
 function summary(sid) {
 	const parts = [];
 	[].concat(uci.get('we1ssconnect', sid, 'service') || []).forEach((k) => parts.push(w1.SERVICES[k] || k));
 	[].concat(uci.get('we1ssconnect', sid, 'preset') || []).forEach((k) => parts.push(w1.PRESETS[k] || k));
 	[].concat(uci.get('we1ssconnect', sid, 'category') || []).forEach((k) => parts.push(k));
-	const dom = (uci.get('we1ssconnect', sid, 'domain') || '').split(/\s+/).filter((x) => x);
+	const dom = entries(sid, 'domain');
 	if (dom.length)
 		parts.push(dom.length > 2 ? _('%d domains').format(dom.length) : dom.join(', '));
-	const net = (uci.get('we1ssconnect', sid, 'subnet') || '').split(/\s+/).filter((x) => x);
+	const net = entries(sid, 'subnet');
 	if (net.length)
 		parts.push(_('%d subnets').format(net.length));
 	const rl = [].concat(uci.get('we1ssconnect', sid, 'remote_list') || []);
@@ -109,10 +114,12 @@ return view.extend({
 			_('One per line; a domain also covers its subdomains.'));
 		o.rows = 5;
 		o.modalonly = true;
+		o.cfgvalue = (sid) => entries(sid, 'domain').join('\n');
 
 		o = s.option(form.TextValue, 'subnet', _('IP addresses and subnets'), _('One per line, such as 149.154.160.0/20.'));
 		o.rows = 4;
 		o.modalonly = true;
+		o.cfgvalue = (sid) => entries(sid, 'subnet').join('\n');
 
 		o = s.option(form.DynamicList, 'remote_list', _('Remote lists'),
 			_('URLs of sing-box rule-sets (.srs, .json) or plain lists of domains and subnets.'));
