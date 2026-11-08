@@ -12,6 +12,7 @@ import (
 	"runtime"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/wailsapp/wails/v2/pkg/options"
@@ -39,6 +40,8 @@ type App struct {
 
 	mu     sync.Mutex
 	status Status
+	// Set by the tray's Quit: only then does closing the window exit the app.
+	quitting atomic.Bool
 }
 
 func NewApp() (*App, error) {
@@ -64,11 +67,17 @@ func (a *App) startup(ctx context.Context) {
 		_ = setSystemProxy(false)
 		a.store.set(proxyFlagKey, "")
 	}
+	a.startTray()
 }
 
+// The close button hides the window to the tray; the VPN keeps running until Quit.
 func (a *App) beforeClose(ctx context.Context) bool {
-	a.disconnect()
-	return false
+	if a.quitting.Load() {
+		a.disconnect()
+		return false
+	}
+	wruntime.WindowHide(ctx)
+	return true
 }
 
 func (a *App) shutdown(ctx context.Context) { a.disconnect() }

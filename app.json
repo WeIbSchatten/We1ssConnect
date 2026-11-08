@@ -30,7 +30,7 @@
         {
           "android": {
             "minSdkVersion": 26,
-            "extraProguardRules": "-keep class libXray.** { *; }\n-keep class go.** { *; }\n-keep class xraybridge.** { *; }\n-keep class com.we1bschatten.xrayvpn.** { *; }",
+            "extraProguardRules": "-keep class libXray.** { *; }\n-keep class go.** { *; }\n-keep class xraybridge.** { *; }\n-keep class com.we1bschatten.xrayvpn.** { *; }\n# R8 renamed ML Kit internals in release builds: the camera showed a picture but read no QR code.\n-keep class com.google.mlkit.** { *; }\n-keep class com.google.android.gms.internal.mlkit_vision_barcode_bundled.** { *; }\n-keep class com.google.android.gms.internal.mlkit_vision_common.** { *; }\n-keep class expo.modules.camera.** { *; }",
             "usesCleartextTraffic": true
           }
         }

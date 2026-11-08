@@ -53,6 +53,12 @@ interface XrayVpnNative {
   openUrl?(url: string): Promise<void>;
   /** The device's preferred ABI, such as arm64-v8a. */
   abi(): string;
+  /** Desktop only: "Connect / disconnect" in the tray menu; returns the unsubscribe function. */
+  onTrayToggle?(cb: () => void): () => void;
+  /** Android: whether battery optimization leaves the VPN alone (otherwise the system may stop it). */
+  backgroundAllowed?(): boolean;
+  /** Android: opens the system prompt that exempts the app from battery optimization. */
+  allowBackground?(): void;
   /** Downloads the APK and opens the system installer; progress arrives as onDownload. */
   installUpdate(url: string): Promise<void>;
   addListener(event: 'onStatus', listener: (status: VpnStatus) => void): EventSubscription;

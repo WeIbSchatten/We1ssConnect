@@ -15,6 +15,7 @@ require (
 	github.com/andybalholm/brotli v1.2.6 // indirect
 	github.com/apernet/quic-go v0.63.1-0.20261004180939-a10df75c260c // indirect
 	github.com/bep/debounce v1.2.1 // indirect
+	github.com/energye/systray v1.0.3 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.16 // indirect
 	github.com/ghodss/yaml v1.0.1-0.20220118164431-d8423dcdf344 // indirect
 	github.com/go-ole/go-ole v1.3.0 // indirect

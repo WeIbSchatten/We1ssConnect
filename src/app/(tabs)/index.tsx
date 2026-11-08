@@ -1,8 +1,9 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Animated, Easing, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Animated, Easing, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { ConnectOrb, type OrbState } from '@/components/ConnectOrb';
 import { alert } from '@/components/dialog';
 import { UpdateCard } from '@/components/UpdateCard';
 import { Button, Card, Muted, PingBadge, Stats } from '@/components/ui';
@@ -11,7 +12,7 @@ import { countryName, formatBytes, formatDate, formatDuration, formatSpeed, t } 
 import { flag, maskIp, useLive } from '@/lib/live';
 import { allServers, getState, hasServers, isAuto, selectedServer, updateSettings, useStore } from '@/lib/store';
 import { refreshStale } from '@/lib/subscription';
-import { usePalette } from '@/lib/theme';
+import { FONT, usePalette } from '@/lib/theme';
 import { autoCheck } from '@/lib/updater';
 import { autoPing, connect, disconnect, useVpnStatus } from '@/lib/vpn';
 
@@ -25,24 +26,13 @@ function useNow(active: boolean): number {
   return now;
 }
 
-/** Slow breathing ring around the button while connecting or connected. */
-function usePulse(running: boolean): Animated.Value {
-  const [value] = useState(() => new Animated.Value(0));
+/** The state line slides in from below each time it changes, so a new state is noticed. */
+function useEntrance(key: string): Animated.Value {
+  const [value] = useState(() => new Animated.Value(1));
   useEffect(() => {
-    if (!running) {
-      value.stopAnimation();
-      value.setValue(0);
-      return;
-    }
-    const loop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(value, { toValue: 1, duration: 1400, easing: Easing.out(Easing.quad), useNativeDriver: true }),
-        Animated.timing(value, { toValue: 0, duration: 0, useNativeDriver: true }),
-      ]),
-    );
-    loop.start();
-    return () => loop.stop();
-  }, [running, value]);
+    value.setValue(0);
+    Animated.timing(value, { toValue: 1, duration: 360, easing: Easing.out(Easing.cubic), useNativeDriver: Platform.OS !== 'web' }).start();
+  }, [key, value]);
   return value;
 }
 
@@ -61,7 +51,6 @@ export default function Home() {
   const on = status.state === 'connected';
   const pending = status.state === 'connecting' || busy;
   const now = useNow(on);
-  const pulse = usePulse(on || pending);
 
   useEffect(() => {
     // New servers from a refresh get their delays tested right after.
@@ -85,6 +74,8 @@ export default function Home() {
       : status.state === 'error'
         ? t('error')
         : t('disconnected');
+  const entrance = useEntrance(label);
+  const orb: OrbState = on ? 'on' : pending ? 'connecting' : status.state === 'error' ? 'error' : 'off';
 
   async function toggle() {
     if (on || status.state === 'connecting') {
@@ -93,7 +84,8 @@ export default function Home() {
     }
     setBusy(true);
     try {
-      await connect();
+      const warning = await connect();
+      if (warning) alert(t('warning'), warning);
     } catch (e) {
       alert(t('error'), (e as Error).message);
     } finally {
@@ -106,39 +98,20 @@ export default function Home() {
   return (
     <ScrollView contentContainerStyle={styles.page}>
       <View style={styles.center}>
-        <View style={styles.powerWrap}>
-          <Animated.View
-            pointerEvents="none"
-            style={[
-              styles.ring,
-              {
-                borderColor: color,
-                opacity: pulse.interpolate({ inputRange: [0, 1], outputRange: [0.6, 0] }),
-                transform: [{ scale: pulse.interpolate({ inputRange: [0, 1], outputRange: [1, 1.35] }) }],
-              },
-            ]}
-          />
-          <Pressable
-            onPress={toggle}
-            disabled={!any || busy}
-            accessibilityLabel={on ? t('disconnect') : t('connect')}
-            style={({ pressed }) => [
-              styles.power,
-              {
-                borderColor: color,
-                backgroundColor: on ? p.accentSoft : p.surface,
-                opacity: !any ? 0.4 : pressed ? 0.85 : 1,
-                transform: [{ scale: pressed ? 0.97 : 1 }],
-              },
-            ]}>
-            {pending ? (
-              <ActivityIndicator size="large" color={p.warning} />
-            ) : (
-              <Ionicons name="power" size={68} color={on ? p.success : p.text} />
-            )}
-          </Pressable>
-        </View>
-        <Text style={[styles.state, { color }]}>{label}</Text>
+        <ConnectOrb
+          state={orb}
+          speed={on ? live.downSpeed + live.upSpeed : 0}
+          disabled={!any || busy}
+          onPress={toggle}
+          label={on ? t('disconnect') : t('connect')}
+        />
+        <Animated.Text
+          style={[
+            styles.state,
+            { color, opacity: entrance, transform: [{ translateY: entrance.interpolate({ inputRange: [0, 1], outputRange: [10, 0] }) }] },
+          ]}>
+          {label}
+        </Animated.Text>
         {on && live.connectedAt ? (
           <Muted>{t('duration', { time: formatDuration(now - live.connectedAt) })}</Muted>
         ) : null}
@@ -251,24 +224,13 @@ export default function Home() {
 
 const styles = StyleSheet.create({
   page: { padding: 16, paddingBottom: 32 },
-  center: { alignItems: 'center', marginTop: 28, marginBottom: 32, gap: 10 },
-  powerWrap: { width: 200, height: 200, alignItems: 'center', justifyContent: 'center' },
-  ring: { position: 'absolute', width: 176, height: 176, borderRadius: 88, borderWidth: 3 },
-  power: {
-    width: 176,
-    height: 176,
-    borderRadius: 88,
-    borderWidth: 3,
-    alignItems: 'center',
-    justifyContent: 'center',
-    elevation: 6,
-  },
-  state: { fontSize: 20, fontWeight: '700' },
+  center: { alignItems: 'center', marginTop: 12, marginBottom: 28, gap: 6 },
+  state: { fontSize: 26, fontFamily: FONT.semibold, letterSpacing: -0.3 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   icon: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
-  name: { fontSize: 16, fontWeight: '600' },
+  name: { fontSize: 16, fontFamily: FONT.semibold },
   flag: { fontSize: 36 },
   ipRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 2 },
-  ip: { fontSize: 18, fontWeight: '700', fontVariant: ['tabular-nums'] },
+  ip: { fontSize: 18, fontFamily: FONT.semibold, fontVariant: ['tabular-nums'] },
   bar: { height: 6, borderRadius: 3, marginTop: 10, overflow: 'hidden' },
 });

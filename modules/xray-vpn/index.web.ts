@@ -86,6 +86,7 @@ const XrayVpn = {
   // The release asset suffix for this OS, like the ABI on Android (see src/lib/updater.ts).
   abi: () => (platform.startsWith('windows') ? `${platform}-setup.exe` : platform),
   installUpdate: (url: string) => bridge().InstallUpdate(url),
+  onTrayToggle: (cb: () => void) => window.runtime?.EventsOn('tray-toggle', cb) ?? (() => undefined),
   installedApps: async (): Promise<InstalledApp[]> => [],
   appIcon: async () => null,
   getItem: (key: string) => items[key] ?? null,

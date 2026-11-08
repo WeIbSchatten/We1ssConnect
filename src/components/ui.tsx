@@ -1,9 +1,9 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import type { ComponentProps, ReactNode } from 'react';
-import { Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
+import { useEffect, useState, type ComponentProps, type ReactNode } from 'react';
+import { Animated, Platform, Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 
 import { t } from '@/lib/i18n';
-import { usePalette } from '@/lib/theme';
+import { FONT, usePalette } from '@/lib/theme';
 
 export type IconName = ComponentProps<typeof Ionicons>['name'];
 
@@ -36,7 +36,7 @@ export function Button({
       disabled={disabled}
       style={({ pressed }) => [
         styles.button,
-        { backgroundColor: bg, opacity: disabled ? 0.5 : pressed ? 0.85 : 1 },
+        { backgroundColor: bg, opacity: disabled ? 0.5 : 1, transform: [{ scale: pressed ? 0.97 : 1 }] },
       ]}>
       {icon ? <Ionicons name={icon} size={18} color={fg} /> : null}
       <Text style={[styles.buttonText, { color: fg }]}>{title}</Text>
@@ -62,11 +62,11 @@ export function Stats({ items }: { items: { label: string; value: string; color?
         <View
           key={item.label}
           style={[styles.stat, i > 0 && { borderLeftWidth: 1, borderLeftColor: p.border }]}>
-          <Text style={{ color: p.text3, fontSize: 12, fontWeight: '500', letterSpacing: 0.2 }} numberOfLines={1}>
+          <Text style={{ color: p.text3, fontSize: 12, fontFamily: FONT.medium }} numberOfLines={1}>
             {item.label}
           </Text>
           <Text
-            style={{ color: item.color ?? p.text, fontSize: 18, fontWeight: '700', fontVariant: ['tabular-nums'] }}
+            style={{ color: item.color ?? p.text, fontSize: 19, fontFamily: FONT.semibold, fontVariant: ['tabular-nums'] }}
             numberOfLines={1}
             adjustsFontSizeToFit>
             {item.value}
@@ -114,7 +114,7 @@ export function Row({
         </View>
       ) : null}
       <View style={{ flex: 1 }}>
-        <Text style={{ color: p.text, fontSize: 15, fontWeight: '500' }}>{title}</Text>
+        <Text style={{ color: p.text, fontSize: 15, fontFamily: FONT.medium }}>{title}</Text>
         {subtitle ? <Muted>{subtitle}</Muted> : null}
       </View>
       {right}
@@ -130,13 +130,14 @@ export function PingBadge({ ping }: { ping?: number }) {
   const color = ping < 0 ? p.error : ping < 300 ? p.success : p.warning;
   return (
     <View style={[styles.badge, { borderColor: color }]}>
-      <Text style={{ color, fontSize: 12, fontWeight: '600', fontVariant: ['tabular-nums'] }}>
+      <Text style={{ color, fontSize: 12, fontFamily: FONT.semibold, fontVariant: ['tabular-nums'] }}>
         {ping < 0 ? t('timeout') : t('ms', { n: ping })}
       </Text>
     </View>
   );
 }
 
+/** Options in a track; the highlight slides to the chosen one, so the change is visible. */
 export function Segmented<T extends string>({
   value,
   options,
@@ -147,18 +148,30 @@ export function Segmented<T extends string>({
   onChange: (v: T) => void;
 }) {
   const p = usePalette();
+  const [width, setWidth] = useState(0);
+  const index = Math.max(0, options.findIndex((o) => o.value === value));
+  const [x] = useState(() => new Animated.Value(index));
+  useEffect(() => {
+    Animated.spring(x, { toValue: index, useNativeDriver: Platform.OS !== 'web', friction: 9, tension: 90 }).start();
+  }, [index, x]);
+  const slot = width > 0 ? (width - 6 - 3 * (options.length - 1)) / options.length : 0;
   return (
-    <View style={[styles.segmented, { backgroundColor: p.surface2 }]}>
+    <View style={[styles.segmented, { backgroundColor: p.surface2 }]} onLayout={(e) => setWidth(e.nativeEvent.layout.width)}>
+      {slot > 0 && (
+        <Animated.View
+          pointerEvents="none"
+          style={[
+            styles.segmentPill,
+            { width: slot, backgroundColor: p.surface, borderColor: p.borderStrong },
+            { transform: [{ translateX: Animated.multiply(x, slot + 3) }] },
+          ]}
+        />
+      )}
       {options.map((o) => {
         const active = o.value === value;
         return (
-          <Pressable
-            key={o.value}
-            onPress={() => onChange(o.value)}
-            style={[styles.segment, active && { backgroundColor: p.surface, borderColor: p.borderStrong }]}>
-            <Text
-              numberOfLines={1}
-              style={{ color: active ? p.text : p.text2, fontSize: 13, fontWeight: active ? '600' : '500' }}>
+          <Pressable key={o.value} onPress={() => onChange(o.value)} style={styles.segment}>
+            <Text numberOfLines={1} style={{ color: active ? p.text : p.text2, fontSize: 13, fontFamily: active ? FONT.semibold : FONT.medium }}>
               {o.label}
             </Text>
           </Pressable>
@@ -189,13 +202,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 8,
   },
-  buttonText: { fontSize: 15, fontWeight: '600' },
+  buttonText: { fontSize: 15, fontFamily: FONT.semibold },
   section: {
-    fontSize: 12,
-    fontWeight: '700',
-    textTransform: 'uppercase',
-    letterSpacing: 0.8,
-    marginTop: 18,
+    fontSize: 14,
+    fontFamily: FONT.semibold,
+    marginTop: 20,
     marginBottom: 8,
     marginHorizontal: 4,
   },
@@ -205,13 +216,6 @@ const styles = StyleSheet.create({
   stats: { flexDirection: 'row', padding: 4 },
   stat: { flex: 1, paddingVertical: 10, paddingHorizontal: 10, gap: 4 },
   segmented: { flexDirection: 'row', borderRadius: 12, padding: 3, gap: 3 },
-  segment: {
-    flex: 1,
-    alignItems: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 6,
-    borderRadius: 10,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: 'transparent',
-  },
+  segment: { flex: 1, alignItems: 'center', paddingVertical: 8, paddingHorizontal: 6 },
+  segmentPill: { position: 'absolute', top: 3, bottom: 3, left: 3, borderRadius: 10, borderWidth: StyleSheet.hairlineWidth },
 });

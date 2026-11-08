@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from 'react';
+import { PermissionsAndroid, Platform } from 'react-native';
 import XrayVpn, { type VpnStatus } from 'xray-vpn';
 
 import { ensureGeo } from './geo';
@@ -42,25 +43,28 @@ function currentTarget(): string {
   return isAuto() || !server ? '' : serverTag(server.id);
 }
 
-export async function connect(): Promise<void> {
+/** Resolves with a warning to show when the tunnel went up without part of the routing rules. */
+export async function connect(): Promise<string | undefined> {
   const state = getState();
   const servers = allServers(state);
   const fallback = selectedServer(state) ?? fastestServer(state);
   if (!fallback || servers.length === 0) throw new Error(t('noServers'));
   if (!(await XrayVpn.prepare())) throw new Error(t('vpnDenied'));
-  try {
-    await ensureGeo(state.settings);
-  } catch (e) {
-    throw new Error(t('geoFailed', { error: (e as Error).message }));
+  // Android 13+: without it the "connected" notification, and the app in the system's list of
+  // running apps, stay hidden. The VPN works either way, so a refusal is not an error.
+  if (Platform.OS === 'android' && Number(Platform.Version) >= 33) {
+    await PermissionsAndroid.request('android.permission.POST_NOTIFICATIONS').catch(() => undefined);
   }
+  const geo = await ensureGeo(state.settings);
   const title = isAuto(state) ? (state.settings.balancer === 'roundRobin' ? t('autoRoundRobin') : t('auto')) : fallback.name;
   XrayVpn.start(
-    buildVpnConfig(servers, fallback, state.settings),
+    buildVpnConfig(servers, fallback, state.settings, { geo }),
     title,
     currentTarget(),
     state.settings.appMode,
     state.settings.apps,
   );
+  return geo ? undefined : t('geoUnavailable');
 }
 
 export function disconnect(): void {
@@ -74,9 +78,9 @@ export async function applySelection(): Promise<void> {
 }
 
 /** Settings that are part of the config need a reconnect to take effect. */
-export async function reconnectIfActive(): Promise<void> {
-  if (!isActive()) return;
-  await connect();
+export async function reconnectIfActive(): Promise<string | undefined> {
+  if (!isActive()) return undefined;
+  return connect();
 }
 
 // libXray measures at most five configs per call.

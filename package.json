@@ -12,6 +12,7 @@
     "desktop:web": "expo export -p web --output-dir desktop/frontend/dist"
   },
   "dependencies": {
+    "@expo-google-fonts/onest": "0.4.2",
     "@expo/metro-runtime": "~58.0.14",
     "@expo/vector-icons": "^15.0.2",
     "expo": "~58.0.14",

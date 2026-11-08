@@ -146,8 +146,20 @@ class XrayVpnService : VpnService() {
           Thread({ connect(request) }, "xray-start").start()
         }
       }
+      // A null intent is the system restarting us after it killed the process (START_STICKY);
+      // SERVICE_INTERFACE is "Always-on VPN". Both bring the last connection back.
+      null, VpnService.SERVICE_INTERFACE -> {
+        val last = lastRequest(this)
+        if (last == null) {
+          stopSelf()
+          return START_NOT_STICKY
+        }
+        title = last.second
+        showNotification()
+        Thread({ connect(last.first) }, "xray-start").start()
+      }
     }
-    return START_NOT_STICKY
+    return START_STICKY
   }
 
   @Synchronized
