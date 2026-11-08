@@ -8,6 +8,7 @@ import XrayVpn from 'xray-vpn';
 import { alert } from '@/components/dialog';
 import { UpdateCard } from '@/components/UpdateCard';
 import { Card, Muted, Row, SectionTitle, Segmented, type IconName } from '@/components/ui';
+import { column } from '@/lib/layout';
 import { updateGeo } from '@/lib/geo';
 import { formatDate, lang, t } from '@/lib/i18n';
 import type { StylePreset } from '@/lib/palettes';
@@ -99,7 +100,7 @@ export default function Settings() {
   const ruleCount = rules.proxy.length + rules.direct.length + rules.block.length;
 
   return (
-    <ScrollView contentContainerStyle={styles.page}>
+    <ScrollView contentContainerStyle={[styles.page, column]}>
       {!background && (
         <Card style={styles.group}>
           <Row

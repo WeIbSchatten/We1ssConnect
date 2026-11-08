@@ -4,6 +4,7 @@ import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { alert } from '@/components/dialog';
 import { Button, Card, Muted, Segmented } from '@/components/ui';
+import { column } from '@/lib/layout';
 import { t } from '@/lib/i18n';
 import { parseEntries, type CustomRules } from '@/lib/rules';
 import { updateSettings, useStore } from '@/lib/store';
@@ -41,7 +42,7 @@ export default function Rules() {
   const all = (['proxy', 'direct', 'block'] as Target[]).flatMap((k) => parseEntries(lines(text[k])).invalid);
 
   return (
-    <ScrollView style={{ backgroundColor: p.bg }} contentContainerStyle={styles.page}>
+    <ScrollView style={{ backgroundColor: p.bg }} contentContainerStyle={[styles.page, column]}>
       <Segmented<Target>
         value={target}
         onChange={setTarget}

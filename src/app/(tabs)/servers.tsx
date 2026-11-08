@@ -6,6 +6,7 @@ import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'r
 
 import { alert } from '@/components/dialog';
 import { Button, Card, Muted, PingBadge, Segmented } from '@/components/ui';
+import { column } from '@/lib/layout';
 import { protocolLabel, serverAddress } from '@/lib/config';
 import { formatDate, t } from '@/lib/i18n';
 import { lookupIp, useLive } from '@/lib/live';
@@ -103,7 +104,7 @@ export default function Servers() {
 
   return (
     <ScrollView
-      contentContainerStyle={styles.page}
+      contentContainerStyle={[styles.page, column]}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
       <View style={styles.actions}>
         <View style={{ flex: 1 }}>

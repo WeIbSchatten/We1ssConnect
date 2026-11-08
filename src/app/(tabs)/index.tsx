@@ -10,6 +10,7 @@ import { Button, Card, Muted, PingBadge, Stats } from '@/components/ui';
 import { protocolLabel, serverAddress } from '@/lib/config';
 import { countryName, formatBytes, formatDate, formatDuration, formatSpeed, t } from '@/lib/i18n';
 import { flag, maskIp, useLive } from '@/lib/live';
+import { column, useHomeColumns } from '@/lib/layout';
 import { allServers, getState, hasServers, isAuto, selectedServer, updateSettings, useStore } from '@/lib/store';
 import { refreshStale } from '@/lib/subscription';
 import { FONT, usePalette } from '@/lib/theme';
@@ -47,6 +48,7 @@ export default function Home() {
   const fullIp = useStore((s) => s.settings.showFullIp);
   const roundRobin = useStore((s) => s.settings.balancer === 'roundRobin');
   const [busy, setBusy] = useState(false);
+  const columns = useHomeColumns();
 
   const on = status.state === 'connected';
   const pending = status.state === 'connecting' || busy;
@@ -95,8 +97,7 @@ export default function Home() {
 
   const info = profile?.userInfo;
   const used = info ? info.upload + info.download : 0;
-  return (
-    <ScrollView contentContainerStyle={styles.page}>
+  const hero = (
       <View style={styles.center}>
         <ConnectOrb
           state={orb}
@@ -118,6 +119,9 @@ export default function Home() {
         {status.state === 'error' && status.error ? <Muted>{status.error}</Muted> : null}
       </View>
 
+  );
+  const cards = (
+    <>
       <UpdateCard style={{ marginBottom: 12 }} />
 
       {any ? (
@@ -218,12 +222,31 @@ export default function Home() {
           </Card>
         </Pressable>
       ) : null}
+    </>
+  );
+  if (columns === 2) {
+    return (
+      <View style={styles.split}>
+        <View style={styles.splitHero}>{hero}</View>
+        <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.splitCards}>
+          {cards}
+        </ScrollView>
+      </View>
+    );
+  }
+  return (
+    <ScrollView contentContainerStyle={[styles.page, column]}>
+      {hero}
+      {cards}
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   page: { padding: 16, paddingBottom: 32 },
+  split: { flex: 1, flexDirection: 'row' },
+  splitHero: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
+  splitCards: { flexGrow: 1, justifyContent: 'center', width: '100%', maxWidth: 560, alignSelf: 'center', padding: 16 },
   center: { alignItems: 'center', marginTop: 12, marginBottom: 28, gap: 6 },
   state: { fontSize: 26, fontFamily: FONT.semibold, letterSpacing: -0.3 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12 },
