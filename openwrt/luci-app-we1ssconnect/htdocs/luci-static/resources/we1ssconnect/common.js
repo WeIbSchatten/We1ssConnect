@@ -47,6 +47,9 @@ const CSS = `
 .w1-pill { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; border: 1px solid rgba(128,128,128,.35); }
 .w1-on { background: rgba(31,122,69,.14); border-color: rgba(31,122,69,.45); color: #1f9a55; }
 .w1-off { opacity: .75; }
+.w1-checklist { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 6px 18px; max-width: 100%; }
+.w1-checklist label { display: flex; align-items: center; gap: 8px; margin: 0; cursor: pointer; line-height: 1.3; }
+.w1-checklist input { margin: 0; flex: none; }
 .w1-err { background: rgba(179,54,47,.12); border-color: rgba(179,54,47,.45); color: #c9443c; }
 .w1-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); border: 1px solid rgba(128,128,128,.28); border-radius: 12px; margin-bottom: 12px; }
 .w1-stats > div { padding: 12px 16px; border-right: 1px solid rgba(128,128,128,.18); }

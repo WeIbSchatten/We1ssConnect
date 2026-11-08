@@ -28,6 +28,20 @@ function summary(sid) {
 	return parts.join(' · ');
 }
 
+// A multiple choice as a wrapping grid of checkboxes. The stock dropdown is drawn by the theme,
+// and some (proton2025) show the chosen items as unticked switches in one overflowing row.
+const ChecklistValue = form.MultiValue.extend({
+	renderWidget: function(section_id, option_index, cfgvalue) {
+		const chosen = L.toArray(cfgvalue != null ? cfgvalue : this.default);
+		return E('div', { class: 'w1-checklist', id: this.cbid(section_id) }, this.keylist.map((k, i) =>
+			E('label', {}, [ E('input', { type: 'checkbox', value: k, checked: chosen.indexOf(k) >= 0 ? '' : null }), this.vallist[i] ])));
+	},
+	formvalue: function(section_id) {
+		const box = this.map.findElement('id', this.cbid(section_id));
+		return box ? Array.prototype.map.call(box.querySelectorAll('input:checked'), (i) => i.value) : null;
+	},
+});
+
 const ACTIONS = {
 	proxy: _('Through the tunnel'),
 	vpn: _('Through a router interface'),
@@ -90,14 +104,13 @@ return view.extend({
 		o.depends('action', 'vpn');
 		o.textvalue = (sid) => uci.get('we1ssconnect', sid, 'action') == 'vpn' ? (uci.get('we1ssconnect', sid, 'interface') || '—') : '—';
 
-		o = s.option(form.MultiValue, 'service', _('Services'),
+		o = s.option(ChecklistValue, 'service', _('Services'),
 			_('Community lists of itdoginfo/allow-domains, refreshed automatically.'));
 		for (const k in w1.SERVICES)
 			o.value(k, w1.SERVICES[k]);
-		o.display_size = 6;
 		o.modalonly = true;
 
-		o = s.option(form.MultiValue, 'preset', _('Presets'));
+		o = s.option(ChecklistValue, 'preset', _('Presets'));
 		for (const k in w1.PRESETS)
 			o.value(k, w1.PRESETS[k]);
 		o.modalonly = true;
@@ -127,6 +140,8 @@ return view.extend({
 
 		o = s.option(form.DummyValue, '_what', _('Matches'));
 		o.textvalue = (sid) => summary(sid) || '—';
+		// The rule editor shows cfgvalue, not textvalue; without it the field read "null".
+		o.cfgvalue = (sid) => summary(sid) || '—';
 
 		s = m.section(form.GridSection, 'group', _('Server groups'),
 			_('A group balances its servers by lowest delay. Point a rule at a group to keep, say, one country for one service.'));
@@ -138,14 +153,14 @@ return view.extend({
 		o = s.option(form.Value, 'name', _('Name'));
 		o.rmempty = false;
 
-		o = s.option(form.MultiValue, 'subscription', _('Subscriptions'));
+		o = s.option(ChecklistValue, 'subscription', _('Subscriptions'));
 		Object.keys(list.subscriptions || {}).forEach((id) => {
 			const info = list.subscriptions[id];
 			o.value(id, info.title || info.name || id);
 		});
 		o.value('manual', _('My keys'));
 
-		o = s.option(form.MultiValue, 'server', _('Servers'));
+		o = s.option(ChecklistValue, 'server', _('Servers'));
 		servers.forEach((x) => o.value(x.id, x.name));
 		o.modalonly = true;
 
