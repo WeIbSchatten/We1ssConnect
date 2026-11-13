@@ -1,9 +1,9 @@
-import Constants from 'expo-constants';
 import XrayVpn from 'xray-vpn';
 
 import { t } from './i18n';
+import { PortalError, request } from './portal';
 import { getState, newId, upsertProfile } from './store';
-import type { Profile, Server, UserInfo, XrayOutbound } from './types';
+import type { PortalAccount, Profile, Server, UserInfo, XrayOutbound } from './types';
 
 /** Parses "upload=1; download=2; total=3; expire=4" (the subscription-userinfo header). */
 export function parseUserInfo(header: string | null): UserInfo | undefined {
@@ -82,25 +82,12 @@ export function isUrl(text: string): boolean {
   return /^https?:\/\//i.test(text.trim());
 }
 
-interface Fetched {
-  status: number;
-  body: string;
-  header(name: string): string | null;
-}
-
-// The desktop webview cannot read most subscription servers (CORS), so Go downloads them there.
-async function download(url: string, userAgent: string): Promise<Fetched> {
-  if (XrayVpn.fetch) {
-    const r = await XrayVpn.fetch(url, userAgent);
-    return { status: r.status, body: r.body, header: (name) => r.headers[name.toLowerCase()] ?? null };
-  }
-  const res = await fetch(url, { headers: { 'User-Agent': userAgent, Accept: '*/*' } });
-  return { status: res.status, body: await res.text(), header: (name) => res.headers.get(name) };
-}
-
-export async function fetchSubscription(url: string, existing?: Profile): Promise<Profile> {
-  const version = Constants.expoConfig?.version ?? '0';
-  const res = await download(url.trim(), `We1ssConnect/${version}`);
+/** account (or existing.account) downloads a portal subscription with its device token. */
+export async function fetchSubscription(url: string, existing?: Profile, account?: PortalAccount): Promise<Profile> {
+  const acc = account ?? existing?.account;
+  const headers: Record<string, string> = acc ? { Authorization: `Bearer ${acc.token}` } : {};
+  const res = await request('GET', url.trim(), { headers });
+  if (acc && res.status === 401) throw new PortalError('unauthorized');
   if (res.status < 200 || res.status >= 300) throw new Error(`HTTP ${res.status}`);
   const body = res.body;
   const servers = await toServers(body, existing?.servers);
@@ -116,13 +103,40 @@ export async function fetchSubscription(url: string, existing?: Profile): Promis
   return {
     id: existing?.id ?? newId(),
     // A name the user gave (or the first title) stays across refreshes.
-    name: existing?.name ?? parseTitle(res.header('profile-title')) ?? host,
+    name: existing?.name ?? parseTitle(res.header('profile-title')) ?? (acc ? `${acc.login} @ ${host}` : host),
     url: url.trim(),
     updatedAt: Date.now(),
     userInfo: parseUserInfo(res.header('subscription-userinfo')),
     servers,
     telegram,
+    ...(acc && { account: { base: acc.base, login: acc.login, token: acc.token } }),
   };
+}
+
+/** A refresh failure as the user should read it: a revoked token is "Login needed". */
+export function refreshErrorText(err: unknown): string {
+  if (err instanceof PortalError && err.code === 'unauthorized') return t('loginNeeded');
+  return (err as Error).message;
+}
+
+// A login during the request replaced the token; that newer profile wins over this answer.
+function stillCurrent(profile: Profile): Profile | undefined {
+  const current = getState().profiles.find((p) => p.id === profile.id);
+  return current && current.account?.token === profile.account?.token ? current : undefined;
+}
+
+async function refresh(profile: Profile): Promise<void> {
+  try {
+    const fresh = await fetchSubscription(profile.url!, profile);
+    if (stillCurrent(profile)) upsertProfile(fresh);
+  } catch (e) {
+    const current = stillCurrent(profile);
+    // A revoked device token keeps the old servers working and asks for a new login.
+    if (current?.account && e instanceof PortalError && e.code === 'unauthorized') {
+      upsertProfile({ ...current, account: { ...current.account, expired: true } });
+    }
+    throw e;
+  }
 }
 
 /**
@@ -155,7 +169,7 @@ export async function addFromText(text: string, name?: string): Promise<number> 
 export async function refreshProfile(id: string): Promise<void> {
   const profile = getState().profiles.find((p) => p.id === id);
   if (!profile?.url) return;
-  upsertProfile(await fetchSubscription(profile.url, profile));
+  await refresh(profile);
 }
 
 export async function refreshAll(): Promise<void> {
@@ -163,9 +177,9 @@ export async function refreshAll(): Promise<void> {
   for (const profile of getState().profiles) {
     if (!profile.url) continue;
     try {
-      upsertProfile(await fetchSubscription(profile.url, profile));
+      await refresh(profile);
     } catch (e) {
-      errors.push(`${profile.name}: ${(e as Error).message}`);
+      errors.push(`${profile.name}: ${refreshErrorText(e)}`);
     }
   }
   if (errors.length) throw new Error(errors.join('\n'));
@@ -178,7 +192,7 @@ export async function refreshStale(): Promise<void> {
   for (const profile of getState().profiles) {
     if (!profile.url || Date.now() - profile.updatedAt < STALE_MS) continue;
     try {
-      upsertProfile(await fetchSubscription(profile.url, profile));
+      await refresh(profile);
     } catch {
       // Tried again on the next start; the old servers keep working.
     }

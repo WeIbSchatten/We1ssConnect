@@ -220,28 +220,34 @@ type FetchResult struct {
 	Headers map[string]string `json:"headers"`
 }
 
-// Fetch downloads a subscription from Go, which the webview's CORS rules would block.
-func (a *App) Fetch(url, userAgent string) (*FetchResult, error) {
-	req, err := http.NewRequest(http.MethodGet, url, nil)
+// Request makes subscription and client portal requests from Go, which the webview's CORS rules would block.
+func (a *App) Request(method, url, userAgent string, headers map[string]string, body string) (*FetchResult, error) {
+	var reader io.Reader
+	if body != "" {
+		reader = strings.NewReader(body)
+	}
+	req, err := http.NewRequest(method, url, reader)
 	if err != nil {
 		return nil, err
 	}
 	req.Header.Set("User-Agent", userAgent)
-	req.Header.Set("Accept", "*/*")
+	for k, v := range headers {
+		req.Header.Set(k, v)
+	}
 	res, err := (&http.Client{Timeout: 30 * time.Second}).Do(req)
 	if err != nil {
 		return nil, err
 	}
 	defer res.Body.Close()
-	body, err := io.ReadAll(io.LimitReader(res.Body, 16<<20))
+	data, err := io.ReadAll(io.LimitReader(res.Body, 16<<20))
 	if err != nil {
 		return nil, err
 	}
-	headers := map[string]string{}
+	out := map[string]string{}
 	for k := range res.Header {
-		headers[strings.ToLower(k)] = res.Header.Get(k)
+		out[strings.ToLower(k)] = res.Header.Get(k)
 	}
-	return &FetchResult{Status: res.StatusCode, Body: string(body), Headers: headers}, nil
+	return &FetchResult{Status: res.StatusCode, Body: string(data), Headers: out}, nil
 }
 
 func (a *App) DownloadGeo(files map[string]string) (float64, error) {

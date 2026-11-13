@@ -11,7 +11,8 @@ import { protocolLabel, serverAddress } from '@/lib/config';
 import { formatBytes, formatDate, t } from '@/lib/i18n';
 import { openLink } from '@/lib/links';
 import { removeProfile, useStore } from '@/lib/store';
-import { refreshProfile, telegramLabel } from '@/lib/subscription';
+import { removeAccount } from '@/lib/account';
+import { refreshErrorText, refreshProfile, telegramLabel } from '@/lib/subscription';
 import { usePalette } from '@/lib/theme';
 
 /** One subscription or key group: traffic, its page and link, Telegram proxies, servers. */
@@ -25,6 +26,7 @@ export default function ProfileScreen() {
   const info = profile.userInfo;
   const used = info ? info.upload + info.download : 0;
   const telegram = profile.telegram ?? [];
+  const account = profile.account;
 
   async function open(url: string) {
     try {
@@ -44,7 +46,7 @@ export default function ProfileScreen() {
     try {
       await refreshProfile(profile!.id);
     } catch (e) {
-      alert(t('refresh'), (e as Error).message);
+      alert(t('refresh'), refreshErrorText(e));
     } finally {
       setBusy(false);
     }
@@ -58,7 +60,8 @@ export default function ProfileScreen() {
         style: 'destructive',
         onPress: () => {
           router.back();
-          removeProfile(profile!.id);
+          if (profile!.account) void removeAccount(profile!.id);
+          else removeProfile(profile!.id);
         },
       },
     ]);
@@ -98,6 +101,24 @@ export default function ProfileScreen() {
         ) : null}
       </Card>
 
+      {account ? (
+        <Card style={styles.group}>
+          <Row first icon="person-circle-outline" title={t('account')} subtitle={account.login} />
+          {account.expired ? (
+            <View style={{ padding: 14, gap: 10 }}>
+              <Text style={{ color: p.warning, fontWeight: '600' }}>{t('loginNeeded')}</Text>
+              <Muted>{t('loginNeededHint')}</Muted>
+              <Button
+                title={t('logInAgain')}
+                onPress={() =>
+                  router.push({ pathname: '/add', params: { mode: 'login', base: account.base, login: account.login } })
+                }
+              />
+            </View>
+          ) : null}
+        </Card>
+      ) : null}
+
       {profile.url ? (
         <Card style={styles.group}>
           <Row
@@ -105,9 +126,11 @@ export default function ProfileScreen() {
             icon="globe-outline"
             title={t('subPage')}
             subtitle={t('subPageHint')}
-            onPress={() => open(profile.url!)}
+            onPress={() => open(account ? `${account.base}/portal` : profile.url!)}
           />
-          <Row icon="copy-outline" title={t('copySubLink')} onPress={() => copy(profile.url!)} />
+          {account ? null : (
+            <Row icon="copy-outline" title={t('copySubLink')} onPress={() => copy(profile.url!)} />
+          )}
           <Row
             icon="refresh-outline"
             title={busy ? t('pinging') : t('refreshOne')}

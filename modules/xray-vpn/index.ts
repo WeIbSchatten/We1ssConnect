@@ -47,8 +47,14 @@ interface XrayVpnNative {
   appIcon(packageName: string): Promise<string | null>;
   getItem(key: string): string | null;
   setItem(key: string, value: string | null): void;
-  /** Desktop only: downloads a URL from outside the webview, which CORS would block. */
-  fetch?(url: string, userAgent: string): Promise<{ status: number; body: string; headers: Record<string, string> }>;
+  /** Desktop only: an HTTP request from outside the webview, which CORS would block. */
+  request?(
+    method: string,
+    url: string,
+    userAgent: string,
+    headers: Record<string, string>,
+    body: string,
+  ): Promise<{ status: number; body: string; headers: Record<string, string> }>;
   /** Desktop only: opens a link (https, tg://) in the system's default app. */
   openUrl?(url: string): Promise<void>;
   /** The device's preferred ABI, such as arm64-v8a. */

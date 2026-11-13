@@ -20,7 +20,13 @@ interface Bridge {
   SetTarget(target: string): Promise<void>;
   Traffic(): Promise<string>;
   HTTPGet(url: string, timeoutMs: number): Promise<string>;
-  Fetch(url: string, userAgent: string): Promise<{ status: number; body: string; headers: Record<string, string> }>;
+  Request(
+    method: string,
+    url: string,
+    userAgent: string,
+    headers: Record<string, string>,
+    body: string,
+  ): Promise<{ status: number; body: string; headers: Record<string, string> }>;
   DownloadGeo(files: Record<string, string>): Promise<number>;
   GeoUpdatedAt(): Promise<number>;
   InstallUpdate(url: string): Promise<void>;
@@ -78,7 +84,8 @@ const XrayVpn = {
   setTarget: (target: string) => bridge().SetTarget(target),
   traffic: () => bridge().Traffic(),
   httpGet: (url: string, timeoutMs: number) => bridge().HTTPGet(url, timeoutMs),
-  fetch: (url: string, userAgent: string) => bridge().Fetch(url, userAgent),
+  request: (method: string, url: string, userAgent: string, headers: Record<string, string>, body: string) =>
+    bridge().Request(method, url, userAgent, headers, body),
   openUrl: (url: string) => bridge().OpenURL(url),
   delay: async () => -1,
   downloadGeo: async (files: Record<string, string>) => (geoAt = await bridge().DownloadGeo(files)),
