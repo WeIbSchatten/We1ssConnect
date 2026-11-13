@@ -23,6 +23,23 @@ Tap a group's header (or the traffic card on the home screen) to open its screen
 - the group's servers;
 - **Remove group** removes the subscription or key group with its servers.
 
+## Log in with a portal account
+
+If your admin turned on the client portal in We1ssBoard, you can add your subscription with a login
+and password instead of a link: **Add servers → Log in**, then enter
+
+- the **server address**, the one your subscription link starts with (for example
+  `vpn.example.com:2096`);
+- the **login** and **password** of the client portal.
+
+A first password from the admin is temporary: set your own on the portal page
+(`https://<server address>/portal`) and then log in in the app. The app keeps only a device token,
+never the password. Such a group has a person icon, opens the portal page instead of a raw link,
+and removing it signs this device out.
+
+When the password is changed or the admin revokes access, the group shows **Login needed**. Its
+servers keep working; open the group and tap **Log in again**.
+
 ## Server actions
 
 - **Tap** picks the server. With the VPN on, it switches on the fly.
