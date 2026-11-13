@@ -47,9 +47,7 @@ interface XrayVpnNative {
   appIcon(packageName: string): Promise<string | null>;
   getItem(key: string): string | null;
   setItem(key: string, value: string | null): void;
-  /** Desktop only: downloads a URL from outside the webview, which CORS would block. */
-  fetch?(url: string, userAgent: string): Promise<{ status: number; body: string; headers: Record<string, string> }>;
-  /** Desktop only: any HTTP request from outside the webview, for the client portal API. */
+  /** Desktop only: an HTTP request from outside the webview, which CORS would block. */
   request?(
     method: string,
     url: string,

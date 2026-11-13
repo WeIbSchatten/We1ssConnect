@@ -32,3 +32,28 @@ export async function request(
   const res = await fetch(url, { method, headers: { 'User-Agent': userAgent(), ...headers }, body: opts.body });
   return { status: res.status, body: await res.text(), header: (name) => res.headers.get(name) };
 }
+
+/** A portal API refusal: the server's error code (invalid_credentials, unauthorized, …) or portal_off. */
+export class PortalError extends Error {
+  readonly code: string;
+  readonly retryAfter?: number;
+
+  constructor(code: string, retryAfter?: number) {
+    super(code);
+    this.name = 'PortalError';
+    this.code = code;
+    this.retryAfter = retryAfter;
+  }
+}
+
+export function portalErrorFrom(res: Fetched): PortalError {
+  if (res.status === 404) return new PortalError('portal_off');
+  let code = `http_${res.status}`;
+  try {
+    code = (JSON.parse(res.body) as { error?: string }).error ?? code;
+  } catch {
+    // A proxy's HTML error page: keep the status code.
+  }
+  const retry = Number(res.header('retry-after'));
+  return new PortalError(code, Number.isFinite(retry) && retry > 0 ? retry : undefined);
+}

@@ -220,12 +220,7 @@ type FetchResult struct {
 	Headers map[string]string `json:"headers"`
 }
 
-// Fetch downloads a subscription from Go, which the webview's CORS rules would block.
-func (a *App) Fetch(url, userAgent string) (*FetchResult, error) {
-	return a.Request(http.MethodGet, url, userAgent, map[string]string{"Accept": "*/*"}, "")
-}
-
-// Request is Fetch with a method, headers and a body, for the client portal API.
+// Request makes subscription and client portal requests from Go, which the webview's CORS rules would block.
 func (a *App) Request(method, url, userAgent string, headers map[string]string, body string) (*FetchResult, error) {
 	var reader io.Reader
 	if body != "" {

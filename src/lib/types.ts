@@ -42,6 +42,16 @@ export interface Profile {
   servers: Server[];
   /** Telegram proxy links from the subscription: MTProto (tg://proxy) and Web Proxy (t.me/webproxy). */
   telegram?: string[];
+  /** Added by logging in to the panel's client portal; only the device token is kept. */
+  account?: PortalAccount;
+}
+
+export interface PortalAccount {
+  base: string;
+  login: string;
+  token: string;
+  /** The token was revoked (password changed, access revoked): the user has to log in again. */
+  expired?: boolean;
 }
 
 /** The pseudo-server that lets the balancer pick the fastest one. */
