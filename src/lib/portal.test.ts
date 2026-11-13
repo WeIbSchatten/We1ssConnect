@@ -10,6 +10,8 @@ describe('portalBase', () => {
     ['  https://vpn.example.com:2096/portal/  ', 'https://vpn.example.com:2096'],
     ['http://10.0.0.1:2096', 'http://10.0.0.1:2096'],
     ['https://vpn.example.com/vpn/portal', 'https://vpn.example.com/vpn'],
+    ['https://VPN.Example.com:443/', 'https://vpn.example.com'],
+    ['http://vpn.example.com:80/portal', 'http://vpn.example.com'],
   ])('%s → %s', (input, want) => {
     expect(portalBase(input)).toBe(want);
   });

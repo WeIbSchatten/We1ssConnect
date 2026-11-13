@@ -1,7 +1,7 @@
-import { loginToPortal, portalErrorText, removeAccount } from './account';
+import { deviceLabel, loginToPortal, portalErrorText, removeAccount } from './account';
 import { PortalError } from './portal';
 import { getState, removeProfile, selectServer } from './store';
-import { refreshProfile, refreshStale } from './subscription';
+import { refreshErrorText, refreshProfile, refreshStale } from './subscription';
 
 jest.mock('xray-vpn', () => ({
   __esModule: true,
@@ -22,7 +22,7 @@ const BASE = 'https://vpn.example.com:2096';
 const SUB = 'vless://a@h:443#Finland\ntrojan://p@h:443#Netherlands';
 
 function reply(status: number, body: string, headers: Record<string, string> = {}) {
-  return new Response(body, { status, headers });
+  return new Response(status === 204 ? null : body, { status, headers });
 }
 
 let fetchMock: jest.SpyInstance;
@@ -135,4 +135,62 @@ describe('portalErrorText', () => {
   ])('%s', (err, text) => {
     expect(portalErrorText(err, BASE)).toBe(text);
   });
+});
+
+test('a pasted subscription link falls back to the server root', async () => {
+  fetchMock
+    .mockResolvedValueOnce(reply(404, '404 page not found'))
+    .mockResolvedValueOnce(reply(200, JSON.stringify({ token: 't1' })))
+    .mockResolvedValueOnce(reply(200, SUB));
+  const profile = await loginToPortal(`${BASE}/sub/abc123`, 'a.smirnova', 'pw');
+  expect(fetchMock.mock.calls[0][0]).toBe(`${BASE}/sub/abc123/portal/api/login`);
+  expect(fetchMock.mock.calls[1][0]).toBe(`${BASE}/portal/api/login`);
+  expect(profile.account?.base).toBe(BASE);
+});
+
+test('logging in again signs the previous token out', async () => {
+  loginOk('t1');
+  await loginToPortal(BASE, 'a.smirnova', 'pw');
+  loginOk('t2');
+  fetchMock.mockResolvedValueOnce(reply(204, ''));
+  await loginToPortal(BASE, 'a.smirnova', 'pw');
+  const logout = fetchMock.mock.calls.find(([url]) => String(url).endsWith('/portal/api/logout'));
+  expect(logout).toBeDefined();
+  expect(new Headers(logout![1].headers).get('Authorization')).toBe('Bearer t1');
+});
+
+test('a late 401 for an old token does not undo a fresh login', async () => {
+  loginOk('t1');
+  const profile = await loginToPortal(BASE, 'a.smirnova', 'pw');
+  let answer!: (r: Response) => void;
+  fetchMock.mockReturnValueOnce(new Promise<Response>((resolve) => (answer = resolve)));
+  const stale = refreshProfile(profile.id).catch(() => undefined);
+  loginOk('t2');
+  fetchMock.mockResolvedValueOnce(reply(204, ''));
+  await loginToPortal(BASE, 'a.smirnova', 'pw');
+  answer(reply(401, JSON.stringify({ error: 'unauthorized' })));
+  await stale;
+  expect(getState().profiles[0].account?.token).toBe('t2');
+  expect(getState().profiles[0].account?.expired).toBeUndefined();
+});
+
+test('a server error during refresh does not mark the profile as needing a login', async () => {
+  loginOk();
+  const profile = await loginToPortal(BASE, 'a.smirnova', 'pw');
+  fetchMock.mockResolvedValueOnce(reply(502, 'bad gateway'));
+  await expect(refreshProfile(profile.id)).rejects.toThrow('HTTP 502');
+  expect(getState().profiles[0].account?.expired).toBeUndefined();
+});
+
+test('device names fit the server limit of 64 bytes', () => {
+  const long = 'Планшет Анастасии Сергеевны для работы и поездок';
+  const label = deviceLabel(long, 'android');
+  expect(new TextEncoder().encode(label).length).toBeLessThanOrEqual(64);
+  expect(long.startsWith(label)).toBe(true);
+  expect(deviceLabel(undefined, 'web')).toBe('We1ssConnect desktop');
+});
+
+test('a revoked token reads as Login needed, not the raw code', () => {
+  expect(refreshErrorText(new PortalError('unauthorized'))).toBe('Требуется вход');
+  expect(refreshErrorText(new Error('HTTP 502'))).toBe('HTTP 502');
 });

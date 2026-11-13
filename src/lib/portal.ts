@@ -14,8 +14,10 @@ export function portalBase(input: string): string {
   let value = input.trim();
   if (!value) throw new Error('empty address');
   if (!/^https?:\/\//i.test(value)) value = `https://${value}`;
-  value = value.replace(/\/+$/, '').replace(/\/portal$/i, '').replace(/\/+$/, '');
-  return value;
+  // URL lower-cases the host and drops a default port, so one server always gives one base.
+  const url = new URL(value);
+  const path = url.pathname.replace(/\/+$/, '').replace(/\/portal$/i, '').replace(/\/+$/, '');
+  return `${url.origin}${path}`;
 }
 
 // The desktop webview cannot reach most servers (CORS), so Go makes the request there.

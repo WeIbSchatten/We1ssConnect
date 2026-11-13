@@ -113,18 +113,28 @@ export async function fetchSubscription(url: string, existing?: Profile, account
   };
 }
 
-// A revoked device token keeps the old servers working and asks for a new login.
-function markExpired(profile: Profile, err: unknown) {
-  if (profile.account && err instanceof PortalError && err.code === 'unauthorized') {
-    upsertProfile({ ...profile, account: { ...profile.account, expired: true } });
-  }
+/** A refresh failure as the user should read it: a revoked token is "Login needed". */
+export function refreshErrorText(err: unknown): string {
+  if (err instanceof PortalError && err.code === 'unauthorized') return t('loginNeeded');
+  return (err as Error).message;
+}
+
+// A login during the request replaced the token; that newer profile wins over this answer.
+function stillCurrent(profile: Profile): Profile | undefined {
+  const current = getState().profiles.find((p) => p.id === profile.id);
+  return current && current.account?.token === profile.account?.token ? current : undefined;
 }
 
 async function refresh(profile: Profile): Promise<void> {
   try {
-    upsertProfile(await fetchSubscription(profile.url!, profile));
+    const fresh = await fetchSubscription(profile.url!, profile);
+    if (stillCurrent(profile)) upsertProfile(fresh);
   } catch (e) {
-    markExpired(profile, e);
+    const current = stillCurrent(profile);
+    // A revoked device token keeps the old servers working and asks for a new login.
+    if (current?.account && e instanceof PortalError && e.code === 'unauthorized') {
+      upsertProfile({ ...current, account: { ...current.account, expired: true } });
+    }
     throw e;
   }
 }
@@ -169,7 +179,7 @@ export async function refreshAll(): Promise<void> {
     try {
       await refresh(profile);
     } catch (e) {
-      errors.push(`${profile.name}: ${(e as Error).message}`);
+      errors.push(`${profile.name}: ${refreshErrorText(e)}`);
     }
   }
   if (errors.length) throw new Error(errors.join('\n'));

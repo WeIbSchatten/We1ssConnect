@@ -12,7 +12,7 @@ import { formatBytes, formatDate, t } from '@/lib/i18n';
 import { openLink } from '@/lib/links';
 import { removeProfile, useStore } from '@/lib/store';
 import { removeAccount } from '@/lib/account';
-import { refreshProfile, telegramLabel } from '@/lib/subscription';
+import { refreshErrorText, refreshProfile, telegramLabel } from '@/lib/subscription';
 import { usePalette } from '@/lib/theme';
 
 /** One subscription or key group: traffic, its page and link, Telegram proxies, servers. */
@@ -46,7 +46,7 @@ export default function ProfileScreen() {
     try {
       await refreshProfile(profile!.id);
     } catch (e) {
-      alert(t('refresh'), (e as Error).message);
+      alert(t('refresh'), refreshErrorText(e));
     } finally {
       setBusy(false);
     }
