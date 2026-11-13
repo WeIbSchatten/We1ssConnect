@@ -1,4 +1,4 @@
-import { loginToPortal, removeAccount } from './account';
+import { loginToPortal, portalErrorText, removeAccount } from './account';
 import { PortalError } from './portal';
 import { getState, removeProfile, selectServer } from './store';
 import { refreshProfile, refreshStale } from './subscription';
@@ -122,4 +122,17 @@ test('removing an account profile signs the device out and survives an unreachab
   expect(init.method).toBe('POST');
   expect(new Headers(init.headers).get('Authorization')).toBe('Bearer t1');
   expect(getState().profiles).toHaveLength(0);
+});
+
+describe('portalErrorText', () => {
+  test.each([
+    [new PortalError('invalid_credentials'), 'Неверный логин или пароль'],
+    [new PortalError('too_many_attempts', 30), 'Слишком много попыток. Повторите через 30 с.'],
+    [new PortalError('must_change_password'), `Пароль временный. Задайте свой на ${BASE}/portal, затем войдите здесь.`],
+    [new PortalError('portal_off'), 'Личный кабинет на этом сервере выключен.'],
+    [new PortalError('http_502'), 'Не удалось войти: http_502'],
+    [new TypeError('Network request failed'), 'Network request failed'],
+  ])('%s', (err, text) => {
+    expect(portalErrorText(err, BASE)).toBe(text);
+  });
 });

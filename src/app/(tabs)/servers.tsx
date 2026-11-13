@@ -183,12 +183,20 @@ export default function Servers() {
         return (
           <View key={profile.id} style={{ marginBottom: 18 }}>
             <Pressable onPress={() => router.push({ pathname: '/profile', params: { id: profile.id } })} style={styles.header}>
-              <Ionicons name={profile.url ? 'cloud-outline' : 'key-outline'} size={14} color={p.text2} />
+              <Ionicons
+                name={profile.account ? 'person-circle-outline' : profile.url ? 'cloud-outline' : 'key-outline'}
+                size={14}
+                color={p.text2}
+              />
               <Text style={[styles.group, { color: p.text2 }]} numberOfLines={1}>
                 {profile.name}
               </Text>
               <View style={{ flex: 1 }} />
-              {profile.url ? <Muted>{t('updated', { date: formatDate(profile.updatedAt) })}</Muted> : null}
+              {profile.account?.expired ? (
+                <Text style={{ color: p.warning, fontSize: 12 }}>{t('loginNeeded')}</Text>
+              ) : profile.url ? (
+                <Muted>{t('updated', { date: formatDate(profile.updatedAt) })}</Muted>
+              ) : null}
               <Ionicons name="chevron-forward" size={16} color={p.text2} />
             </Pressable>
             <Card style={{ padding: 0 }}>

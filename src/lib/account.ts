@@ -1,7 +1,8 @@
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 
-import { portalBase, portalErrorFrom, request } from './portal';
+import { t } from './i18n';
+import { PortalError, portalBase, portalErrorFrom, request } from './portal';
 import { getState, removeProfile, upsertProfile } from './store';
 import { fetchSubscription } from './subscription';
 import type { Profile } from './types';
@@ -39,4 +40,21 @@ export async function removeAccount(id: string): Promise<void> {
   await request('POST', `${profile.account.base}/portal/api/logout`, {
     headers: { Authorization: `Bearer ${profile.account.token}` },
   }).catch(() => undefined);
+}
+
+/** A message for a failed portal login; base fills in where the user sets a temporary password. */
+export function portalErrorText(err: unknown, base: string): string {
+  if (!(err instanceof PortalError)) return (err as Error).message;
+  switch (err.code) {
+    case 'invalid_credentials':
+      return t('loginInvalid');
+    case 'too_many_attempts':
+      return t('loginTooMany', { s: err.retryAfter ?? 60 });
+    case 'must_change_password':
+      return t('loginMustChange', { url: `${base}/portal` });
+    case 'portal_off':
+      return t('portalOff');
+    default:
+      return t('loginFailed', { code: err.code });
+  }
 }
