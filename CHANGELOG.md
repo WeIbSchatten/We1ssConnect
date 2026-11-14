@@ -4,6 +4,10 @@ The full history with details is in the documentation:
 [русский](https://weibschatten.github.io/We1ssConnect/ru/docs/help/history/) ·
 [English](https://weibschatten.github.io/We1ssConnect/docs/help/history/).
 
+## 1.11.1
+
+- OpenWrt: updating no longer needs 25 MB free when sing-box is already installed (2 MB is enough), downloads go through curl so an update no longer stops silently when github.com is slow to answer, and the overview says why the last update failed instead of offering it again silently.
+
 ## 1.11.0
 
 - Log in to the We1ssBoard client portal (panel 1.11.0+) with a login and password instead of a link: the app keeps only a device token, keys turned off in the portal leave the list, a signed-out device shows "Login needed" with Log in again, and deleting the group signs the device out. The desktop shows in the portal under the computer's name.
