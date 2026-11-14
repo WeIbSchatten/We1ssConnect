@@ -14,9 +14,23 @@ else
 fi
 echo "We1ssConnect: OpenWrt $(. /etc/openwrt_release; echo "$DISTRIB_RELEASE"), .$fmt packages"
 
+installed() {
+	if [ "$fmt" = apk ]; then
+		apk info -e "$1" > /dev/null 2>&1
+	else
+		opkg status "$1" 2> /dev/null | grep -q '^Status:.* installed'
+	fi
+}
+
+# Only a fresh sing-box needs ~25 MB; our own packages take a few hundred KB.
 free_kb="$(df -k /overlay 2> /dev/null | awk 'NR == 2 { print $4 }')"
-if [ -n "$free_kb" ] && [ "$free_kb" -lt 25000 ]; then
-	echo "Not enough flash: sing-box needs about 25 MB free on /overlay, $((free_kb / 1024)) MB left." >&2
+if installed sing-box; then
+	need_kb=2048 need="Not enough flash for the update: about 2 MB needed on /overlay"
+else
+	need_kb=25000 need="Not enough flash: sing-box needs about 25 MB free on /overlay"
+fi
+if [ -n "$free_kb" ] && [ "$free_kb" -lt "$need_kb" ]; then
+	echo "$need, $((free_kb / 1024)) MB left." >&2
 	exit 1
 fi
 

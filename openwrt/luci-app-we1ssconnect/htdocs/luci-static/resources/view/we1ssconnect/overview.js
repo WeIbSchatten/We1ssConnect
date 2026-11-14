@@ -59,7 +59,8 @@ return view.extend({
 			w1.header('We1ssConnect', [ _('Version'), ' ', st.version, ' · ', st.singbox || '' ], pill),
 			w1.updateAvailable(this.update)
 				? E('div', { class: 'w1-alert' }, [ _('Version %s is available.').format(this.update.latest), ' ',
-					E('button', { class: 'cbi-button cbi-button-action', click: ui.createHandlerFn(this, () => w1.update().then(() => w1.notify({}, _('Updating in the background; reload the page in a minute.')))) }, _('Update')) ])
+					E('button', { class: 'cbi-button cbi-button-action', click: ui.createHandlerFn(this, () => w1.update().then(() => w1.notify({}, _('Updating in the background; reload the page in a minute.')))) }, _('Update')),
+					this.update.failed ? E('div', { style: 'margin-top:6px' }, _('The last update failed: %s').format(this.update.failed)) : '' ])
 				: '',
 			warnings.length ? E('div', { class: 'w1-alert' }, warnings.map((x) => E('div', {}, w1.warning(x)))) : '',
 			(st.taken_over || []).length ? E('div', { class: 'w1-card w1-muted', style: 'margin-bottom:12px' },

@@ -146,6 +146,9 @@ msgstr "Серверы"
 msgid "Version"
 msgstr "Версия"
 
+msgid "The last update failed: %s"
+msgstr "Последнее обновление не удалось: %s"
+
 msgid "To keep the tunnel working, these were stopped and their autostart turned off: %s. Nothing was removed; turn them back on under System → Startup after disconnecting here."
 msgstr "Чтобы туннель работал, остановлены и выключены из автозапуска: %s. Ничего не удалено; вернуть их можно в «Система → Загрузка», отключив здесь We1ssConnect."
 
