@@ -34,7 +34,17 @@ if [ -n "$free_kb" ] && [ "$free_kb" -lt "$need_kb" ]; then
 	exit 1
 fi
 
-api="$(wget -qO- "https://api.github.com/repos/$REPO/releases/latest")" || {
+# fetch <url> <file or ->. uclient-fetch gives up on the first github.com address that times
+# out; curl (installed with We1ssConnect) tries the others and retries.
+fetch() {
+	if command -v curl > /dev/null 2>&1; then
+		curl -fsSL --retry 3 --connect-timeout 15 -o "$2" "$1"
+	else
+		wget -qO "$2" "$1"
+	fi
+}
+
+api="$(fetch "https://api.github.com/repos/$REPO/releases/latest" -)" || {
 	echo "GitHub did not answer; check the router's internet access." >&2
 	exit 1
 }
@@ -42,8 +52,12 @@ urls="$(echo "$api" | grep -oE "\"browser_download_url\": *\"[^\"]*/(we1ssconnec
 [ -n "$urls" ] || { echo "The latest release has no .$fmt packages." >&2; exit 1; }
 
 for url in $urls; do
-	echo "Downloading $(basename "$url")"
-	wget -qO "$tmp/$(basename "$url")" "$url"
+	name="$(basename "$url")"
+	echo "Downloading $name"
+	fetch "$url" "$tmp/$name" || {
+		echo "Could not download $name; check the router's access to github.com." >&2
+		exit 1
+	}
 done
 
 if [ "$fmt" = apk ]; then
