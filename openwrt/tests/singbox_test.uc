@@ -154,6 +154,14 @@ test('devices, groups, LAN proxy, QUIC block, fragment and the chrome fingerprin
 	check(c, 'devices and groups');
 });
 
+test('a protocol rule routes sniffed traffic and stays out of DNS', () => {
+	const r = build(settings({ mode: 'global', rules: [{ id: 'r1', name: 'BT', action: 'direct', protocols: ['bittorrent'] }] }), DATA);
+	eq(r.errors, []);
+	eq(filter(r.config.route.rules, (x) => x.protocol && x.protocol != 'dns'), [{ protocol: ['bittorrent'], outbound: 'direct' }]);
+	eq(filter(r.config.dns.rules, (x) => x.protocol), []);
+	check(r.config, 'protocol');
+});
+
 test('categories: geosite sets take part in DNS, geoip sets only in routing', () => {
 	const r = build(downloaded(settings({ rules: [{ id: 'r1', name: 'Blocked', action: 'proxy', target: 'auto', categories: ['geosite:ru-blocked', 'geoip:telegram'] }] })), DATA);
 	eq(r.errors, []);

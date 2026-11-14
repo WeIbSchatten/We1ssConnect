@@ -29,6 +29,7 @@ const WARNINGS = [
 	[ /^group (.+) has no usable servers$/, (m) => _('Group %s has no usable servers.').format(m[1]) ],
 	[ /^rule (.+): target (.+) is not available$/, (m) => _('Rule %s: target %s is not available.').format(m[1], m[2]) ],
 	[ /^rule (.+): no interface$/, (m) => _('Rule %s: no VPN interface chosen.').format(m[1]) ],
+	[ /^rule (.+): bad protocol (.+)$/, (m) => _('Rule %s: unknown protocol %s.').format(m[1], m[2]) ],
 	[ /^rule (.+): bad category (.+)$/, (m) => _('Rule %s: unknown category %s.').format(m[1], m[2]) ],
 	[ /^(.+): bad filter (.+)$/, (m) => _('%s: invalid filter %s.').format(m[1], m[2]) ],
 ];

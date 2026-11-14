@@ -199,6 +199,7 @@ export function build(cfg, data, via_xray) {
 
 		const act = r.action == 'block' ? { action: 'reject' } : { outbound: target };
 		const matchers = filter([
+			length(r.protocols) ? { protocol: r.protocols } : null,
 			length(sets) ? { rule_set: sets } : null,
 			length(ipsets) ? { rule_set: ipsets, by_ip: true } : null,
 			length(suffixes) ? { domain_suffix: suffixes } : null,
@@ -212,7 +213,7 @@ export function build(cfg, data, via_xray) {
 			push(route_rules, rule);
 		}
 
-		const dns_matchers = filter(matchers, (m) => !m.ip_cidr && !m.by_ip);
+		const dns_matchers = filter(matchers, (m) => !m.ip_cidr && !m.by_ip && !m.protocol);
 		for (let m in dns_matchers) {
 			if (r.action == 'block')
 				push(dns_rules, { ...m, action: 'reject' });

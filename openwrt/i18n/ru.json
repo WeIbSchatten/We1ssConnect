@@ -201,6 +201,7 @@
  "Group %s has no usable servers.": "В группе %s нет рабочих серверов.",
  "Rule %s: target %s is not available.": "Правило %s: цель %s недоступна.",
  "Rule %s: no VPN interface chosen.": "Правило %s: не выбран VPN-интерфейс.",
+ "Rule %s: unknown protocol %s.": "Правило %s: неизвестный протокол %s.",
  "Rule %s: unknown category %s.": "Правило %s: неизвестная категория %s.",
  "%s: invalid filter %s.": "%s: неверный фильтр %s.",
  "Xray running for REALITY servers": "Xray для серверов REALITY запущен",

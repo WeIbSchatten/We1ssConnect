@@ -14,6 +14,8 @@ export const DEFAULTS = {
 
 // Category names of the published rule-sets; attributes like google@cn are not among them.
 const CATEGORY = /^[a-z0-9][a-z0-9._!-]*$/;
+// What sing-box sniffs; the LuCI text editor accepts the same names (rules.js).
+const PROTOCOLS = ['http', 'tls', 'quic', 'stun', 'dns', 'bittorrent', 'dtls', 'ssh', 'rdp', 'ntp'];
 
 function list(v) {
 	if (v == null || v == '')
@@ -81,6 +83,13 @@ export function normalize(sections, data, runtime) {
 				else if (m)
 					push(errors, `rule ${name}: bad category ${e}`);
 			}
+			let protocols = [];
+			for (let p in list(s.protocol)) {
+				if (index(PROTOCOLS, lc(p)) >= 0)
+					push(protocols, lc(p));
+				else
+					push(errors, `rule ${name}: bad protocol ${p}`);
+			}
 			for (let e in lines(s.domain))
 				if (!match(lc(e), /^geo(site|ip):/))
 					push(domains, e);
@@ -90,7 +99,7 @@ export function normalize(sections, data, runtime) {
 			push(rules, {
 				id, name, action: s.action || 'proxy', target: s.target || 'auto', interface: s.interface,
 				services: list(s.service), presets: list(s.preset), remote_lists: list(s.remote_list),
-				categories: uniq(categories), domains, subnets,
+				categories: uniq(categories), protocols: uniq(protocols), domains, subnets,
 			});
 		}
 		else if (s['.type'] == 'device' && s.ip && (s.mode == 'tunnel' || s.mode == 'bypass'))

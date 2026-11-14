@@ -587,6 +587,9 @@ msgstr "Правило %s: цель %s недоступна."
 msgid "Rule %s: no VPN interface chosen."
 msgstr "Правило %s: не выбран VPN-интерфейс."
 
+msgid "Rule %s: unknown protocol %s."
+msgstr "Правило %s: неизвестный протокол %s."
+
 msgid "Rule %s: unknown category %s."
 msgstr "Правило %s: неизвестная категория %s."
 
