@@ -6,7 +6,7 @@ The full history with details is in the documentation:
 
 ## 1.11.1
 
-- OpenWrt: updating no longer needs 25 MB free when sing-box is already installed (2 MB is enough), and the overview says why the last update failed instead of offering it again silently.
+- OpenWrt: updating no longer needs 25 MB free when sing-box is already installed (2 MB is enough), downloads go through curl so an update no longer stops silently when github.com is slow to answer, and the overview says why the last update failed instead of offering it again silently.
 
 ## 1.11.0
 
