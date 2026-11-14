@@ -4,6 +4,10 @@ The full history with details is in the documentation:
 [русский](https://weibschatten.github.io/We1ssConnect/ru/docs/help/history/) ·
 [English](https://weibschatten.github.io/We1ssConnect/docs/help/history/).
 
+## 1.11.0
+
+- Log in to the We1ssBoard client portal (panel 1.11.0+) with a login and password instead of a link: the app keeps only a device token, keys turned off in the portal leave the list, a signed-out device shows "Login needed" with Log in again, and deleting the group signs the device out. The desktop shows in the portal under the computer's name.
+
 ## 1.10.1
 
 - Tablets and wide windows: the app rotates with the screen instead of running in a phone-sized window, and lays the home screen out in two columns in landscape.
