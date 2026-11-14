@@ -6,8 +6,10 @@ set -u
 root="${1:-$(cd "$(dirname "$0")/.." && pwd)}"
 fails=0
 
-# run <free KB on /overlay> <sing-box installed: yes|no>; leaves output in $out, exit in $code.
+# run <free KB> <sing-box installed: yes|no> [github.com for: both|curl-only|neither];
+# leaves the output in $out, the exit code in $code and the apk calls in $calls.
 run() {
+	reach="${3:-both}"
 	bin="$(mktemp -d)"
 	log="$bin/calls"
 	cat > "$bin/df" <<EOF
@@ -23,25 +25,48 @@ case "\$1" in
 	*) exit 0 ;;
 esac
 EOF
-	cat > "$bin/wget" <<'EOF'
+	# serve <url> <out file or -> <tool>: the release API answers; github.com downloads obey $reach.
+	cat > "$bin/serve" <<EOF
+#!/bin/sh
+case "\$1" in
+	*api.github.com*)
+		d=https://github.com/x/releases/download/v9.9.9
+		printf '{"assets":[{"browser_download_url": "%s/we1ssconnect-openwrt-9.9.9.apk"},{"browser_download_url": "%s/luci-app-we1ssconnect-9.9.9.apk"}]}' "\$d" "\$d" ;;
+	*)
+		case "$reach:\$3" in
+			neither:*|curl-only:wget) exit 4 ;;
+		esac
+		: > "\$2" ;;
+esac
+EOF
+	cat > "$bin/wget" <<EOF
 #!/bin/sh
 out=""; url=""
-for a in "$@"; do
-	case "$a" in
+for a in "\$@"; do
+	case "\$a" in
 		-qO-) out=- ;;
 		-qO) out=next ;;
 		-*) ;;
-		*) if [ "$out" = next ]; then out="$a"; else url="$a"; fi ;;
+		*) if [ "\$out" = next ]; then out="\$a"; else url="\$a"; fi ;;
 	esac
 done
-case "$url" in
-	*api.github.com*)
-		d=https://github.com/x/releases/download/v9.9.9
-		printf '{"assets":[{"browser_download_url": "%s/we1ssconnect-openwrt-9.9.9.apk"},{"browser_download_url": "%s/luci-app-we1ssconnect-9.9.9.apk"}]}' "$d" "$d" ;;
-	*) : > "$out" ;;
-esac
+exec "$bin/serve" "\$url" "\$out" wget
 EOF
-	chmod +x "$bin/df" "$bin/apk" "$bin/wget"
+	cat > "$bin/curl" <<EOF
+#!/bin/sh
+out=-; url=""
+while [ \$# -gt 0 ]; do
+	case "\$1" in
+		-o) out="\$2"; shift ;;
+		--retry|--retry-delay|--connect-timeout|-m|--max-time) shift ;;
+		-*) ;;
+		*) url="\$1" ;;
+	esac
+	shift
+done
+exec "$bin/serve" "\$url" "\$out" curl
+EOF
+	chmod +x "$bin/df" "$bin/apk" "$bin/wget" "$bin/curl" "$bin/serve"
 	out="$(PATH="$bin:$PATH" sh "$root/install.sh" 2>&1)"
 	code=$?
 	calls="$(cat "$log" 2> /dev/null)"
@@ -66,6 +91,12 @@ check "a fresh install still asks for the 25 MB sing-box needs" '[ $code -eq 1 ]
 
 run 900 yes
 check "an update with under 2 MB free stops before downloading" '[ $code -eq 1 ] && echo "$out" | grep -q "2 MB" && ! echo "$calls" | grep -q "apk add"'
+
+run 17500 yes curl-only
+check "uclient-fetch timing out on github.com does not stop an update: curl downloads" '[ $code -eq 0 ] && echo "$calls" | grep -q "apk add --allow-untrusted"'
+
+run 17500 yes neither
+check "an unreachable github.com is reported, not a silent stop" '[ $code -eq 1 ] && echo "$out" | grep -q "Could not download we1ssconnect-openwrt-9.9.9.apk" && ! echo "$calls" | grep -q "apk add"'
 
 echo "install: $fails failed"
 [ "$fails" -eq 0 ]

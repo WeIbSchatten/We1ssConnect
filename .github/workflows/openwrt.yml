@@ -89,6 +89,7 @@ jobs:
             format: apk
     # Playwright 1.56 cannot install its browser deps on ubuntu-latest (26.04) yet.
     runs-on: ubuntu-24.04
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7
       - uses: actions/download-artifact@v7
@@ -125,7 +126,7 @@ jobs:
           node luci-e2e.mjs "http://$ip" "$GITHUB_WORKSPACE/shots"
       - name: Service log
         if: always()
-        run: docker exec owrt sh -c 'logread | tail -n 80' || true
+        run: timeout 30 docker exec owrt sh -c 'logread | tail -n 80' || true
       - uses: actions/upload-artifact@v7
         if: always()
         with:
