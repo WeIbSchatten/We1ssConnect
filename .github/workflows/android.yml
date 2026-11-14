@@ -9,6 +9,10 @@ on:
       version:
         description: "Release version, e.g. 0.0.1 (empty: build only)"
         required: false
+      openwrt_only:
+        description: "Build only the OpenWrt packages; the apps are copied from the latest release"
+        type: boolean
+        default: false
   pull_request:
   push:
     branches: [main]
@@ -45,6 +49,7 @@ jobs:
         run: go vet ./... && go test ./...
 
   android:
+    if: ${{ !inputs.openwrt_only }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -144,6 +149,7 @@ jobs:
 
   # Windows and Linux: the same screens exported for the web, inside a Wails window (desktop/).
   desktop:
+    if: ${{ !inputs.openwrt_only }}
     strategy:
       fail-fast: false
       matrix:
@@ -222,7 +228,8 @@ jobs:
       version: ${{ inputs.version || github.ref_name }}
 
   release:
-    if: needs.check.result == 'success' && needs.android.result == 'success' && needs.desktop.result == 'success' && needs.openwrt.result == 'success' && (inputs.version || startsWith(github.ref, 'refs/tags/v'))
+    # A skipped job would skip the release too without !cancelled().
+    if: "!cancelled() && needs.check.result == 'success' && (inputs.openwrt_only || (needs.android.result == 'success' && needs.desktop.result == 'success')) && needs.openwrt.result == 'success' && (inputs.version || startsWith(github.ref, 'refs/tags/v'))"
     needs: [check, android, desktop, openwrt]
     runs-on: ubuntu-latest
     steps:
@@ -235,8 +242,13 @@ jobs:
       - name: Publish the release
         env:
           GH_TOKEN: ${{ github.token }}
+          OPENWRT_ONLY: ${{ inputs.openwrt_only }}
         run: |
           version="${RELEASE_VERSION#v}"
+          # An OpenWrt-only release keeps the latest apps on the latest-release page.
+          if [[ "$OPENWRT_ONLY" == true ]]; then
+            gh release download --repo "$GITHUB_REPOSITORY" --dir dist --pattern 'we1ssconnect-android-*' --pattern 'we1ssconnect-desktop-*'
+          fi
           cd dist
           # Phones are ARM; the x86_64 build is only for the emulator test.
           rm -f *-x86_64.apk *-x86.apk *.idsig
@@ -249,6 +261,7 @@ jobs:
 
   # Installs the APK on an emulator and checks that it starts and the core loads.
   smoke:
+    if: ${{ !inputs.openwrt_only }}
     needs: android
     runs-on: ubuntu-latest
     steps:
