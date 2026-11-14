@@ -521,7 +521,7 @@ export function update_check() {
 };
 
 export function self_update() {
-	sh(`(sleep 1; wget -qO- https://raw.githubusercontent.com/${REPO}/main/openwrt/install.sh | sh; echo "exit $?") >${UPDATE_LOG} 2>&1 &`);
+	sh(`(sleep 1; curl -fsSL --retry 3 --connect-timeout 15 https://raw.githubusercontent.com/${REPO}/main/openwrt/install.sh | sh; echo "exit $?") >${UPDATE_LOG} 2>&1 &`);
 	return { ok: true, log: UPDATE_LOG };
 };
 
