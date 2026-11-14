@@ -145,6 +145,9 @@ msgstr ""
 msgid "Version"
 msgstr ""
 
+msgid "The last update failed: %s"
+msgstr ""
+
 msgid "To keep the tunnel working, these were stopped and their autostart turned off: %s. Nothing was removed; turn them back on under System → Startup after disconnecting here."
 msgstr ""
 

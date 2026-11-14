@@ -12,12 +12,13 @@ import * as dnsmasq from 'we1ssconnect.dnsmasq';
 import * as clash from 'we1ssconnect.clash';
 import * as takeover from 'we1ssconnect.takeover';
 import * as xray from 'we1ssconnect.xray';
-import { mkdir_p } from 'we1ssconnect.util';
+import { mkdir_p, update_failure } from 'we1ssconnect.util';
 
 export const VERSION = '0.0.0-dev';
 export const REPO = 'WeIbSchatten/We1ssConnect';
 export const RUN_DIR = getenv('WE1SS_RUN_DIR') || '/var/run/we1ssconnect';
 const TMP_DIR = '/tmp/we1ssconnect';
+const UPDATE_LOG = '/tmp/we1ssconnect-update.log';
 const SVC_PROXY = 'socks5h://127.0.0.1:' + singbox.SVC_PORT;
 // On flash, so the lists survive a reboot and the first start does not depend on GitHub.
 const LIST_DIR = getenv('WE1SS_LIST_DIR') || '/etc/we1ssconnect/lists';
@@ -509,18 +510,19 @@ export function logs(lines) {
 
 export function update_check() {
 	const r = sh(`curl -s -m 10 https://api.github.com/repos/${REPO}/releases/latest`);
+	const failed = update_failure(readfile(UPDATE_LOG));
 	try {
 		const j = json(r.out);
-		return { current: VERSION, latest: replace(j.tag_name ?? '', /^v/, ''), url: j.html_url, notes: j.body };
+		return { current: VERSION, latest: replace(j.tag_name ?? '', /^v/, ''), url: j.html_url, notes: j.body, failed };
 	}
 	catch (e) {
-		return { current: VERSION, error: 'GitHub did not answer' };
+		return { current: VERSION, error: 'GitHub did not answer', failed };
 	}
 };
 
 export function self_update() {
-	sh(`(sleep 1; wget -qO- https://raw.githubusercontent.com/${REPO}/main/openwrt/install.sh | sh) >/tmp/we1ssconnect-update.log 2>&1 &`);
-	return { ok: true, log: '/tmp/we1ssconnect-update.log' };
+	sh(`(sleep 1; wget -qO- https://raw.githubusercontent.com/${REPO}/main/openwrt/install.sh | sh; echo "exit $?") >${UPDATE_LOG} 2>&1 &`);
+	return { ok: true, log: UPDATE_LOG };
 };
 
 function set_main(key, value) {

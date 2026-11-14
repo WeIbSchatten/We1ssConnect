@@ -26,6 +26,7 @@
  "Version %s is available.": "Доступна версия %s.",
  "Updating in the background; reload the page in a minute.": "Обновление идёт в фоне; обновите страницу через минуту.",
  "Update": "Обновить",
+ "The last update failed: %s": "Последнее обновление не удалось: %s",
  "Error": "Ошибка",
  "Connected": "Подключено",
  "Starting…": "Запуск…",

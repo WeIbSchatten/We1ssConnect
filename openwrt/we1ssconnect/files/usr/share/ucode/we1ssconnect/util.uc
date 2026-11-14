@@ -98,6 +98,15 @@ export function csv(s) {
 	return filter(map(split(s, ','), (x) => trim(x)), (x) => x != '');
 };
 
+// The update log ends with "exit N" once install.sh is done; on failure its last message says why.
+export function update_failure(log) {
+	const lines = filter(map(split(log ?? '', '\n'), (l) => trim(l)), (l) => l != '');
+	const n = length(lines);
+	if (!n || !match(lines[n - 1], /^exit [1-9][0-9]*$/))
+		return null;
+	return n > 1 ? lines[n - 2] : lines[n - 1];
+};
+
 export function truthy(v) {
 	return v === true || v == '1' || lc(`${v}`) == 'true' || lc(`${v}`) == 'yes' || lc(`${v}`) == 'on';
 };
