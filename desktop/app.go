@@ -109,6 +109,12 @@ func (a *App) Status() Status {
 
 func (a *App) Platform() string { return runtime.GOOS + "-" + runtime.GOARCH }
 
+// deviceName labels this computer in the client portal's device list.
+func deviceName() string {
+	name, _ := os.Hostname()
+	return name
+}
+
 func (a *App) XrayVersion() string { return xcore.Version() }
 
 func (a *App) ConvertShareLinks(text string) (string, error) {

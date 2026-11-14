@@ -53,7 +53,9 @@ function bridge(): Bridge {
 let status: VpnStatus = { state: 'disconnected', error: null };
 let geoAt = 0;
 // desktop/assets.go inlines the saved state into index.html, so reads can stay synchronous.
-const injected = (window as unknown as { __WE1SS__?: { store: Record<string, string>; platform: string } }).__WE1SS__;
+const injected = (
+  window as unknown as { __WE1SS__?: { store: Record<string, string>; platform: string; device?: string } }
+).__WE1SS__;
 let items: Record<string, string> = injected?.store ?? {};
 const platform = injected?.platform ?? 'linux-amd64';
 const listeners: Record<string, Set<Listener>> = { onStatus: new Set(), onDownload: new Set() };
@@ -87,6 +89,7 @@ const XrayVpn = {
   request: (method: string, url: string, userAgent: string, headers: Record<string, string>, body: string) =>
     bridge().Request(method, url, userAgent, headers, body),
   openUrl: (url: string) => bridge().OpenURL(url),
+  deviceName: () => injected?.device || 'We1ssConnect desktop',
   delay: async () => -1,
   downloadGeo: async (files: Record<string, string>) => (geoAt = await bridge().DownloadGeo(files)),
   geoUpdatedAt: () => geoAt,

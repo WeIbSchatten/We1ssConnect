@@ -24,7 +24,7 @@ func (a *App) injectState(next http.Handler) http.Handler {
 			next.ServeHTTP(w, r)
 			return
 		}
-		state, _ := json.Marshal(map[string]any{"store": a.store.all(), "platform": a.Platform()})
+		state, _ := json.Marshal(map[string]any{"store": a.store.all(), "platform": a.Platform(), "device": deviceName()})
 		// </script> inside a value would end the tag early.
 		safe := strings.ReplaceAll(string(state), "</", `<\/`)
 		script := []byte("<script>window.__WE1SS__=" + safe + "</script>")

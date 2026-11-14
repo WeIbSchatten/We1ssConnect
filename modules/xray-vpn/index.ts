@@ -57,6 +57,8 @@ interface XrayVpnNative {
   ): Promise<{ status: number; body: string; headers: Record<string, string> }>;
   /** Desktop only: opens a link (https, tg://) in the system's default app. */
   openUrl?(url: string): Promise<void>;
+  /** Desktop only: the computer's name; the webview's own device name is the browser's. */
+  deviceName?(): string;
   /** The device's preferred ABI, such as arm64-v8a. */
   abi(): string;
   /** Desktop only: "Connect / disconnect" in the tray menu; returns the unsubscribe function. */

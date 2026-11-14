@@ -1,5 +1,6 @@
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
+import XrayVpn from 'xray-vpn';
 
 import { t } from './i18n';
 import { PortalError, portalBase, portalErrorFrom, request } from './portal';
@@ -19,7 +20,7 @@ export async function loginToPortal(address: string, login: string, password: st
     login: login.trim(),
     password,
     client: 'app',
-    device: deviceLabel(Constants.deviceName, Platform.OS),
+    device: deviceLabel(XrayVpn.deviceName?.() ?? Constants.deviceName, Platform.OS),
   });
   const post = (root: string) => request('POST', `${root}/portal/api/login`, { headers: JSON_HEADERS, body });
   let res = await post(base);

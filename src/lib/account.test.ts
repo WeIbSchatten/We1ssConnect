@@ -1,3 +1,5 @@
+import XrayVpn from 'xray-vpn';
+
 import { deviceLabel, loginToPortal, portalErrorText, removeAccount } from './account';
 import { PortalError } from './portal';
 import { getState, removeProfile, selectServer } from './store';
@@ -55,6 +57,18 @@ test('logs in as an app, then downloads the subscription with the device token',
   expect(profile.account).toEqual({ base: BASE, login: 'a.smirnova', token: 't1' });
   expect(profile.servers.map((s) => s.name)).toEqual(['Finland', 'Netherlands']);
   expect(JSON.stringify(getState())).not.toContain('secret-pass');
+});
+
+test('the desktop names itself by the computer, not by its webview browser', async () => {
+  const native = XrayVpn as { deviceName?: () => string };
+  native.deviceName = () => 'KD-WORKSTATION';
+  try {
+    loginOk();
+    await loginToPortal(BASE, 'a.smirnova', 'secret-pass');
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body).device).toBe('KD-WORKSTATION');
+  } finally {
+    delete native.deviceName;
+  }
 });
 
 test.each([
