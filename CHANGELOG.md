@@ -4,6 +4,10 @@ The full history with details is in the documentation:
 [русский](https://weibschatten.github.io/We1ssConnect/ru/docs/help/history/) ·
 [English](https://weibschatten.github.io/We1ssConnect/docs/help/history/).
 
+## 1.11.2
+
+- OpenWrt: routing rules can be edited as text, one rule per line (`domain(geosite:ru-blocked)->proxy`), next to the form; errors show by line before saving. Rules can also match protocols such as bittorrent. The phone and computer apps are unchanged.
+
 ## 1.11.1
 
 - OpenWrt: updating no longer needs 25 MB free when sing-box is already installed (2 MB is enough), downloads go through curl so an update no longer stops silently when github.com is slow to answer, and the overview says why the last update failed instead of offering it again silently.
