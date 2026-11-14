@@ -12,6 +12,8 @@ const IPV4 = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})(\/(\d{1,2}))?$/;
 const IPV6 = /^[0-9a-f]*:[0-9a-f:.]*(\/(\d{1,3}))?$/;
 const IFACE = /^[A-Za-z0-9_.@-]+$/;
 const RULE = /^(!)?\s*([a-z]+)\s*\((.*?)\)\s*->\s*([a-z]+)\s*(?:\((.*)\))?$/i;
+// lists.uc downloads categories from here (CATEGORY_BASE, category_url).
+const CATEGORY_BASE = 'https://raw.githubusercontent.com/runetfreedom/russia-v2ray-rules-dat/release/sing-box/';
 const LISTS = ['protocol', 'service', 'preset', 'category', 'domain', 'subnet', 'remote_list'];
 
 function isIp(v) {
@@ -25,6 +27,11 @@ function isIp(v) {
 // uci keeps domains and subnets as text (and older configs as lists); the rest as lists.
 function entries(v) {
 	return [].concat(v || []).join('\n').split(/[\s,]+/).filter((x) => x);
+}
+
+function categoryUrl(category) {
+	const [kind, name] = category.split(':');
+	return `${CATEGORY_BASE}rule-set-${kind}/${kind}-${name}.srs`;
 }
 
 function blank(over) {
@@ -194,4 +201,4 @@ function serialize(mode, rules, ctx) {
 	return lines.join('\n') + '\n';
 }
 
-return baseclass.extend({ PROTOCOLS, LISTS, entries, parse, serialize });
+return baseclass.extend({ PROTOCOLS, LISTS, entries, categoryUrl, parse, serialize });

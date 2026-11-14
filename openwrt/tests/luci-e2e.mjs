@@ -84,6 +84,25 @@ if (youtube && !/\bnull\b/.test(modalText)) console.log('ok   routing: the rule 
 else { console.log(`FAIL routing editor: youtube ticked=${youtube}, null shown=${/\bnull\b/.test(modalText)}`); failed++; }
 await page.screenshot({ path: `${out}/routing-editor.png`, fullPage: true });
 
+// Rules typed as text are saved as rule sections and read back as the same text.
+const typed = 'default: direct\nprotocol(bittorrent)->direct\n\n# Заблокированные\ndomain(geosite:refilter)->proxy\ndomain(market.example)->proxy(Нидерланды)\n';
+const printed = 'default: direct\n\nprotocol(bittorrent)->direct\n\n# Заблокированные\ndomain(geosite:refilter)->proxy\ndomain(market.example)->proxy(Нидерланды)\n';
+await page.goto(`${base}/cgi-bin/luci/admin/services/we1ssconnect/routing`);
+await page.getByRole('button', { name: 'Текстом' }).click();
+await page.locator('textarea.w1-rules-text').fill(typed);
+await page.locator('.cbi-page-actions .cbi-button-apply').click();
+await page.waitForTimeout(15000);
+await page.goto(`${base}/cgi-bin/luci/admin/services/we1ssconnect/routing`);
+const text = page.locator('textarea.w1-rules-text');
+await text.waitFor({ timeout: 20000 });
+const back = await text.inputValue();
+const sections = await page.evaluate(() => L.require('uci').then((uci) =>
+	uci.load('we1ssconnect').then(() => uci.sections('we1ssconnect', 'rule').map((s) => [s.action, s.protocol || s.category || s.domain]))));
+if (back === printed && JSON.stringify(sections) === JSON.stringify([['direct', ['bittorrent']], ['proxy', ['geosite:refilter']], ['proxy', 'market.example']]))
+	console.log('ok   routing: rules typed as text are saved and read back');
+else { console.log(`FAIL routing text: ${JSON.stringify(back)} ${JSON.stringify(sections)}`); failed++; }
+await page.screenshot({ path: `${out}/routing-text.png`, fullPage: true });
+
 await page.setViewportSize({ width: 390, height: 844 });
 await page.goto(`${base}/cgi-bin/luci/admin/services/we1ssconnect/overview`);
 await page.waitForTimeout(3000);
