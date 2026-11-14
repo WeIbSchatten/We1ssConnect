@@ -50,6 +50,12 @@ test('rules keep file order; disabled rules and incomplete devices drop out', ()
 	eq(r.cfg.devices, [{ name: 'TV', ip: '192.168.1.50', mode: 'tunnel' }]);
 });
 
+test('protocols are read in lower case; unknown ones are reported', () => {
+	const r = normalize([{ '.type': 'rule', '.name': 'r1', name: 'BT', action: 'direct', protocol: ['bittorrent', 'BitTorrent', 'gopher'] }], DATA);
+	eq(r.cfg.rules[0].protocols, ['bittorrent']);
+	eq(r.errors, ['rule BT: bad protocol gopher']);
+});
+
 test('plain lists: domains, CIDRs, comments and common prefixes', () => {
 	eq(parse_plain('# list\nexample.com\n*.cdn.example\n.dot.example\ndomain:pre.example\nfull:full.example\nDOMAIN-SUFFIX,clash.example\n1.2.3.4\n10.0.0.0/8 # lan\n2001:db8::/32\nnot_a_domain\n'), {
 		domains: ['example.com', 'cdn.example', 'dot.example', 'pre.example', 'full.example', 'clash.example'],

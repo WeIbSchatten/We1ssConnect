@@ -254,6 +254,12 @@ msgstr "Списки сообщества itdoginfo/allow-domains, обновл�
 msgid "Presets"
 msgstr "Пресеты"
 
+msgid "Protocols"
+msgstr "Протоколы"
+
+msgid "Traffic sing-box recognizes as this protocol, such as bittorrent."
+msgstr "Трафик, который sing-box распознаёт как этот протокол, например bittorrent."
+
 msgid "Categories"
 msgstr "Категории"
 
@@ -304,6 +310,24 @@ msgstr "Фильтр по названию"
 
 msgid "Regular expression, such as finland|helsinki."
 msgstr "Регулярное выражение, например finland|helsinki."
+
+msgid "One rule per line, checked from top to bottom: condition(value)->action. Conditions: domain, geoip, ip, service, preset, list, protocol. Actions: direct, proxy, proxy(server or group), block, vpn(interface). A # line names the rules under it; ! at the start turns a rule off; default: direct or default: proxy sets the mode."
+msgstr "По правилу на строку, проверяются сверху вниз: условие(значение)->действие. Условия: domain, geoip, ip, service, preset, list, protocol. Действия: direct, proxy, proxy(сервер или группа), block, vpn(интерфейс). Строка с # называет правила под ней; ! в начале выключает правило; default: direct или default: proxy задаёт режим."
+
+msgid "As a form"
+msgstr "Формой"
+
+msgid "As text"
+msgstr "Текстом"
+
+msgid "Line %d: %s"
+msgstr "Строка %d: %s"
+
+msgid "Line %d: the rule files have no category %s"
+msgstr "Строка %d: в файлах правил нет категории %s"
+
+msgid "Fix the lines marked in the rule text first."
+msgstr "Сначала исправьте отмеченные строки в тексте правил."
 
 msgid "not supported"
 msgstr "не поддерживается"
@@ -587,6 +611,9 @@ msgstr "Правило %s: цель %s недоступна."
 msgid "Rule %s: no VPN interface chosen."
 msgstr "Правило %s: не выбран VPN-интерфейс."
 
+msgid "Rule %s: unknown protocol %s."
+msgstr "Правило %s: неизвестный протокол %s."
+
 msgid "Rule %s: unknown category %s."
 msgstr "Правило %s: неизвестная категория %s."
 
@@ -613,6 +640,60 @@ msgstr "неизвестный тип ссылки: %s"
 
 msgid "Failed"
 msgstr "Не удалось"
+
+msgid "Several servers or groups are named %s; use its id"
+msgstr "Несколько серверов или групп называются %s; укажите идентификатор"
+
+msgid "No server or group named %s"
+msgstr "Нет сервера или группы с именем %s"
+
+msgid "Not a category name: %s"
+msgstr "Неверное имя категории: %s"
+
+msgid "Not a domain: %s"
+msgstr "Не домен: %s"
+
+msgid "Not an IP address or subnet: %s"
+msgstr "Не IP-адрес и не подсеть: %s"
+
+msgid "Unknown service %s"
+msgstr "Неизвестный сервис %s"
+
+msgid "Unknown preset %s"
+msgstr "Неизвестный пресет %s"
+
+msgid "Not an http(s) URL: %s"
+msgstr "Не адрес http(s): %s"
+
+msgid "Unknown protocol %s"
+msgstr "Неизвестный протокол %s"
+
+msgid "Unknown condition %s"
+msgstr "Неизвестное условие %s"
+
+msgid "%s takes no server"
+msgstr "%s не принимает сервер"
+
+msgid "vpn needs an interface, such as vpn(wg0)"
+msgstr "vpn нужен интерфейс, например vpn(wg0)"
+
+msgid "Unknown action %s"
+msgstr "Неизвестное действие %s"
+
+msgid "Only one default line is allowed"
+msgstr "Строка default может быть только одна"
+
+msgid "default is direct or proxy"
+msgstr "default — это direct или proxy"
+
+msgid "Put comments on a line of their own"
+msgstr "Комментарий пишется на отдельной строке"
+
+msgid "Expected condition(value)->action"
+msgstr "Ожидается условие(значение)->действие"
+
+msgid "In selective mode only traffic matched by domain or IP rules reaches the tunnel, so this rule catches almost nothing"
+msgstr "В выборочном режиме в туннель попадает только трафик, совпавший с правилами по доменам или IP, поэтому это правило почти ничего не поймает"
 
 msgid "We1ssConnect"
 msgstr "We1ssConnect"

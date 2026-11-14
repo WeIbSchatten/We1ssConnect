@@ -2,8 +2,11 @@
 'require view';
 'require form';
 'require uci';
+'require ui';
+'require dom';
 'require tools.widgets as widgets';
 'require we1ssconnect.common as w1';
+'require we1ssconnect.rules as rules';
 
 // Domains and subnets are text in LuCI, but may be uci lists (uci add_list, older configs).
 function entries(sid, option) {
@@ -13,6 +16,7 @@ function entries(sid, option) {
 // What a rule matches, in words; also the row title of rules without a name.
 function summary(sid) {
 	const parts = [];
+	[].concat(uci.get('we1ssconnect', sid, 'protocol') || []).forEach((k) => parts.push(k));
 	[].concat(uci.get('we1ssconnect', sid, 'service') || []).forEach((k) => parts.push(w1.SERVICES[k] || k));
 	[].concat(uci.get('we1ssconnect', sid, 'preset') || []).forEach((k) => parts.push(w1.PRESETS[k] || k));
 	[].concat(uci.get('we1ssconnect', sid, 'category') || []).forEach((k) => parts.push(k));
@@ -115,6 +119,11 @@ return view.extend({
 			o.value(k, w1.PRESETS[k]);
 		o.modalonly = true;
 
+		o = s.option(ChecklistValue, 'protocol', _('Protocols'),
+			_('Traffic sing-box recognizes as this protocol, such as bittorrent.'));
+		rules.PROTOCOLS.forEach((p) => o.value(p, p));
+		o.modalonly = true;
+
 		o = s.option(form.DynamicList, 'category', _('Categories'),
 			_('geosite:… and geoip:… categories of the rule files, as in Xray and v2rayN: geosite:ru-blocked, geosite:youtube, geoip:telegram. The phone and computer apps understand the same names.'));
 		[ 'geosite:ru-blocked', 'geosite:ru-blocked-all', 'geosite:ru-available-only-inside', 'geosite:youtube', 'geosite:telegram',
@@ -166,6 +175,132 @@ return view.extend({
 
 		o = s.option(form.Value, 'filter', _('Name filter'), _('Regular expression, such as finland|helsinki.'));
 
-		return m.render();
+		this.map = m;
+		this.ctx = {
+			groups: uci.sections('we1ssconnect', 'group').map((g) => ({ sid: g['.name'], name: g.name || g['.name'] })),
+			servers: servers.map((x) => ({ id: x.id, name: x.name })),
+			services: Object.keys(w1.SERVICES),
+			presets: Object.keys(w1.PRESETS),
+		};
+		this.categories = {};
+		this.textarea = E('textarea', { class: 'w1-rules-text', spellcheck: 'false', input: () => this.check() });
+		this.msgs = E('ul', { class: 'w1-rules-msgs' });
+		this.textBox = E('div', { class: 'cbi-section' }, [
+			E('h3', {}, _('Routing rules')),
+			E('div', { class: 'cbi-section-descr' }, _('One rule per line, checked from top to bottom: condition(value)->action. Conditions: domain, geoip, ip, service, preset, list, protocol. Actions: direct, proxy, proxy(server or group), block, vpn(interface). A # line names the rules under it; ! at the start turns a rule off; default: direct or default: proxy sets the mode.')),
+			this.textarea, this.msgs,
+		]);
+		this.buttons = {
+			form: E('button', { class: 'cbi-button', click: ui.createHandlerFn(this, 'show', 'form', false) }, _('As a form')),
+			text: E('button', { class: 'cbi-button', click: ui.createHandlerFn(this, 'show', 'text', false) }, _('As text')),
+		};
+		return m.render().then((node) => {
+			this.root = E('div', {}, [ E('div', { class: 'w1-views' }, [ this.buttons.form, this.buttons.text ]), this.textBox, node ]);
+			let saved = null;
+			try { saved = localStorage.getItem('we1ssconnect.routing.view'); } catch (e) {}
+			return this.show(saved == 'text' ? 'text' : 'form', true).then(() => this.root);
+		});
+	},
+
+	// The rule sections stay the storage; the text is printed from them and parsed back.
+	show: function(mode, initial) {
+		let ready;
+		if (mode == 'text')
+			ready = (initial ? Promise.resolve() : this.map.parse()).then(() => {
+				this.textarea.value = this.text();
+				this.check();
+				return true;
+			});
+		else
+			ready = this.mode == 'text' ? this.applyText() : Promise.resolve(true);
+		return ready.then((ok) => {
+			if (!ok)
+				return;
+			this.mode = mode;
+			try { localStorage.setItem('we1ssconnect.routing.view', mode); } catch (e) {}
+			this.root.classList.toggle('w1-textmode', mode == 'text');
+			this.textBox.style.display = mode == 'text' ? '' : 'none';
+			for (const k in this.buttons)
+				this.buttons[k].classList.toggle('cbi-button-action', k == mode);
+		}).catch((e) => ui.addNotification(null, E('p', {}, e.message), 'danger'));
+	},
+
+	text: function() {
+		const sections = uci.sections('we1ssconnect', 'rule').map((s) => {
+			const r = { enabled: s.enabled != '0', name: s.name || '', action: s.action || 'proxy', target: s.target || '', interface: s.interface || '' };
+			rules.LISTS.forEach((k) => r[k] = s[k]);
+			return r;
+		});
+		return rules.serialize(uci.get('we1ssconnect', 'main', 'mode') == 'global' ? 'global' : 'selective', sections, this.ctx);
+	},
+
+	check: function() {
+		const p = rules.parse(this.textarea.value, Object.assign({ mode: uci.get('we1ssconnect', 'main', 'mode') }, this.ctx));
+		const items = p.errors.map((e) => E('li', { class: 'w1-bad' }, _('Line %d: %s').format(e.line, e.msg)))
+			.concat(p.warnings.map((w) => E('li', { class: 'w1-warn' }, _('Line %d: %s').format(w.line, w.msg))));
+		p.categories.forEach((c) => {
+			const state = this.categories[c.category];
+			if (state == 'missing')
+				items.push(E('li', { class: 'w1-warn' }, _('Line %d: the rule files have no category %s').format(c.line, c.category)));
+			else if (state == null)
+				this.lookUp(c.category);
+		});
+		dom.content(this.msgs, items);
+		return p;
+	},
+
+	// Only a 404 counts as missing: an offline browser must not flag every category.
+	lookUp: function(category) {
+		this.categories[category] = 'pending';
+		fetch(rules.categoryUrl(category), { method: 'HEAD' })
+			.then((r) => this.categories[category] = r.status == 404 ? 'missing' : 'ok')
+			.catch(() => this.categories[category] = 'ok')
+			.then(() => this.mode == 'text' && this.check());
+	},
+
+	applyText: function() {
+		const p = this.check();
+		if (p.errors.length) {
+			ui.addNotification(null, E('p', {}, _('Fix the lines marked in the rule text first.')), 'danger');
+			return Promise.resolve(false);
+		}
+		uci.sections('we1ssconnect', 'rule').forEach((s) => uci.remove('we1ssconnect', s['.name']));
+		p.rules.forEach((r) => {
+			const sid = uci.add('we1ssconnect', 'rule');
+			const set = (k, v) => uci.set('we1ssconnect', sid, k, v);
+			if (r.name)
+				set('name', r.name);
+			if (!r.enabled)
+				set('enabled', '0');
+			set('action', r.action);
+			if (r.action == 'proxy')
+				set('target', r.target);
+			if (r.action == 'vpn')
+				set('interface', r.interface);
+			[ 'domain', 'subnet' ].forEach((k) => r[k].length && set(k, r[k].join('\n')));
+			[ 'protocol', 'service', 'preset', 'category', 'remote_list' ].forEach((k) => r[k].length && set(k, r[k]));
+		});
+		if (p.mode)
+			uci.set('we1ssconnect', 'main', 'mode', p.mode);
+		return this.map.renderContents().then(() => true);
+	},
+
+	handleSave: function(ev) {
+		if (this.mode != 'text')
+			return this.super('handleSave', [ ev ]);
+		return this.applyText().then((ok) => ok && this.super('handleSave', [ ev ]));
+	},
+
+	handleSaveApply: function(ev, mode) {
+		if (this.mode != 'text')
+			return this.super('handleSaveApply', [ ev, mode ]);
+		return this.applyText().then((ok) => ok && this.super('handleSave', [ ev ]).then(() => ui.changes.apply(mode == '0')));
+	},
+
+	handleReset: function(ev) {
+		if (this.mode != 'text')
+			return this.super('handleReset', [ ev ]);
+		this.textarea.value = this.text();
+		this.check();
 	},
 });

@@ -253,6 +253,12 @@ msgstr ""
 msgid "Presets"
 msgstr ""
 
+msgid "Protocols"
+msgstr ""
+
+msgid "Traffic sing-box recognizes as this protocol, such as bittorrent."
+msgstr ""
+
 msgid "Categories"
 msgstr ""
 
@@ -302,6 +308,24 @@ msgid "Name filter"
 msgstr ""
 
 msgid "Regular expression, such as finland|helsinki."
+msgstr ""
+
+msgid "One rule per line, checked from top to bottom: condition(value)->action. Conditions: domain, geoip, ip, service, preset, list, protocol. Actions: direct, proxy, proxy(server or group), block, vpn(interface). A # line names the rules under it; ! at the start turns a rule off; default: direct or default: proxy sets the mode."
+msgstr ""
+
+msgid "As a form"
+msgstr ""
+
+msgid "As text"
+msgstr ""
+
+msgid "Line %d: %s"
+msgstr ""
+
+msgid "Line %d: the rule files have no category %s"
+msgstr ""
+
+msgid "Fix the lines marked in the rule text first."
 msgstr ""
 
 msgid "not supported"
@@ -586,6 +610,9 @@ msgstr ""
 msgid "Rule %s: no VPN interface chosen."
 msgstr ""
 
+msgid "Rule %s: unknown protocol %s."
+msgstr ""
+
 msgid "Rule %s: unknown category %s."
 msgstr ""
 
@@ -611,6 +638,60 @@ msgid "Unknown link type: %s"
 msgstr ""
 
 msgid "Failed"
+msgstr ""
+
+msgid "Several servers or groups are named %s; use its id"
+msgstr ""
+
+msgid "No server or group named %s"
+msgstr ""
+
+msgid "Not a category name: %s"
+msgstr ""
+
+msgid "Not a domain: %s"
+msgstr ""
+
+msgid "Not an IP address or subnet: %s"
+msgstr ""
+
+msgid "Unknown service %s"
+msgstr ""
+
+msgid "Unknown preset %s"
+msgstr ""
+
+msgid "Not an http(s) URL: %s"
+msgstr ""
+
+msgid "Unknown protocol %s"
+msgstr ""
+
+msgid "Unknown condition %s"
+msgstr ""
+
+msgid "%s takes no server"
+msgstr ""
+
+msgid "vpn needs an interface, such as vpn(wg0)"
+msgstr ""
+
+msgid "Unknown action %s"
+msgstr ""
+
+msgid "Only one default line is allowed"
+msgstr ""
+
+msgid "default is direct or proxy"
+msgstr ""
+
+msgid "Put comments on a line of their own"
+msgstr ""
+
+msgid "Expected condition(value)->action"
+msgstr ""
+
+msgid "In selective mode only traffic matched by domain or IP rules reaches the tunnel, so this rule catches almost nothing"
 msgstr ""
 
 msgid "We1ssConnect"

@@ -46,6 +46,8 @@ jobs:
         run: |
           node openwrt/i18n/i18n.mjs openwrt/luci-app-we1ssconnect openwrt/i18n/ru.json
           git diff --exit-code -- openwrt/luci-app-we1ssconnect/po
+      - name: LuCI modules that run without a browser
+        run: node --test openwrt/tests/rules_test.mjs
 
   build:
     needs: [test, translations]

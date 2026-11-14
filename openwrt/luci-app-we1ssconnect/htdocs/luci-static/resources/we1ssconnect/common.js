@@ -29,6 +29,7 @@ const WARNINGS = [
 	[ /^group (.+) has no usable servers$/, (m) => _('Group %s has no usable servers.').format(m[1]) ],
 	[ /^rule (.+): target (.+) is not available$/, (m) => _('Rule %s: target %s is not available.').format(m[1], m[2]) ],
 	[ /^rule (.+): no interface$/, (m) => _('Rule %s: no VPN interface chosen.').format(m[1]) ],
+	[ /^rule (.+): bad protocol (.+)$/, (m) => _('Rule %s: unknown protocol %s.').format(m[1], m[2]) ],
 	[ /^rule (.+): bad category (.+)$/, (m) => _('Rule %s: unknown category %s.').format(m[1], m[2]) ],
 	[ /^(.+): bad filter (.+)$/, (m) => _('%s: invalid filter %s.').format(m[1], m[2]) ],
 ];
@@ -50,6 +51,12 @@ const CSS = `
 .w1-checklist { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 6px 18px; max-width: 100%; }
 .w1-checklist label { display: flex; align-items: center; gap: 8px; margin: 0; cursor: pointer; line-height: 1.3; }
 .w1-checklist input { margin: 0; flex: none; }
+.w1-rules-text { width: 100%; min-height: 420px; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 13px; line-height: 1.5; white-space: pre; tab-size: 4; box-sizing: border-box; }
+.w1-rules-msgs { margin: 8px 0 0; padding-left: 18px; }
+.w1-rules-msgs .w1-warn { color: #b7791f; }
+.w1-rules-msgs .w1-bad { color: #c9443c; }
+.w1-textmode #cbi-we1ssconnect-rule, .w1-textmode .cbi-map-descr { display: none; }
+.w1-views { display: flex; gap: 6px; margin: 0 0 10px; }
 .w1-err { background: rgba(179,54,47,.12); border-color: rgba(179,54,47,.45); color: #c9443c; }
 .w1-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); border: 1px solid rgba(128,128,128,.28); border-radius: 12px; margin-bottom: 12px; }
 .w1-stats > div { padding: 12px 16px; border-right: 1px solid rgba(128,128,128,.18); }
