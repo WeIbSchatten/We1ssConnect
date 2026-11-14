@@ -30,6 +30,9 @@ bottom and the first match wins; drag rows to change the order.
 - **Remote lists** — URLs of sing-box rule-sets (`.srs`, `.json`) or plain text lists of domains and
   subnets. Lines like `example.com`, `*.example.com`, `domain:example.com`,
   `DOMAIN-SUFFIX,example.com`, addresses, subnets and `#` comments are understood.
+- **Protocols** — traffic sing-box recognizes as `bittorrent`, `quic`, `stun` and so on. Mostly for
+  sending torrents direct in all-traffic mode: in list mode only traffic of "through the tunnel"
+  rules reaches sing-box, so torrents go direct anyway.
 
 ## Categories
 
@@ -44,6 +47,47 @@ Write categories in the **Categories** field or right in **Domains** and **IP ad
 Categories with attributes (`geosite:google@cn`) are not supported. A category that does not exist is
 skipped with a warning on the overview. Subnets of `geoip:` categories in "through the tunnel" rules are
 captured too, so apps that connect by IP also go through the tunnel.
+
+## Rules as text
+
+The **As text** button above the rules shows them as one list you can edit, paste from your notes
+or copy to another router. **As a form** brings the usual view back; both edit the same rules.
+
+```
+default: direct
+protocol(bittorrent)->direct
+
+# Blocked in Russia
+domain(geosite:ru-blocked)->proxy
+domain(geosite:refilter)->proxy
+
+# Ads
+domain(geosite:category-ads-all)->block
+
+# Sites
+domain(shikimori.io)->proxy(Finland)
+geoip(telegram)->proxy
+```
+
+| Condition | Matches |
+| --- | --- |
+| `domain(example.com)` | the domain and its subdomains |
+| `domain(geosite:ru-blocked)` | a domain category |
+| `geoip(telegram)` | an address category |
+| `ip(149.154.160.0/20)` | an address or subnet |
+| `service(youtube)` | a service from the list |
+| `preset(ru)` | a preset (`ru`, `ads`) |
+| `list(https://…)` | a remote list |
+| `protocol(bittorrent)` | a protocol: `http`, `tls`, `quic`, `stun`, `dns`, `bittorrent`, `dtls`, `ssh`, `rdp`, `ntp` |
+
+Actions: `direct`, `proxy` (through Auto), `proxy(Name)` (through the group or server of that name),
+`block`, `vpn(wg0)` (through a router interface).
+
+- `default: direct` is list mode, `default: proxy` is all-traffic mode.
+- A `#` line names the rules under it; comments go on a line of their own.
+- `!` at the start of a line turns the rule off without deleting it.
+- Errors show under the text with their line number and block saving until fixed. A category the
+  rule files do not have shows a warning.
 
 ## How it works
 
