@@ -1,0 +1,35 @@
+#!/bin/sh
+# Package upgrades on a booted OpenWrt keep the service and autostart as the user left them.
+# Needs the built packages in /pkgs. Runs after service_test.sh.
+set -u
+. "$(dirname "$0")/lib/pkg.sh"
+
+fails=0
+pass() { echo "ok   $1"; }
+fail() { echo "FAIL $1"; fails=$((fails + 1)); }
+check() { if eval "$2"; then pass "$1"; else fail "$1"; fi; }
+field() { ubus call we1ssconnect status | jsonfilter -e "@.$1"; }
+svc() { ubus call we1ssconnect service "{\"action\":\"$1\"}" > /dev/null; }
+up() { [ "$(field running)" = true ]; }
+up_within() { i=0; until up; do i=$((i + 1)); [ "$i" -le "$1" ] || return 1; sleep 1; done; }
+
+svc enable
+svc start
+up_within 15
+out="$(reinstall)"
+check "the upgrade ran our postinst" 'echo "$out" | grep -q "We1ssConnect: kept"'
+check "a running service runs after the upgrade" 'up_within 20'
+check "autostart stays on" '[ "$(field autostart)" = true ]'
+
+svc stop
+svc disable
+out="$(reinstall)"
+check "a stopped service stays stopped after the upgrade" 'sleep 3; ! up'
+check "autostart stays off" '[ "$(field autostart)" = false ]'
+
+svc enable
+svc start
+up_within 15 || fail "the service runs again for the LuCI test"
+[ "$fails" -gt 0 ] && echo "$out"
+echo "upgrade: $fails failed"
+[ "$fails" -eq 0 ]
