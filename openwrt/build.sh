@@ -25,13 +25,14 @@ for f in $(find bin/packages -type f \( -name '*.ipk' -o -name '*.apk' \)); do
 	luci-i18n-we1ssconnect-ru[-_]*) cp "$f" "$out/luci-i18n-we1ssconnect-ru-$version.$ext" ;;
 	esac
 done
-# For the LuCI job's upgrade test: the routers' apk has no mkndx, and a repository needs the
-# package under its own name. Kept out of the release, which takes only the files above.
-main="$(find bin/packages -type f -name 'we1ssconnect-[0-9]*.apk' | head -n 1)"
-if [ -n "$main" ]; then
-	mkdir -p "$out/index"
-	cp "$main" "$out/index/"
-	apk="$(find staging_dir -path '*/bin/apk' -type f | head -n 1)"
-	"$apk" mkndx --allow-untrusted --output "$out/index/packages.adb" "$out/index/"*.apk
-fi
+# The LuCI job's upgrade test installs these over the release build: real upgrades, as neither
+# opkg nor apk reruns the scripts for the same version. Kept out of the release in up/.
+mkdir -p "$out/up"
+for k in 1 2 3; do
+	make package/we1ssconnect/compile WE1SS_VERSION="$version.$k" V=s > build.log 2>&1 || {
+		tail -n 80 build.log
+		exit 1
+	}
+	find bin/packages -type f -name "we1ssconnect[-_]$version.$k[-_]*" -exec cp {} "$out/up/" \;
+done
 ls -lR "$out"

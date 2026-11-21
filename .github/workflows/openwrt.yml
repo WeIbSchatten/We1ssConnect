@@ -79,10 +79,9 @@ jobs:
           if-no-files-found: error
       # Not "we1ssconnect-*": the release collects every artifact by that pattern.
       - uses: actions/upload-artifact@v7
-        if: matrix.format == 'apk'
         with:
-          name: upgrade-test-index-apk
-          path: dist/index/
+          name: upgrade-test-packages-${{ matrix.format }}
+          path: dist/up/
           if-no-files-found: error
 
   # Installs the built packages with opkg/apk on a booted OpenWrt and drives LuCI in Chromium.
@@ -106,10 +105,9 @@ jobs:
           name: we1ssconnect-openwrt-${{ matrix.format }}
           path: pkgs
       - uses: actions/download-artifact@v7
-        if: matrix.format == 'apk'
         with:
-          name: upgrade-test-index-apk
-          path: pkgs/index
+          name: upgrade-test-packages-${{ matrix.format }}
+          path: pkgs/up
       - name: Install LuCI and We1ssConnect with the release's package manager
         run: |
           docker run --name prep -v "$PWD/pkgs:/pkgs:ro" -v "$PWD/openwrt:/src:ro" \

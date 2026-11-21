@@ -48,10 +48,10 @@ define Package/we1ssconnect/preinst
 #!/bin/sh
 [ -n "$$IPKG_INSTROOT" ] && exit 0
 [ -x /etc/init.d/we1ssconnect ] || exit 0
+# On opkg the old package's prerm ran first and already noted the state.
+[ -f /tmp/we1ssconnect.pkg ] && exit 0
 autostart=0 running=0
 /etc/init.d/we1ssconnect enabled && autostart=1
-# Releases before 1.11.4 kept "Disconnected" in uci with procd autostart still on.
-[ "$$(uci -q get we1ssconnect.main.enabled)" = 0 ] && autostart=0
 pidof sing-box > /dev/null && nft list table inet we1ssconnect > /dev/null 2>&1 && running=1
 echo "autostart=$$autostart running=$$running" > /tmp/we1ssconnect.pkg
 exit 0
@@ -64,10 +64,12 @@ define Package/we1ssconnect/postinst
 # podkop, Passwall and the like capture the same traffic: stop them and their autostart.
 stopped="$$(/usr/bin/we1ssconnect take-over | jsonfilter -e '@.stopped[*]' | tr '\n' ' ')"
 [ -n "$$stopped" ] && echo "We1ssConnect: stopped and disabled $${stopped}(nothing was removed)"
-uci -q delete we1ssconnect.main.enabled && uci commit we1ssconnect
 autostart=0 running=0
 [ -f /tmp/we1ssconnect.pkg ] && . /tmp/we1ssconnect.pkg && upgrade=1
 rm -f /tmp/we1ssconnect.pkg
+# Releases up to 1.11.3 kept the user's choice in uci, and their prerm stops and disables on upgrade.
+legacy="$$(uci -q get we1ssconnect.main.enabled)"
+[ -n "$$legacy" ] && autostart="$$legacy" running="$$legacy" && uci delete we1ssconnect.main.enabled && uci commit we1ssconnect
 if [ "$$autostart" = 1 ]; then /etc/init.d/we1ssconnect enable; else /etc/init.d/we1ssconnect disable; fi
 if [ "$$running" = 1 ]; then /etc/init.d/we1ssconnect restart; else /etc/init.d/we1ssconnect stop; fi
 # opkg runs this before its own enable and start of the init script; that start applies the hold.
@@ -79,6 +81,14 @@ endef
 define Package/we1ssconnect/prerm
 #!/bin/sh
 [ -n "$$IPKG_INSTROOT" ] && exit 0
+# opkg runs this on an upgrade too: note the state for the new postinst, keep the service and Xray.
+if [ "$${PKG_UPGRADE:-}" = 1 ]; then
+	autostart=0 running=0
+	/etc/init.d/we1ssconnect enabled && autostart=1
+	pidof sing-box > /dev/null && nft list table inet we1ssconnect > /dev/null 2>&1 && running=1
+	echo "autostart=$$autostart running=$$running" > /tmp/we1ssconnect.pkg
+	exit 0
+fi
 /etc/init.d/we1ssconnect stop
 /etc/init.d/we1ssconnect disable
 # Xray for REALITY servers was downloaded by the service, so the package does not own it.
