@@ -2,9 +2,6 @@ msgid ""
 msgstr "Content-Type: text/plain; charset=UTF-8\n"
 "Language: ru\n"
 
-msgid "Like per-app routing on the phone: a device can send everything through the tunnel, or nothing at all. Give such devices a static DHCP lease so their address does not change."
-msgstr "Как маршрутизация по приложениям на телефоне: устройство может отправлять всё через туннель или ничего. Закрепите за такими устройствами статический адрес DHCP, чтобы он не менялся."
-
 msgid "Devices"
 msgstr "Устройства"
 
@@ -25,6 +22,9 @@ msgstr "Всё через туннель"
 
 msgid "Nothing through the tunnel"
 msgstr "Ничего через туннель"
+
+msgid "Like per-app routing on the phone: a device can send everything through the tunnel, or nothing at all. Give such devices a static DHCP lease so their address does not change."
+msgstr "Как маршрутизация по приложениям на телефоне: устройство может отправлять всё через туннель или ничего. Закрепите за такими устройствами статический адрес DHCP, чтобы он не менялся."
 
 msgid "sing-box installed"
 msgstr "sing-box установлен"
@@ -212,9 +212,6 @@ msgstr "Напрямую"
 msgid "Block"
 msgstr "Блокировать"
 
-msgid "Rules are checked from top to bottom; the first match wins. Drag rows to change the order."
-msgstr "Правила проверяются сверху вниз, срабатывает первое подходящее. Порядок меняется перетаскиванием строк."
-
 msgid "Routing rules"
 msgstr "Правила маршрутизации"
 
@@ -230,14 +227,14 @@ msgstr "Вкл."
 msgid "Where to send"
 msgstr "Куда отправлять"
 
+msgid "missing: %s"
+msgstr "нет: %s"
+
 msgid "Auto (lowest delay)"
 msgstr "Авто (по задержке)"
 
 msgid "Group: %s"
 msgstr "Группа: %s"
-
-msgid "missing: %s"
-msgstr "нет: %s"
 
 msgid "Interface"
 msgstr "Интерфейс"
@@ -320,6 +317,12 @@ msgstr "Формой"
 msgid "As text"
 msgstr "Текстом"
 
+msgid "Routing"
+msgstr "Маршрутизация"
+
+msgid "Rules are checked from top to bottom; the first match wins. Drag rows to change the order."
+msgstr "Правила проверяются сверху вниз, срабатывает первое подходящее. Порядок меняется перетаскиванием строк."
+
 msgid "Line %d: %s"
 msgstr "Строка %d: %s"
 
@@ -397,9 +400,6 @@ msgstr "Название (необязательно)"
 
 msgid "A We1ssBoard subscription link or any other one with share links (plain or base64)."
 msgstr "Ссылка на подписку We1ssBoard или любую другую со ссылками на ключи (обычную или base64)."
-
-msgid "Changes apply after Save & Apply; the tunnel restarts."
-msgstr "Изменения вступают в силу после «Сохранить и применить»; туннель перезапускается."
 
 msgid "DNS"
 msgstr "DNS"
@@ -557,6 +557,12 @@ msgstr "Порт API управления"
 msgid "Local sing-box API used by this page (127.0.0.1 only)."
 msgstr "Локальный API sing-box, которым пользуется эта страница (только 127.0.0.1)."
 
+msgid "Settings"
+msgstr "Настройки"
+
+msgid "Changes apply after Save & Apply; the tunnel restarts."
+msgstr "Изменения вступают в силу после «Сохранить и применить»; туннель перезапускается."
+
 msgid "Blocked in Russia"
 msgstr "Заблокированное в России"
 
@@ -700,9 +706,3 @@ msgstr "We1ssConnect"
 
 msgid "Overview"
 msgstr "Обзор"
-
-msgid "Routing"
-msgstr "Маршрутизация"
-
-msgid "Settings"
-msgstr "Настройки"

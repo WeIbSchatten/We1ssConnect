@@ -63,8 +63,7 @@ return view.extend({
 		const servers = (list.servers || []).filter((s) => s.ok);
 		let m, s, o;
 
-		m = new form.Map('we1ssconnect', null,
-			_('Rules are checked from top to bottom; the first match wins. Drag rows to change the order.'));
+		m = new form.Map('we1ssconnect');
 		w1.style();
 
 		s = m.section(form.GridSection, 'rule', _('Routing rules'));
@@ -86,7 +85,19 @@ return view.extend({
 		for (const k in ACTIONS)
 			o.value(k, ACTIONS[k]);
 		o.default = 'proxy';
-		o.textvalue = (sid) => ACTIONS[uci.get('we1ssconnect', sid, 'action') || 'proxy'];
+		// One column for where a rule sends traffic: the server or interface rides in the pill.
+		o.textvalue = function(sid) {
+			const act = uci.get('we1ssconnect', sid, 'action') || 'proxy';
+			let via = '';
+			if (act == 'proxy') {
+				const t = this.section.children.filter((x) => x.option == 'target')[0];
+				const v = uci.get('we1ssconnect', sid, 'target') || 'auto';
+				via = t.keylist.indexOf(v) >= 0 ? t.vallist[t.keylist.indexOf(v)] : _('missing: %s').format(v);
+			}
+			else if (act == 'vpn')
+				via = uci.get('we1ssconnect', sid, 'interface') || '—';
+			return E('span', { class: 'w1-act w1-act-' + act }, [ ACTIONS[act] || act, via ? E('small', {}, [ ' · ', via ]) : '' ]);
+		};
 
 		o = s.option(form.ListValue, 'target', _('Server'));
 		o.value('auto', _('Auto (lowest delay)'));
@@ -94,19 +105,14 @@ return view.extend({
 		servers.forEach((x) => o.value('server:' + x.id, x.name));
 		o.default = 'auto';
 		o.depends('action', 'proxy');
-		o.textvalue = function(sid) {
-			if ((uci.get('we1ssconnect', sid, 'action') || 'proxy') != 'proxy')
-				return '—';
-			const v = this.cfgvalue(sid) || 'auto';
-			return this.keylist.indexOf(v) >= 0 ? this.vallist[this.keylist.indexOf(v)] : _('missing: %s').format(v);
-		};
+		o.modalonly = true;
 
 		o = s.option(widgets.DeviceSelect, 'interface', _('Interface'),
 			_('A VPN already set up on the router: WireGuard, AmneziaWG, OpenVPN…'));
 		o.noaliases = true;
 		o.nocreate = true;
 		o.depends('action', 'vpn');
-		o.textvalue = (sid) => uci.get('we1ssconnect', sid, 'action') == 'vpn' ? (uci.get('we1ssconnect', sid, 'interface') || '—') : '—';
+		o.modalonly = true;
 
 		o = s.option(ChecklistValue, 'service', _('Services'),
 			_('Community lists of itdoginfo/allow-domains, refreshed automatically.'));
@@ -148,7 +154,8 @@ return view.extend({
 		o.modalonly = true;
 
 		o = s.option(form.DummyValue, '_what', _('Matches'));
-		o.textvalue = (sid) => summary(sid) || '—';
+		// A rule without a name already shows this as its title.
+		o.textvalue = (sid) => uci.get('we1ssconnect', sid, 'name') ? (summary(sid) || '—') : '';
 		// The rule editor shows cfgvalue, not textvalue; without it the field read "null".
 		o.cfgvalue = (sid) => summary(sid) || '—';
 
@@ -191,11 +198,15 @@ return view.extend({
 			this.textarea, this.msgs,
 		]);
 		this.buttons = {
-			form: E('button', { class: 'cbi-button', click: ui.createHandlerFn(this, 'show', 'form', false) }, _('As a form')),
-			text: E('button', { class: 'cbi-button', click: ui.createHandlerFn(this, 'show', 'text', false) }, _('As text')),
+			form: E('button', { click: ui.createHandlerFn(this, 'show', 'form', false) }, E('span', {}, _('As a form'))),
+			text: E('button', { click: ui.createHandlerFn(this, 'show', 'text', false) }, E('span', {}, _('As text'))),
 		};
 		return m.render().then((node) => {
-			this.root = E('div', {}, [ E('div', { class: 'w1-views' }, [ this.buttons.form, this.buttons.text ]), this.textBox, node ]);
+			this.root = E('div', { class: 'w1-wrap' }, [
+				w1.header(_('Routing'), _('Rules are checked from top to bottom; the first match wins. Drag rows to change the order.'),
+					E('div', { class: 'w1-seg' }, [ this.buttons.form, this.buttons.text ])),
+				this.textBox, node,
+			]);
 			let saved = null;
 			try { saved = localStorage.getItem('we1ssconnect.routing.view'); } catch (e) {}
 			return this.show(saved == 'text' ? 'text' : 'form', true).then(() => this.root);
@@ -221,7 +232,7 @@ return view.extend({
 			this.root.classList.toggle('w1-textmode', mode == 'text');
 			this.textBox.style.display = mode == 'text' ? '' : 'none';
 			for (const k in this.buttons)
-				this.buttons[k].classList.toggle('cbi-button-action', k == mode);
+				this.buttons[k].classList.toggle('w1-active', k == mode);
 		}).catch((e) => ui.addNotification(null, E('p', {}, e.message), 'danger'));
 	},
 
@@ -235,6 +246,8 @@ return view.extend({
 	},
 
 	check: function() {
+		// The editor grows with the list instead of scrolling a fixed box.
+		this.textarea.rows = Math.max(8, this.textarea.value.split('\n').length + 2);
 		const p = rules.parse(this.textarea.value, Object.assign({ mode: uci.get('we1ssconnect', 'main', 'mode') }, this.ctx));
 		const items = p.errors.map((e) => E('li', { class: 'w1-bad' }, _('Line %d: %s').format(e.line, e.msg)))
 			.concat(p.warnings.map((w) => E('li', { class: 'w1-warn' }, _('Line %d: %s').format(w.line, w.msg))));

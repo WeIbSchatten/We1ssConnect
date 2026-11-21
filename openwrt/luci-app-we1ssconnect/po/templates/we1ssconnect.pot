@@ -1,9 +1,6 @@
 msgid ""
 msgstr "Content-Type: text/plain; charset=UTF-8\n"
 
-msgid "Like per-app routing on the phone: a device can send everything through the tunnel, or nothing at all. Give such devices a static DHCP lease so their address does not change."
-msgstr ""
-
 msgid "Devices"
 msgstr ""
 
@@ -23,6 +20,9 @@ msgid "Everything through the tunnel"
 msgstr ""
 
 msgid "Nothing through the tunnel"
+msgstr ""
+
+msgid "Like per-app routing on the phone: a device can send everything through the tunnel, or nothing at all. Give such devices a static DHCP lease so their address does not change."
 msgstr ""
 
 msgid "sing-box installed"
@@ -211,9 +211,6 @@ msgstr ""
 msgid "Block"
 msgstr ""
 
-msgid "Rules are checked from top to bottom; the first match wins. Drag rows to change the order."
-msgstr ""
-
 msgid "Routing rules"
 msgstr ""
 
@@ -229,13 +226,13 @@ msgstr ""
 msgid "Where to send"
 msgstr ""
 
+msgid "missing: %s"
+msgstr ""
+
 msgid "Auto (lowest delay)"
 msgstr ""
 
 msgid "Group: %s"
-msgstr ""
-
-msgid "missing: %s"
 msgstr ""
 
 msgid "Interface"
@@ -319,6 +316,12 @@ msgstr ""
 msgid "As text"
 msgstr ""
 
+msgid "Routing"
+msgstr ""
+
+msgid "Rules are checked from top to bottom; the first match wins. Drag rows to change the order."
+msgstr ""
+
 msgid "Line %d: %s"
 msgstr ""
 
@@ -395,9 +398,6 @@ msgid "Name (optional)"
 msgstr ""
 
 msgid "A We1ssBoard subscription link or any other one with share links (plain or base64)."
-msgstr ""
-
-msgid "Changes apply after Save & Apply; the tunnel restarts."
 msgstr ""
 
 msgid "DNS"
@@ -556,6 +556,12 @@ msgstr ""
 msgid "Local sing-box API used by this page (127.0.0.1 only)."
 msgstr ""
 
+msgid "Settings"
+msgstr ""
+
+msgid "Changes apply after Save & Apply; the tunnel restarts."
+msgstr ""
+
 msgid "Blocked in Russia"
 msgstr ""
 
@@ -698,10 +704,4 @@ msgid "We1ssConnect"
 msgstr ""
 
 msgid "Overview"
-msgstr ""
-
-msgid "Routing"
-msgstr ""
-
-msgid "Settings"
 msgstr ""
