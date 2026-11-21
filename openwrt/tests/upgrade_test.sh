@@ -16,7 +16,7 @@ up_within() { i=0; until up; do i=$((i + 1)); [ "$i" -le "$1" ] || return 1; sle
 svc enable
 svc start
 up_within 15
-out="$(reinstall)"
+out1="$(reinstall)"; out="$out1"
 check "the upgrade ran our postinst" 'echo "$out" | grep -q "We1ssConnect: kept"'
 check "a running service runs after the upgrade" 'up_within 20'
 check "autostart stays on" '[ "$(field autostart)" = true ]'
@@ -30,6 +30,6 @@ check "autostart stays off" '[ "$(field autostart)" = false ]'
 svc enable
 svc start
 up_within 15 || fail "the service runs again for the LuCI test"
-[ "$fails" -gt 0 ] && echo "$out"
+[ "$fails" -gt 0 ] && { echo "--- running upgrade"; echo "$out1"; echo "--- stopped upgrade"; echo "$out"; ubus call we1ssconnect status; logread | grep -i we1ss | tail -20; }
 echo "upgrade: $fails failed"
 [ "$fails" -eq 0 ]

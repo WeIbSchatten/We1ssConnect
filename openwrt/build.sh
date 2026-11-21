@@ -25,4 +25,13 @@ for f in $(find bin/packages -type f \( -name '*.ipk' -o -name '*.apk' \)); do
 	luci-i18n-we1ssconnect-ru[-_]*) cp "$f" "$out/luci-i18n-we1ssconnect-ru-$version.$ext" ;;
 	esac
 done
-ls -l "$out"
+# For the LuCI job's upgrade test: the routers' apk has no mkndx, and a repository needs the
+# package under its own name. Kept out of the release, which takes only the files above.
+main="$(find bin/packages -type f -name 'we1ssconnect-[0-9]*.apk' | head -n 1)"
+if [ -n "$main" ]; then
+	mkdir -p "$out/index"
+	cp "$main" "$out/index/"
+	apk="$(find staging_dir -path '*/bin/apk' -type f | head -n 1)"
+	"$apk" mkndx --allow-untrusted --output "$out/index/packages.adb" "$out/index/"*.apk
+fi
+ls -lR "$out"
