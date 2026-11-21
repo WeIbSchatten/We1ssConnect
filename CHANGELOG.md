@@ -4,6 +4,13 @@ The full history with details is in the documentation:
 [русский](https://weibschatten.github.io/We1ssConnect/ru/docs/help/history/) ·
 [English](https://weibschatten.github.io/We1ssConnect/docs/help/history/).
 
+## 1.11.3
+
+- Phone and computer: with "Russian sites directly" or "Block ads" on, the VPN connects at once instead of waiting for ~100 MB of rule files from GitHub; the presets now need a 9 MB cut-down copy, refreshed in the background, so ad blocking and Russian sites work again on slow or blocked links.
+- Android: the notification and the quick-settings tile show the We1ss mark instead of a padlock.
+- The connect button's planets move on their own orbits, each at its own pace.
+- OpenWrt: tidier Routing, Devices and Settings pages; the rule text editor grows with the list, and the rule table shows where traffic goes in one coloured label.
+
 ## 1.11.2
 
 - OpenWrt: routing rules can be edited as text, one rule per line (`domain(geosite:ru-blocked)->proxy`), next to the form; errors show by line before saving. Rules can also match protocols such as bittorrent. The phone and computer apps are unchanged.
