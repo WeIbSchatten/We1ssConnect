@@ -43,6 +43,20 @@ define Package/we1ssconnect/install
 		$(1)/usr/share/ucode/we1ssconnect/service.uc
 endef
 
+# An upgrade keeps the service and autostart as the user left them; preinst notes both.
+define Package/we1ssconnect/preinst
+#!/bin/sh
+[ -n "$$IPKG_INSTROOT" ] && exit 0
+[ -x /etc/init.d/we1ssconnect ] || exit 0
+autostart=0 running=0
+/etc/init.d/we1ssconnect enabled && autostart=1
+# Releases before 1.11.4 kept "Disconnected" in uci with procd autostart still on.
+[ "$$(uci -q get we1ssconnect.main.enabled)" = 0 ] && autostart=0
+pidof sing-box > /dev/null && nft list table inet we1ssconnect > /dev/null 2>&1 && running=1
+echo "autostart=$$autostart running=$$running" > /tmp/we1ssconnect.pkg
+exit 0
+endef
+
 define Package/we1ssconnect/postinst
 #!/bin/sh
 [ -n "$$IPKG_INSTROOT" ] && exit 0
@@ -50,8 +64,14 @@ define Package/we1ssconnect/postinst
 # podkop, Passwall and the like capture the same traffic: stop them and their autostart.
 stopped="$$(/usr/bin/we1ssconnect take-over | jsonfilter -e '@.stopped[*]' | tr '\n' ' ')"
 [ -n "$$stopped" ] && echo "We1ssConnect: stopped and disabled $${stopped}(nothing was removed)"
-/etc/init.d/we1ssconnect enable
-/etc/init.d/we1ssconnect restart
+uci -q delete we1ssconnect.main.enabled && uci commit we1ssconnect
+autostart=0 running=0
+[ -f /tmp/we1ssconnect.pkg ] && . /tmp/we1ssconnect.pkg && upgrade=1
+rm -f /tmp/we1ssconnect.pkg
+# Decided here, after OpenWrt's default postinst may have enabled and started it.
+if [ "$$autostart" = 1 ]; then /etc/init.d/we1ssconnect enable; else /etc/init.d/we1ssconnect disable; fi
+if [ "$$running" = 1 ]; then /etc/init.d/we1ssconnect restart; else /etc/init.d/we1ssconnect stop; fi
+[ -n "$${upgrade:-}" ] && echo "We1ssConnect: kept autostart=$$autostart running=$$running"
 exit 0
 endef
 
