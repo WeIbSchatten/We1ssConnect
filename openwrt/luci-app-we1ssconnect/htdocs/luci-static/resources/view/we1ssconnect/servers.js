@@ -6,7 +6,7 @@
 
 return view.extend({
 	load: function() {
-		return w1.servers();
+		return Promise.all([ w1.servers(), w1.status() ]);
 	},
 
 	refresh: function() {
@@ -88,7 +88,7 @@ return view.extend({
 		});
 
 		dom.content(this.box, [
-			w1.header(_('Servers'), _('Tap a server to pin it, or choose Auto. Switching does not restart the tunnel.')),
+			w1.header(_('Servers'), _('Tap a server to pin it, or choose Auto. Switching does not restart the tunnel.'), this.st),
 			E('div', { class: 'w1-toolbar' }, [
 				E('button', { class: 'cbi-button cbi-button-action', click: ui.createHandlerFn(this, 'handlePing') }, _('Test delay')),
 				E('button', { class: 'cbi-button', click: ui.createHandlerFn(this, 'handleImport') }, _('Add keys')),
@@ -147,7 +147,8 @@ return view.extend({
 	},
 
 	render: function(data) {
-		this.data = data || {};
+		this.data = data[0] || {};
+		this.st = data[1] || {};
 		this.delays = {};
 		this.box = E('div', { class: 'w1-wrap' });
 		this.draw();

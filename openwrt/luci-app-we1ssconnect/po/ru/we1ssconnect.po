@@ -92,24 +92,6 @@ msgstr "Обновление идёт в фоне; обновите страни
 msgid "Update"
 msgstr "Обновить"
 
-msgid "Error"
-msgstr "Ошибка"
-
-msgid "Connected"
-msgstr "Подключено"
-
-msgid "Starting…"
-msgstr "Запуск…"
-
-msgid "Off"
-msgstr "Выключено"
-
-msgid "Disconnect"
-msgstr "Отключить"
-
-msgid "Connect"
-msgstr "Подключить"
-
 msgid "By lists"
 msgstr "По спискам"
 
@@ -149,8 +131,8 @@ msgstr "Версия"
 msgid "The last update failed: %s"
 msgstr "Последнее обновление не удалось: %s"
 
-msgid "To keep the tunnel working, these were stopped and their autostart turned off: %s. Nothing was removed; turn them back on under System → Startup after disconnecting here."
-msgstr "Чтобы туннель работал, остановлены и выключены из автозапуска: %s. Ничего не удалено; вернуть их можно в «Система → Загрузка», отключив здесь We1ssConnect."
+msgid "To keep the tunnel working, these were stopped and their autostart turned off: %s. Nothing was removed; turn them back on under System → Startup after stopping the service on the Diagnostics page."
+msgstr "Чтобы туннель работал, остановлены и выключены из автозапуска: %s. Ничего не удалено; вернуть их можно в «Система → Загрузка», остановив службу We1ssConnect в Диагностике."
 
 msgid "Tunnel"
 msgstr "Туннель"
@@ -161,6 +143,9 @@ msgstr "Через туннель идёт всё, кроме прямых пр�
 msgid "Only sites and services from routing rules go through the tunnel."
 msgstr "Через туннель идут только сайты и сервисы из правил маршрутизации."
 
+msgid "Stop, restart and autostart: Diagnostics"
+msgstr "Остановка, перезапуск и автозапуск — в Диагностике"
+
 msgid "Server"
 msgstr "Сервер"
 
@@ -170,8 +155,8 @@ msgstr "Внешний IP"
 msgid "Speed test"
 msgstr "Проверка скорости"
 
-msgid "Connect to see the exit IP."
-msgstr "Подключитесь, чтобы увидеть внешний IP."
+msgid "Start the tunnel to see the exit IP."
+msgstr "Запустите туннель, чтобы увидеть IP выхода."
 
 msgid "Checking…"
 msgstr "Проверка…"
@@ -623,6 +608,18 @@ msgstr "Правило %s: неизвестная категория %s."
 msgid "%s: invalid filter %s."
 msgstr "%s: неверный фильтр %s."
 
+msgid "Service"
+msgstr "Служба"
+
+msgid "Autostart"
+msgstr "Автозапуск"
+
+msgid "Autostart is on"
+msgstr "Включён"
+
+msgid "Autostart is off"
+msgstr "Выключен"
+
 msgid "no answer"
 msgstr "нет ответа"
 
@@ -715,6 +712,12 @@ msgstr "Выключить автозапуск"
 
 msgid "Service is running"
 msgstr "Работает"
+
+msgid "Error"
+msgstr "Ошибка"
+
+msgid "Starting…"
+msgstr "Запуск…"
 
 msgid "Service is stopped"
 msgstr "Остановлена"

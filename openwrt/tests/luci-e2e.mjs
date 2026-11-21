@@ -7,8 +7,7 @@ const [base, out] = process.argv.slice(2);
 fs.mkdirSync(out, { recursive: true });
 
 const pages = [
-	// luci-base 25.12 translates "Connected" as "Подключён" and wins over our catalog.
-	['overview', /Подключ(ено|ён)/],
+	['overview', 'Работает'],
 	['servers', 'Нидерланды'],
 	['routing', 'market.example'],
 	['devices', 'Устройства'],
@@ -103,10 +102,45 @@ if (back === printed && JSON.stringify(sections) === JSON.stringify([['direct', 
 else { console.log(`FAIL routing text: ${JSON.stringify(back)} ${JSON.stringify(sections)}`); failed++; }
 await page.screenshot({ path: `${out}/routing-text.png`, fullPage: true });
 
-await page.setViewportSize({ width: 390, height: 844 });
-await page.goto(`${base}/cgi-bin/luci/admin/services/we1ssconnect/overview`);
-await page.waitForTimeout(3000);
-await page.screenshot({ path: `${out}/overview-mobile.png`, fullPage: true });
+// Service control as in podkop: Diagnostics stops, restarts and sets autostart; Overview only starts.
+const url = (name) => `${base}/cgi-bin/luci/admin/services/we1ssconnect/${name}`;
+async function seen(scope, text, what) {
+	try {
+		await scope.getByText(text, { exact: true }).first().waitFor({ timeout: 30000 });
+		console.log(`ok   ${what}`);
+	} catch {
+		console.log(`FAIL ${what}`);
+		failed++;
+	}
+}
+await page.goto(url('diagnostics'));
+const service = page.locator('.w1-panel .w1-prow').nth(0), autostart = page.locator('.w1-panel .w1-prow').nth(1);
+await seen(service, 'Работает', 'diagnostics: the service is running');
+// A double click must send one command; the button stays disabled until it is done.
+await service.locator('.w1-btn', { hasText: 'Остановить' }).dblclick();
+await seen(service, 'Остановлена', 'diagnostics: Stop stops the service');
+await seen(service, 'Запустить', 'diagnostics: a stopped service offers Start');
+await page.screenshot({ path: `${out}/diagnostics-stopped.png`, fullPage: true });
+
+await page.goto(url('overview'));
+await page.locator('.w1-orb').click();
+await seen(page.locator('.w1-head'), 'Работает', 'overview: the orb starts the service');
+await page.screenshot({ path: `${out}/overview-running.png`, fullPage: true });
+
+await page.goto(url('diagnostics'));
+await seen(autostart, 'Включён', 'diagnostics: autostart is on');
+await autostart.locator('.w1-btn', { hasText: 'Выключить автозапуск' }).click();
+await seen(autostart, 'Выключен', 'diagnostics: Disable autostart turns it off');
+await seen(service, 'Работает', 'diagnostics: turning autostart off leaves the service running');
+await autostart.locator('.w1-btn', { hasText: 'Включить автозапуск' }).click();
+await seen(autostart, 'Включён', 'diagnostics: Enable autostart turns it back on');
+
+await page.setViewportSize({ width: 375, height: 812 });
+for (const name of ['overview', 'diagnostics']) {
+	await page.goto(url(name));
+	await page.waitForTimeout(3000);
+	await page.screenshot({ path: `${out}/${name}-mobile.png`, fullPage: true });
+}
 
 for (const e of errors) console.log(`JS error: ${e}`);
 await browser.close();

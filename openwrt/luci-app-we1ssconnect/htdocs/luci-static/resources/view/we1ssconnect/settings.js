@@ -5,7 +5,11 @@
 'require we1ssconnect.common as w1';
 
 return view.extend({
-	render: function() {
+	load: function() {
+		return w1.status();
+	},
+
+	render: function(st) {
 		let m, s, o;
 
 		m = new form.Map('we1ssconnect');
@@ -99,6 +103,6 @@ return view.extend({
 		o.datatype = 'port';
 		o.default = '9090';
 
-		return m.render().then((node) => E('div', { class: 'w1-wrap' }, [ w1.header(_('Settings'), _('Changes apply after Save & Apply; the tunnel restarts.')), node ]));
+		return m.render().then((node) => E('div', { class: 'w1-wrap' }, [ w1.header(_('Settings'), _('Changes apply after Save & Apply; the tunnel restarts.'), st || {}), node ]));
 	},
 });
