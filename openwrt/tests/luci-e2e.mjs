@@ -104,9 +104,10 @@ await page.screenshot({ path: `${out}/routing-text.png`, fullPage: true });
 
 // Service control as in podkop: Diagnostics stops, restarts and sets autostart; Overview only starts.
 const url = (name) => `${base}/cgi-bin/luci/admin/services/we1ssconnect/${name}`;
-async function seen(scope, text, what) {
+// After a click the block must redraw from the answer, well before the 5 s poll would.
+async function seen(scope, text, what, timeout = 4000) {
 	try {
-		await scope.getByText(text, { exact: true }).first().waitFor({ timeout: 30000 });
+		await scope.getByText(text, { exact: true }).first().waitFor({ timeout });
 		console.log(`ok   ${what}`);
 	} catch {
 		console.log(`FAIL ${what}`);
@@ -115,7 +116,7 @@ async function seen(scope, text, what) {
 }
 await page.goto(url('diagnostics'));
 const service = page.locator('.w1-panel .w1-prow').nth(0), autostart = page.locator('.w1-panel .w1-prow').nth(1);
-await seen(service, 'Работает', 'diagnostics: the service is running');
+await seen(service, 'Работает', 'diagnostics: the service is running', 30000);
 // A double click must send one command; the button stays disabled until it is done.
 await service.locator('.w1-btn', { hasText: 'Остановить' }).dblclick();
 await seen(service, 'Остановлена', 'diagnostics: Stop stops the service');
@@ -124,11 +125,11 @@ await page.screenshot({ path: `${out}/diagnostics-stopped.png`, fullPage: true }
 
 await page.goto(url('overview'));
 await page.locator('.w1-orb').click();
-await seen(page.locator('.w1-head'), 'Работает', 'overview: the orb starts the service');
+await seen(page.locator('.w1-head'), 'Работает', 'overview: the orb starts the service', 30000);
 await page.screenshot({ path: `${out}/overview-running.png`, fullPage: true });
 
 await page.goto(url('diagnostics'));
-await seen(autostart, 'Включён', 'diagnostics: autostart is on');
+await seen(autostart, 'Включён', 'diagnostics: autostart is on', 30000);
 await autostart.locator('.w1-btn', { hasText: 'Выключить автозапуск' }).click();
 await seen(autostart, 'Выключен', 'diagnostics: Disable autostart turns it off');
 await seen(service, 'Работает', 'diagnostics: turning autostart off leaves the service running');

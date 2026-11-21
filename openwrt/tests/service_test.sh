@@ -46,5 +46,14 @@ check "disable autostart: still running" 'up'
 svc enable
 check "enable autostart: on" '[ "$(field autostart)" = true ]'
 
+# A stopped service drops the error its last start left; commands report their own outcome.
+edit urltest_interval bogus
+check "a stop after a failed start answers without the old error" 	'[ -z "$(ubus call we1ssconnect service "{\"action\":\"stop\"}" | jsonfilter -e @.error)" ]'
+check "the CLI's disable succeeds on a stopped service with an old error" 'we1ssconnect disable > /dev/null'
+svc enable
+edit urltest_interval 3m
+svc start
+up_within 15 || fail "the service runs again for the next test"
+
 echo "service: $fails failed"
 [ "$fails" -eq 0 ]

@@ -28,7 +28,7 @@ done
 # The LuCI job's upgrade test installs these over the release build: real upgrades, as neither
 # opkg nor apk reruns the scripts for the same version. Kept out of the release in up/.
 mkdir -p "$out/up"
-for k in 1 2 3; do
+for k in 1 2 3 4; do
 	make package/we1ssconnect/compile WE1SS_VERSION="$version.$k" V=s > build.log 2>&1 || {
 		tail -n 80 build.log
 		exit 1

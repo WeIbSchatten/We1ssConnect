@@ -23,13 +23,23 @@ check "autostart stays on" '[ "$(field autostart)" = true ]'
 
 svc stop
 svc disable
+# prepare rewrites the config on every start, so its age shows a start that was undone later.
+before="$(date -r /var/run/we1ssconnect/config.json +%s)"
+sleep 1
 out="$(reinstall)"
 check "a stopped service stays stopped after the upgrade" 'sleep 3; ! up'
+check "and is not even started for a moment during it" '[ "$(date -r /var/run/we1ssconnect/config.json +%s)" = "$before" ]'
 check "autostart stays off" '[ "$(field autostart)" = false ]'
 
+# Wanted but failing on a bad config: the upgrade keeps it wanted, so the fixing edit restarts it.
 svc enable
+uci set we1ssconnect.main.urltest_interval=bogus; uci commit we1ssconnect
 svc start
-up_within 15 || fail "the service runs again for the LuCI test"
+sleep 3
+out="$(reinstall)"
+check "an upgrade keeps a failing service wanted" '[ "$(field wanted)" = true ]'
+uci set we1ssconnect.main.urltest_interval=3m; uci commit we1ssconnect; reload_config
+up_within 20 || fail "the service runs again for the LuCI test"
 [ "$fails" -gt 0 ] && { echo "--- running upgrade"; echo "$out1"; echo "--- stopped upgrade"; echo "$out"; ubus call we1ssconnect status; logread | grep -i we1ss | tail -20; }
 echo "upgrade: $fails failed"
 [ "$fails" -eq 0 ]
