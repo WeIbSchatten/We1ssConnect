@@ -291,7 +291,7 @@ class XrayVpnService : VpnService() {
       else -> if (ru) "Подключение…" else "Connecting…"
     }
     val notification: Notification = NotificationCompat.Builder(this, CHANNEL_ID)
-      .setSmallIcon(android.R.drawable.ic_lock_lock)
+      .setSmallIcon(R.drawable.ic_stat_we1ss)
       .setContentTitle(title ?: "We1ssConnect")
       .setContentText(text)
       .setContentIntent(open)
