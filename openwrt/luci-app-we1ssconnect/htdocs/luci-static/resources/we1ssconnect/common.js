@@ -65,9 +65,8 @@ const CSS = `
 .w1-btn:hover { background: var(--w1-hover); }
 .w1-btn:focus-visible, .w1-seg button:focus-visible, .w1-orb:focus-visible { outline: 2px solid var(--w1-vpn); outline-offset: 2px; }
 .w1-btn[disabled] { opacity: .55; cursor: default; }
-.w1-btn-primary { background: currentColor; border-color: transparent; }
-.w1-btn-primary > span, .w1-btn-primary > .w1-spin { filter: invert(1); }
-.w1-btn-primary:hover { background: currentColor; opacity: .88; }
+.w1-btn-primary { background: var(--w1-on); border-color: transparent; color: #fff; }
+.w1-btn-primary:hover { background: var(--w1-on); filter: brightness(1.08); }
 .w1-btn-danger { color: var(--w1-err); border-color: color-mix(in srgb, var(--w1-err) 45%, transparent); }
 .w1-spin { width: 14px; height: 14px; border-radius: 50%; border: 2px solid currentColor; border-right-color: transparent; animation: w1-spin .8s linear infinite; }
 @keyframes w1-spin { to { transform: rotate(360deg); } }
@@ -87,7 +86,8 @@ const CSS = `
 .w1-orb .w1-moon { position: absolute; inset: 0; animation: w1-spin 14s linear infinite; }
 .w1-orb .w1-moon::before { content: ""; position: absolute; top: -3px; left: calc(50% - 3px); width: 6px; height: 6px; border-radius: 50%; background: currentColor; opacity: .5; }
 .w1-orb:hover .w1-disc { opacity: .9; }
-.w1-orb[disabled] { cursor: default; }
+.w1-orb.w1-running, .w1-orb.w1-busy { cursor: default; }
+.w1-orb.w1-busy .w1-disc { opacity: .7; }
 .w1-orb.w1-running .w1-disc { background: var(--w1-on); }
 .w1-orb.w1-running .w1-moon::before { background: var(--w1-on); opacity: 1; }
 .w1-orb.w1-running .w1-disc > span { filter: none; color: #fff; }
@@ -257,17 +257,17 @@ return baseclass.extend({
 	orb: function(st, onStart) {
 		const running = !!st.running;
 		const label = running ? state.serviceLabel(st).text : state.ACTION_LABELS.start;
-		const o = E('button', { type: 'button', class: 'w1-orb' + (running ? ' w1-running' : ''), 'aria-label': label },
-			[ running ? E('span', { class: 'w1-moon' }) : '', E('span', { class: 'w1-disc' }, E('span', {}, label)) ]);
+		// Running, it is a picture, not a disabled button: themes fade disabled buttons.
 		if (running)
-			o.disabled = true;
-		else
-			o.addEventListener('click', () => {
-				if (o.disabled)
-					return;
-				o.disabled = true;
-				this.service('start').then((r) => { this.notify(r); return onStart(r); }).finally(() => { o.disabled = false; });
-			});
+			return E('div', { class: 'w1-orb w1-running', role: 'img', 'aria-label': label },
+				[ E('span', { class: 'w1-moon' }), E('span', { class: 'w1-disc' }, E('span', {}, label)) ]);
+		const o = E('button', { type: 'button', class: 'w1-orb', 'aria-label': label }, E('span', { class: 'w1-disc' }, E('span', {}, label)));
+		o.addEventListener('click', () => {
+			if (o.classList.contains('w1-busy'))
+				return;
+			o.classList.add('w1-busy');
+			this.service('start').then((r) => { this.notify(r); return onStart(r); }).finally(() => o.classList.remove('w1-busy'));
+		});
 		return o;
 	},
 
