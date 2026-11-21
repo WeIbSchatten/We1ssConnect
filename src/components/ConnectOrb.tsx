@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { AccessibilityInfo, Animated, Easing, Platform, Pressable, StyleSheet, View } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
 
-import { orbitSeconds } from '@/lib/motion';
+import { orbitSeconds, PLANETS, planetSeconds } from '@/lib/motion';
 import { usePalette } from '@/lib/theme';
 
 export type OrbState = 'off' | 'connecting' | 'on' | 'error';
@@ -40,8 +40,8 @@ function useLoop(active: boolean, duration: number, easing = Easing.linear) {
 
 /**
  * The connect button. Its motion carries the state: still rings while off, a sweeping arc
- * while connecting, and once connected a slow breath with satellites whose speed follows
- * the traffic through the tunnel.
+ * while connecting, and once connected a slow breath with planets on their own orbits, each at
+ * its own pace like real ones, all quicker with the traffic through the tunnel.
  */
 export function ConnectOrb({
   state,
@@ -73,7 +73,12 @@ export function ConnectOrb({
   const breath = useLoop(on && !reduced, 3200, Easing.inOut(Easing.sin));
   // Re-keyed by speed bucket, so the orbit only restarts when the pace really changes.
   const seconds = Math.round(orbitSeconds(speed) * 2) / 2;
-  const orbit = useLoop(on && !reduced, seconds * 1000);
+  const periods = planetSeconds(seconds);
+  const orbits = [
+    useLoop(on && !reduced, periods[0] * 1000),
+    useLoop(on && !reduced, periods[1] * 1000),
+    useLoop(on && !reduced, periods[2] * 1000),
+  ];
 
   const spin = (v: Animated.Value) => v.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '360deg'] });
   const halo = breath.interpolate({ inputRange: [0, 0.5, 1], outputRange: [0.08, 0.2, 0.08] });
@@ -92,6 +97,7 @@ export function ConnectOrb({
       <Svg pointerEvents="none" width={SIZE} height={SIZE} style={StyleSheet.absoluteFill}>
         <Circle cx={SIZE / 2} cy={SIZE / 2} r={ORBIT / 2} stroke={color} strokeOpacity={0.22} strokeWidth={1} fill="none" />
         <Circle cx={SIZE / 2} cy={SIZE / 2} r={DISC / 2 + 14} stroke={color} strokeOpacity={0.12} strokeWidth={1} fill="none" />
+        {on && <Circle cx={SIZE / 2} cy={SIZE / 2} r={PLANETS[2].radius} stroke={color} strokeOpacity={0.08} strokeWidth={1} fill="none" />}
       </Svg>
       {connecting && (
         <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, { transform: [{ rotate: spin(sweep) }] }]}>
@@ -109,23 +115,29 @@ export function ConnectOrb({
           </Svg>
         </Animated.View>
       )}
-      {on && (
-        <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, { opacity: lit, transform: [{ rotate: spin(orbit) }] }]}>
-          {[0, 120, 240].map((deg, i) => (
+      {on &&
+        PLANETS.map((planet, i) => (
+          <Animated.View
+            key={planet.radius}
+            pointerEvents="none"
+            style={[StyleSheet.absoluteFill, { opacity: lit, transform: [{ rotate: spin(orbits[i]) }] }]}>
             <View
-              key={deg}
               style={[
                 styles.satellite,
                 {
+                  width: planet.size,
+                  height: planet.size,
+                  borderRadius: planet.size / 2,
+                  top: SIZE / 2 - planet.size / 2,
+                  left: SIZE / 2 - planet.size / 2,
                   backgroundColor: p.success,
-                  opacity: 1 - i * 0.28,
-                  transform: [{ rotate: `${deg}deg` }, { translateY: -ORBIT / 2 }],
+                  opacity: 1 - i * 0.22,
+                  transform: [{ rotate: `${planet.phase}deg` }, { translateY: -planet.radius }],
                 },
               ]}
             />
-          ))}
-        </Animated.View>
-      )}
+          </Animated.View>
+        ))}
       <Animated.View style={{ transform: [{ scale: press }] }}>
         <Pressable
           onPress={onPress}
@@ -156,12 +168,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  satellite: {
-    position: 'absolute',
-    top: SIZE / 2 - 4,
-    left: SIZE / 2 - 4,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
+  satellite: { position: 'absolute' },
 });
