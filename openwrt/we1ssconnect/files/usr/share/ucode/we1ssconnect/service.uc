@@ -269,7 +269,7 @@ export function status() {
 	let out = {
 		version: VERSION, running: up, wanted: stat(WANTED) != null, autostart: sh(`${INIT} enabled`).code == 0,
 		mode: l.cfg.mode, selected: l.cfg.selected,
-		error: st.error, warnings: st.warnings ?? [], servers: length(store.usable(l.data)),
+		error: stat(WANTED) != null ? st.error : null, warnings: st.warnings ?? [], servers: length(store.usable(l.data)),
 		singbox: split(sh('sing-box version').out, '\n')[0],
 		taken_over: takeover.taken_over().names ?? [],
 	};
@@ -545,8 +545,10 @@ export function take_over() {
 export function service(action) {
 	if (index([ 'start', 'stop', 'restart', 'enable', 'disable' ], action) < 0)
 		return { ok: false, error: 'action must be start, stop, restart, enable or disable' };
-	sh(`${INIT} ${action}`);
-	return status();
+	const code = sh(`${INIT} ${action}`).code;
+	const st = status();
+	// procd answers "not found" to stopping a service that never came up; stopped is what was asked.
+	return { ...st, ok: action == 'stop' ? !st.running : code == 0 };
 };
 
 export function set_mode(mode) {

@@ -1,5 +1,5 @@
-# reinstall: upgrades the installed package to the next of the .1/.2/.3 builds in /pkgs/up, so
-# its scripts run as on a real upgrade (opkg's --force-reinstall removes it first, running prerm).
+# reinstall: upgrades the installed package to the next of the .1-.4 builds in /pkgs/up, so its
+# scripts run as on a real upgrade; neither opkg nor apk reruns them for the same version.
 reinstall() {
 	if command -v apk > /dev/null; then
 		have="$(apk list -I we1ssconnect 2>/dev/null)"

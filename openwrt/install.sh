@@ -70,4 +70,4 @@ fi
 rm -rf "$tmp"
 
 echo
-echo "Done. Open LuCI → Services → We1ssConnect, add a subscription or keys and press Connect."
+echo "Done. Open LuCI → Services → We1ssConnect, add a subscription or keys and press Start."

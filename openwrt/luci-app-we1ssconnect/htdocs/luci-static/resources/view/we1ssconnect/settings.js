@@ -103,6 +103,6 @@ return view.extend({
 		o.datatype = 'port';
 		o.default = '9090';
 
-		return m.render().then((node) => E('div', { class: 'w1-wrap' }, [ w1.header(_('Settings'), _('Changes apply after Save & Apply; the tunnel restarts.'), st || {}), node ]));
+		return m.render().then((node) => E('div', { class: 'w1-wrap' }, [ w1.header(_('Settings'), _('Changes apply after Save & Apply; a running tunnel restarts.'), st || {}), node ]));
 	},
 });

@@ -40,11 +40,14 @@ return view.extend({
 		]);
 	},
 
-	drawService: function(st) {
-		// A command in flight owns the block until it settles; the poll would drop its spinner.
-		if (this.serviceBox.querySelector('.w1-btn[disabled]'))
+	// A command's own answer always redraws; the poll waits while a command is in flight.
+	drawService: function(st, answer) {
+		if (!answer && this.serviceBox.querySelector('.w1-btn[disabled]'))
 			return;
-		dom.content(this.serviceBox, w1.serviceBlock(st, (r) => this.reload()));
+		dom.content(this.serviceBox, w1.serviceBlock(st, (r) => {
+			this.drawService(r, true);
+			return this.reload();
+		}));
 	},
 
 	reload: function() {

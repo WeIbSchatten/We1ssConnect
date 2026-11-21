@@ -541,7 +541,7 @@ msgstr ""
 msgid "Settings"
 msgstr ""
 
-msgid "Changes apply after Save & Apply; the tunnel restarts."
+msgid "Changes apply after Save & Apply; a running tunnel restarts."
 msgstr ""
 
 msgid "Blocked in Russia"

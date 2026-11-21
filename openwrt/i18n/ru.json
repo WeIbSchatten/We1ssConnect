@@ -111,7 +111,6 @@
  "Add": "Добавить",
  "Name (optional)": "Название (необязательно)",
  "A We1ssBoard subscription link or any other one with share links (plain or base64).": "Ссылка на подписку We1ssBoard или любую другую со ссылками на ключи (обычную или base64).",
- "Changes apply after Save & Apply; the tunnel restarts.": "Изменения вступают в силу после «Сохранить и применить»; туннель перезапускается.",
  "DNS": "DNS",
  "Network": "Сеть",
  "Connection": "Подключение",
@@ -240,5 +239,6 @@
  "Service": "Служба",
  "Autostart": "Автозапуск",
  "Autostart is on": "Включён",
- "Autostart is off": "Выключен"
+ "Autostart is off": "Выключен",
+ "Changes apply after Save & Apply; a running tunnel restarts.": "Изменения вступают в силу после «Сохранить и применить»; работающий туннель перезапустится."
 }

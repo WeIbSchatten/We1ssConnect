@@ -542,8 +542,8 @@ msgstr "Локальный API sing-box, которым пользуется э�
 msgid "Settings"
 msgstr "Настройки"
 
-msgid "Changes apply after Save & Apply; the tunnel restarts."
-msgstr "Изменения вступают в силу после «Сохранить и применить»; туннель перезапускается."
+msgid "Changes apply after Save & Apply; a running tunnel restarts."
+msgstr "Изменения вступают в силу после «Сохранить и применить»; работающий туннель перезапустится."
 
 msgid "Blocked in Russia"
 msgstr "Заблокированное в России"
