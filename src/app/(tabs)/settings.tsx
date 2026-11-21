@@ -50,7 +50,7 @@ export default function Settings() {
   async function onGeo() {
     setGeoBusy(true);
     try {
-      setGeoAt(await updateGeo());
+      setGeoAt(await updateGeo(settings));
       await reconnectIfActive();
     } catch (e) {
       alert(t('geoUpdate'), (e as Error).message);

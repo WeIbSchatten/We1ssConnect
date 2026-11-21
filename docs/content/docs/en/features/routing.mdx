@@ -50,8 +50,12 @@ The [router client](../openwrt/routing.mdx#categories) understands the same cate
 
 The presets and categories need two rule files from
 [runetfreedom/russia-v2ray-rules-dat](https://github.com/runetfreedom/russia-v2ray-rules-dat): every
-v2fly category plus Russian ones (`ru-blocked`, `ru-available-only-inside` and others). They download
-on the first connect that needs them and refresh weekly:
+v2fly category plus Russian ones (`ru-blocked`, `ru-available-only-inside` and others). The full files
+weigh about 100 MB, so for the presets and popular categories (`category-ru`, `category-ads-all`,
+`ru-blocked`, `youtube`, `telegram`, `discord`, `meta`, `openai`, `geoip:ru` and others) the app
+downloads a cut-down copy of about 9 MB. The full files are needed only when your own rules name a
+category outside that set. The files download on the first connect that needs them; after that the
+VPN connects at once and the files refresh weekly in the background:
 
 - `geoip.dat`: IP ranges by country and service;
 - `geosite.dat`: domain lists.

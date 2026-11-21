@@ -1,0 +1,28 @@
+{
+  "geosite": [
+    "category-ru",
+    "category-ads-all",
+    "ru-blocked",
+    "ru-available-only-inside",
+    "refilter",
+    "youtube",
+    "google",
+    "telegram",
+    "discord",
+    "meta",
+    "facebook",
+    "instagram",
+    "whatsapp",
+    "twitter",
+    "tiktok",
+    "openai",
+    "anthropic",
+    "netflix",
+    "spotify",
+    "twitch",
+    "linkedin",
+    "win-update",
+    "win-extra"
+  ],
+  "geoip": ["ru", "private", "ru-blocked", "telegram", "cloudflare", "google", "facebook", "twitter", "netflix"]
+}

@@ -1,0 +1,60 @@
+name: Geo lite
+
+# Cuts runetfreedom's geosite.dat/geoip.dat (~100 MB) to the categories in src/lib/geo-lite.json
+# (~9 MB) and publishes them on the "geo" branch, where the apps download them (src/lib/geo.ts).
+on:
+  schedule:
+    - cron: "17 4 * * *"
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - src/lib/geo-lite.json
+      - core/cmd/geolite/**
+      - .github/workflows/geo.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: geo
+  cancel-in-progress: false
+
+jobs:
+  lite:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: core/go.mod
+          cache-dependency-path: core/go.sum
+      - name: Download the full files
+        run: |
+          mkdir -p /tmp/full /tmp/lite
+          for f in geoip.dat geosite.dat; do
+            curl -fsSL --retry 3 -o "/tmp/full/$f" "https://raw.githubusercontent.com/runetfreedom/russia-v2ray-rules-dat/release/$f"
+          done
+      - name: Cut them to the lite categories
+        working-directory: core
+        run: |
+          go test ./cmd/geolite/
+          go run ./cmd/geolite -list ../src/lib/geo-lite.json -geosite /tmp/full/geosite.dat -geoip /tmp/full/geoip.dat -out /tmp/lite
+          ls -l /tmp/lite
+      - name: Publish on the geo branch when they changed
+        run: |
+          if git fetch -q --depth 1 origin geo && \
+             cmp -s /tmp/lite/geosite.dat <(git show FETCH_HEAD:geosite.dat) && \
+             cmp -s /tmp/lite/geoip.dat <(git show FETCH_HEAD:geoip.dat); then
+            echo "unchanged"
+            exit 0
+          fi
+          cd /tmp/lite
+          printf 'Geo files for the We1ssConnect apps, cut from runetfreedom/russia-v2ray-rules-dat by .github/workflows/geo.yml on main. Rewritten on every update.\n' > README.md
+          git init -q -b geo
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -q -m "geo: $(date -u +%F)"
+          git push -q --force "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" geo
