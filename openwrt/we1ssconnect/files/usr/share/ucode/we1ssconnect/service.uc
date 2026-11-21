@@ -17,6 +17,9 @@ import { mkdir_p, update_failure } from 'we1ssconnect.util';
 export const VERSION = '0.0.0-dev';
 export const REPO = 'WeIbSchatten/We1ssConnect';
 export const RUN_DIR = getenv('WE1SS_RUN_DIR') || '/var/run/we1ssconnect';
+// The user wants it running: the init script's start writes it, its stop removes it.
+export const WANTED = RUN_DIR + '/wanted';
+const INIT = '/etc/init.d/we1ssconnect';
 const TMP_DIR = '/tmp/we1ssconnect';
 const UPDATE_LOG = '/tmp/we1ssconnect-update.log';
 const SVC_PROXY = 'socks5h://127.0.0.1:' + singbox.SVC_PORT;
@@ -171,7 +174,7 @@ function start_xray_install() {
 	const last = read_json(XRAY_STATE);
 	if (last && !last.ok && time() - last.time < 3600)
 		return `REALITY servers: Xray is not installed: ${last.error}`;
-	sh(`sh -c 'echo $$ > ${XRAY_PID}; /usr/bin/we1ssconnect xray-install > /dev/null && /etc/init.d/we1ssconnect restart; rm -f ${XRAY_PID}' > /dev/null 2>&1 &`);
+	sh(`sh -c 'echo $$ > ${XRAY_PID}; /usr/bin/we1ssconnect xray-install > /dev/null && [ -e ${WANTED} ] && ${INIT} restart; rm -f ${XRAY_PID}' > /dev/null 2>&1 &`);
 	return XRAY_WAIT;
 }
 
@@ -264,7 +267,8 @@ export function status() {
 	const st = read_status();
 	const up = sh('pidof sing-box').code == 0 && sh(`nft list table inet ${nft.TABLE}`).code == 0;
 	let out = {
-		version: VERSION, enabled: l.cfg.enabled, running: up, mode: l.cfg.mode, selected: l.cfg.selected,
+		version: VERSION, running: up, wanted: stat(WANTED) != null, autostart: sh(`${INIT} enabled`).code == 0,
+		mode: l.cfg.mode, selected: l.cfg.selected,
 		error: st.error, warnings: st.warnings ?? [], servers: length(store.usable(l.data)),
 		singbox: split(sh('sing-box version').out, '\n')[0],
 		taken_over: takeover.taken_over().names ?? [],
@@ -357,9 +361,10 @@ export function select(id) {
 	return { ok: true };
 };
 
-function restart_if_running() {
-	if (status().running)
-		sh('/etc/init.d/we1ssconnect restart');
+// Wanted, not running: a config that failed to start comes back with the edit that fixes it.
+function restart_if_wanted() {
+	if (stat(WANTED) != null)
+		sh(`${INIT} restart`);
 }
 
 export function lists_update() {
@@ -374,7 +379,7 @@ export function lists_update() {
 		return d.content;
 	}, null, (url) => lists.cache_file(url, LIST_DIR));
 	if (changed)
-		restart_if_running();
+		restart_if_wanted();
 	return { ok: true, changed, missing: res.missing };
 };
 
@@ -390,7 +395,7 @@ export function import_links(text) {
 	const added = store.add_links(data, parts.links);
 	store.save(data);
 	if (subs || length(filter(added, (s) => s.ok)))
-		restart_if_running();
+		restart_if_wanted();
 	return { added: length(filter(added, (s) => s.ok)), subscriptions: subs,
 		skipped: map(filter(added, (s) => !s.ok), (s) => ({ name: s.name, reason: s.reason })) };
 };
@@ -400,7 +405,7 @@ export function remove_server(id) {
 	const ok = store.remove(data, id);
 	store.save(data);
 	if (ok)
-		restart_if_running();
+		restart_if_wanted();
 	return { ok };
 };
 
@@ -432,7 +437,7 @@ export function sub_update(which, no_restart) {
 	}
 	store.save(data);
 	if (changed && !no_restart)
-		restart_if_running();
+		restart_if_wanted();
 	return { results, changed };
 };
 
@@ -444,7 +449,7 @@ export function sub_remove(id) {
 	let data = store.load();
 	store.remove_source(data, id);
 	store.save(data);
-	restart_if_running();
+	restart_if_wanted();
 	return { ok: true };
 };
 
@@ -536,9 +541,11 @@ export function take_over() {
 	return { stopped: takeover.take_over() };
 };
 
-export function set_enabled(on) {
-	set_main('enabled', on ? '1' : '0');
-	sh(on ? '/etc/init.d/we1ssconnect enable; /etc/init.d/we1ssconnect restart' : '/etc/init.d/we1ssconnect stop');
+// Start/stop/restart the tunnel now, or enable/disable its start at boot, as in podkop.
+export function service(action) {
+	if (index([ 'start', 'stop', 'restart', 'enable', 'disable' ], action) < 0)
+		return { ok: false, error: 'action must be start, stop, restart, enable or disable' };
+	sh(`${INIT} ${action}`);
 	return status();
 };
 
@@ -546,6 +553,6 @@ export function set_mode(mode) {
 	if (mode != 'selective' && mode != 'global')
 		return { ok: false, error: 'mode must be selective or global' };
 	set_main('mode', mode);
-	restart_if_running();
+	restart_if_wanted();
 	return { ok: true };
 };

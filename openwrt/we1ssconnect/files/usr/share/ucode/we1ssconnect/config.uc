@@ -3,7 +3,7 @@
 import { truthy } from 'we1ssconnect.util';
 
 export const DEFAULTS = {
-	enabled: '0', mode: 'selective', selected: 'auto',
+	mode: 'selective', selected: 'auto',
 	urltest_url: 'https://www.gstatic.com/generate_204', urltest_interval: '3m', urltest_tolerance: '50',
 	dns_type: 'doh', dns_server: '1.1.1.1', bootstrap_dns: '77.88.8.8', direct_dns: '77.88.8.8',
 	source_iface: ['br-lan'], ipv6: '0', lan_proxy: '0', lan_proxy_port: '2080',
@@ -107,7 +107,7 @@ export function normalize(sections, data, runtime) {
 	}
 
 	const cfg = {
-		enabled: truthy(main.enabled), mode: main.mode == 'global' ? 'global' : 'selective', selected: main.selected || 'auto',
+		mode: main.mode == 'global' ? 'global' : 'selective', selected: main.selected || 'auto',
 		urltest: { url: main.urltest_url, interval: main.urltest_interval, tolerance: int(main.urltest_tolerance) },
 		dns: { type: main.dns_type, server: main.dns_server, bootstrap: main.bootstrap_dns, direct: main.direct_dns },
 		ifaces: list(main.source_iface), ipv6: truthy(main.ipv6),

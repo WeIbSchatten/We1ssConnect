@@ -1,6 +1,5 @@
 
 config settings 'main'
-	option enabled '0'
 	option mode 'selective'
 	option selected 'auto'
 	option dns_type 'doh'

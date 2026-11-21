@@ -40,7 +40,6 @@ server_pid=$!
 rm -rf /etc/we1ssconnect /var/run/we1ssconnect
 cp "$1/we1ssconnect/files/etc/config/we1ssconnect" /etc/config/we1ssconnect
 we1ssconnect import "ss://$(printf 'aes-128-gcm:testpw' | base64)@127.0.0.1:8388#Local" > /dev/null
-uci set we1ssconnect.main.enabled=1
 uci set we1ssconnect.main.manage_dnsmasq=0
 uci add we1ssconnect rule > /dev/null
 uci set we1ssconnect.@rule[-1].name=Listed
