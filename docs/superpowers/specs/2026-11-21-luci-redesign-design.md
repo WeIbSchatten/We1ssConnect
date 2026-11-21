@@ -88,7 +88,7 @@ State model (owner approved these calls, 2026-11-21):
 
 - rpcd: replace `set_enabled` with `service` taking `start|stop|restart|enable|disable`;
   `status()` gains `autostart` and `wanted`. CLI gains `start | stop | restart | enable | disable`.
-- Migration (uci-defaults, once): uci `main.enabled=0` → `init.d disable`; `enabled=1` → keep
+- Migration (in the package postinst, once): uci `main.enabled=0` → `init.d disable`; `enabled=1` → keep
   init enabled. Then delete `main.enabled`. A legacy "Disconnected" router shows "Stopped,
   autostart disabled" and nothing turns on by itself.
 - Package scripts: a fresh install leaves the service stopped and autostart disabled. An upgrade
