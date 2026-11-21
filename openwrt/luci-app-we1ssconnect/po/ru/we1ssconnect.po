@@ -698,6 +698,27 @@ msgstr "Ожидается условие(значение)->действие"
 msgid "In selective mode only traffic matched by domain or IP rules reaches the tunnel, so this rule catches almost nothing"
 msgstr "В выборочном режиме в туннель попадает только трафик, совпавший с правилами по доменам или IP, поэтому это правило почти ничего не поймает"
 
+msgid "Start the service"
+msgstr "Запустить"
+
+msgid "Stop the service"
+msgstr "Остановить"
+
+msgid "Restart the service"
+msgstr "Перезапустить"
+
+msgid "Enable autostart"
+msgstr "Включить автозапуск"
+
+msgid "Disable autostart"
+msgstr "Выключить автозапуск"
+
+msgid "Service is running"
+msgstr "Работает"
+
+msgid "Service is stopped"
+msgstr "Остановлена"
+
 msgid "We1ssConnect"
 msgstr "We1ssConnect"
 

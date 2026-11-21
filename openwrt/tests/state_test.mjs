@@ -17,12 +17,12 @@ test('a stopped service offers Start and Restart, plus the opposite of its autos
 });
 
 test('the label says what the service is doing', () => {
-	assert.deepEqual(state.serviceLabel({ running: true, wanted: true }), { text: 'Running', kind: 'on' });
+	assert.deepEqual(state.serviceLabel({ running: true, wanted: true }), { text: 'Service is running', kind: 'on' });
 	assert.deepEqual(state.serviceLabel({ running: false, wanted: true, error: 'bad config' }), { text: 'Error', kind: 'err' });
 	assert.deepEqual(state.serviceLabel({ running: false, wanted: true }), { text: 'Starting…', kind: 'off' });
-	assert.deepEqual(state.serviceLabel({ running: false, wanted: false }), { text: 'Stopped', kind: 'off' });
+	assert.deepEqual(state.serviceLabel({ running: false, wanted: false }), { text: 'Service is stopped', kind: 'off' });
 });
 
 test('a stopped service with an old error from its last start reads Stopped, not Error', () => {
-	assert.deepEqual(state.serviceLabel({ running: false, wanted: false, error: 'bad config' }), { text: 'Stopped', kind: 'off' });
+	assert.deepEqual(state.serviceLabel({ running: false, wanted: false, error: 'bad config' }), { text: 'Service is stopped', kind: 'off' });
 });

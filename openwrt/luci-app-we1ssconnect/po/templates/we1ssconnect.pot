@@ -697,6 +697,27 @@ msgstr ""
 msgid "In selective mode only traffic matched by domain or IP rules reaches the tunnel, so this rule catches almost nothing"
 msgstr ""
 
+msgid "Start the service"
+msgstr ""
+
+msgid "Stop the service"
+msgstr ""
+
+msgid "Restart the service"
+msgstr ""
+
+msgid "Enable autostart"
+msgstr ""
+
+msgid "Disable autostart"
+msgstr ""
+
+msgid "Service is running"
+msgstr ""
+
+msgid "Service is stopped"
+msgstr ""
+
 msgid "We1ssConnect"
 msgstr ""
 
