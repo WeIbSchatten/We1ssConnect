@@ -218,9 +218,6 @@ msgstr "Правила маршрутизации"
 msgid "Routing rule"
 msgstr "Правило маршрутизации"
 
-msgid "Rule"
-msgstr "Правило"
-
 msgid "On"
 msgstr "Вкл."
 

@@ -217,9 +217,6 @@ msgstr ""
 msgid "Routing rule"
 msgstr ""
 
-msgid "Rule"
-msgstr ""
-
 msgid "On"
 msgstr ""
 

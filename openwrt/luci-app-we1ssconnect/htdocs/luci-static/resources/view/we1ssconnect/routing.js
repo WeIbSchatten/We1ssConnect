@@ -72,7 +72,8 @@ return view.extend({
 		s.sortable = true;
 		s.nodescriptions = true;
 		s.modaltitle = _('Routing rule');
-		s.sectiontitle = (sid) => uci.get('we1ssconnect', sid, 'name') || summary(sid) || _('Rule');
+		// LuCI 24.10 draws the title from an attribute, so what a rule matches stays in its own column.
+		s.sectiontitle = (sid) => uci.get('we1ssconnect', sid, 'name') || '—';
 
 		o = s.option(form.Flag, 'enabled', _('On'));
 		o.default = '1';
@@ -154,8 +155,7 @@ return view.extend({
 		o.modalonly = true;
 
 		o = s.option(form.DummyValue, '_what', _('Matches'));
-		// A rule without a name already shows this as its title.
-		o.textvalue = (sid) => uci.get('we1ssconnect', sid, 'name') ? (summary(sid) || '—') : '';
+		o.textvalue = (sid) => summary(sid) || '—';
 		// The rule editor shows cfgvalue, not textvalue; without it the field read "null".
 		o.cfgvalue = (sid) => summary(sid) || '—';
 
