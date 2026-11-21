@@ -38,7 +38,8 @@ svc start
 sleep 3
 out="$(reinstall)"
 check "an upgrade keeps a failing service wanted" '[ "$(field wanted)" = true ]'
-uci set we1ssconnect.main.urltest_interval=3m; uci commit we1ssconnect; reload_config
+# reload_config acts on changes since its last run, which saw 3m: fix it with another valid value.
+uci set we1ssconnect.main.urltest_interval=5m; uci commit we1ssconnect; reload_config
 up_within 20 || fail "the service runs again for the LuCI test"
 [ "$fails" -gt 0 ] && { echo "--- running upgrade"; echo "$out1"; echo "--- stopped upgrade"; echo "$out"; ubus call we1ssconnect status; logread | grep -i we1ss | tail -20; }
 echo "upgrade: $fails failed"
