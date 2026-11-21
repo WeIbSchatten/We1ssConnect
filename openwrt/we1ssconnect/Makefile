@@ -68,9 +68,10 @@ uci -q delete we1ssconnect.main.enabled && uci commit we1ssconnect
 autostart=0 running=0
 [ -f /tmp/we1ssconnect.pkg ] && . /tmp/we1ssconnect.pkg && upgrade=1
 rm -f /tmp/we1ssconnect.pkg
-# Decided here, after OpenWrt's default postinst may have enabled and started it.
 if [ "$$autostart" = 1 ]; then /etc/init.d/we1ssconnect enable; else /etc/init.d/we1ssconnect disable; fi
 if [ "$$running" = 1 ]; then /etc/init.d/we1ssconnect restart; else /etc/init.d/we1ssconnect stop; fi
+# opkg runs this before its own enable and start of the init script; that start applies the hold.
+[ -f /usr/lib/opkg/info/we1ssconnect.list ] && echo "autostart=$$autostart running=$$running" > /tmp/we1ssconnect.hold
 [ -n "$${upgrade:-}" ] && echo "We1ssConnect: kept autostart=$$autostart running=$$running"
 exit 0
 endef

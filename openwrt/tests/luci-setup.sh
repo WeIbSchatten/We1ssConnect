@@ -34,8 +34,8 @@ stop() { echo stop >> /root/podkop.calls; }
 	uci set we1ssconnect.main.enabled=0
 	uci commit we1ssconnect
 	/etc/init.d/we1ssconnect enable
-	reinstall > /dev/null
-	/etc/init.d/we1ssconnect enabled && { echo 'FAIL a disconnected router got autostart back on upgrade'; exit 1; }
+	out="$(reinstall)" || { echo "$out"; echo "FAIL the reinstall failed"; exit 1; }
+	/etc/init.d/we1ssconnect enabled && { echo "$out"; echo 'FAIL a disconnected router got autostart back on upgrade'; exit 1; }
 	[ -z "$(uci -q get we1ssconnect.main.enabled)" ] || { echo 'FAIL the old enabled option is still there'; exit 1; }
 	echo 'ok   an upgrade keeps a disconnected router off and drops the old option'
 	/etc/init.d/network disable

@@ -9,6 +9,14 @@ USE_PROCD=1
 RUN_DIR=/var/run/we1ssconnect
 
 start_service() {
+	# An opkg install's last word: it enables and starts us after our postinst decided both.
+	if [ -f /tmp/we1ssconnect.hold ]; then
+		local autostart running
+		. /tmp/we1ssconnect.hold
+		rm -f /tmp/we1ssconnect.hold
+		if [ "$autostart" = 1 ]; then enable; else disable; fi
+		[ "$running" = 1 ] || return 0
+	fi
 	# Written before prepare: a start that fails on a bad config still wants to run once fixed.
 	mkdir -p "$RUN_DIR" && touch "$RUN_DIR/wanted"
 
