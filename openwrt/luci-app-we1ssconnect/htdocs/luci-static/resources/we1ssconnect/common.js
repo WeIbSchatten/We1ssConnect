@@ -51,12 +51,16 @@ const CSS = `
 .w1-checklist { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 6px 18px; max-width: 100%; }
 .w1-checklist label { display: flex; align-items: center; gap: 8px; margin: 0; cursor: pointer; line-height: 1.3; }
 .w1-checklist input { margin: 0; flex: none; }
-.w1-rules-text { width: 100%; min-height: 420px; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 13px; line-height: 1.5; white-space: pre; tab-size: 4; box-sizing: border-box; }
+.w1-rules-text { width: 100%; resize: vertical; overflow: auto; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 13px; line-height: 1.5; white-space: pre; tab-size: 4; box-sizing: border-box; }
 .w1-rules-msgs { margin: 8px 0 0; padding-left: 18px; }
 .w1-rules-msgs .w1-warn { color: #b7791f; }
 .w1-rules-msgs .w1-bad { color: #c9443c; }
 .w1-textmode #cbi-we1ssconnect-rule, .w1-textmode .cbi-map-descr { display: none; }
-.w1-views { display: flex; gap: 6px; margin: 0 0 10px; }
+.w1-act { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; border: 1px solid rgba(128,128,128,.35); white-space: nowrap; }
+.w1-act small { font-weight: 400; opacity: .8; }
+.w1-act-proxy { background: rgba(31,122,69,.12); border-color: rgba(31,122,69,.4); color: #1f9a55; }
+.w1-act-vpn { background: rgba(43,108,176,.12); border-color: rgba(43,108,176,.4); color: #2b7bc9; }
+.w1-act-block { background: rgba(179,54,47,.1); border-color: rgba(179,54,47,.4); color: #c9443c; }
 .w1-err { background: rgba(179,54,47,.12); border-color: rgba(179,54,47,.45); color: #c9443c; }
 .w1-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); border: 1px solid rgba(128,128,128,.28); border-radius: 12px; margin-bottom: 12px; }
 .w1-stats > div { padding: 12px 16px; border-right: 1px solid rgba(128,128,128,.18); }

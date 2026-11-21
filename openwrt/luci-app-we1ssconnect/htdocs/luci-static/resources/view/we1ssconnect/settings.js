@@ -8,7 +8,7 @@ return view.extend({
 	render: function() {
 		let m, s, o;
 
-		m = new form.Map('we1ssconnect', null, _('Changes apply after Save & Apply; the tunnel restarts.'));
+		m = new form.Map('we1ssconnect');
 		w1.style();
 
 		s = m.section(form.NamedSection, 'main', 'settings');
@@ -99,6 +99,6 @@ return view.extend({
 		o.datatype = 'port';
 		o.default = '9090';
 
-		return m.render();
+		return m.render().then((node) => E('div', { class: 'w1-wrap' }, [ w1.header(_('Settings'), _('Changes apply after Save & Apply; the tunnel restarts.')), node ]));
 	},
 });

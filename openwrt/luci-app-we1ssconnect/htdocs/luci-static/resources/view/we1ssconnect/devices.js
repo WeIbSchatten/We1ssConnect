@@ -13,8 +13,7 @@ return view.extend({
 		const leases = (data[0] && data[0].dhcp_leases) || [];
 		let m, s, o;
 
-		m = new form.Map('we1ssconnect', null,
-			_('Like per-app routing on the phone: a device can send everything through the tunnel, or nothing at all. Give such devices a static DHCP lease so their address does not change.'));
+		m = new form.Map('we1ssconnect');
 		w1.style();
 
 		s = m.section(form.GridSection, 'device', _('Devices'));
@@ -35,6 +34,6 @@ return view.extend({
 		o.value('bypass', _('Nothing through the tunnel'));
 		o.default = 'tunnel';
 
-		return m.render();
+		return m.render().then((node) => E('div', { class: 'w1-wrap' }, [ w1.header(_('Devices'), _('Like per-app routing on the phone: a device can send everything through the tunnel, or nothing at all. Give such devices a static DHCP lease so their address does not change.')), node ]));
 	},
 });
