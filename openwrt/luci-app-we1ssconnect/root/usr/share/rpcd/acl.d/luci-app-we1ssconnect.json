@@ -10,7 +10,7 @@
 		},
 		"write": {
 			"ubus": {
-				"we1ssconnect": [ "set_enabled", "set_mode", "ping", "select", "import", "remove", "sub_add", "sub_update", "sub_remove", "exit_info", "speedtest", "update" ]
+				"we1ssconnect": [ "service", "set_mode", "ping", "select", "import", "remove", "sub_add", "sub_update", "sub_remove", "exit_info", "speedtest", "update" ]
 			},
 			"uci": [ "we1ssconnect" ]
 		}

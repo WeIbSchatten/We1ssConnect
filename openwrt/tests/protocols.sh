@@ -70,7 +70,6 @@ for i in $(seq 1 180); do [ -f /tmp/we1ssconnect/xray-install.json ] && [ ! -f /
 xray_ver=$(/usr/share/we1ssconnect/xray version 2> /dev/null | head -n 1)
 case "$xray_ver" in "Xray 26.10.21 "*) pass "Xray 26.10.21 installed" ;; *) fail "Xray installed (got '$xray_ver', $(cat /tmp/we1ssconnect/xray-install.json 2> /dev/null))" ;; esac
 
-uci set we1ssconnect.main.enabled=1
 uci commit we1ssconnect
 we1ssconnect prepare > $dir/prepare.json || { echo "FAIL prepare"; cat $dir/prepare.json; exit 1; }
 xray_bin=$(ucode -e "import { readfile } from 'fs'; print(json(readfile('/var/run/we1ssconnect/status.json')).xray ?? '');")

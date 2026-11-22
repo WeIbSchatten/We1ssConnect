@@ -47,7 +47,7 @@ jobs:
           node openwrt/i18n/i18n.mjs openwrt/luci-app-we1ssconnect openwrt/i18n/ru.json
           git diff --exit-code -- openwrt/luci-app-we1ssconnect/po
       - name: LuCI modules that run without a browser
-        run: node --test openwrt/tests/rules_test.mjs
+        run: node --test openwrt/tests/rules_test.mjs openwrt/tests/state_test.mjs
 
   build:
     needs: [test, translations]
@@ -77,6 +77,12 @@ jobs:
           name: we1ssconnect-openwrt-${{ matrix.format }}
           path: dist/*.${{ matrix.format }}
           if-no-files-found: error
+      # Not "we1ssconnect-*": the release collects every artifact by that pattern.
+      - uses: actions/upload-artifact@v7
+        with:
+          name: upgrade-test-packages-${{ matrix.format }}
+          path: dist/up/
+          if-no-files-found: error
 
   # Installs the built packages with opkg/apk on a booted OpenWrt and drives LuCI in Chromium.
   luci:
@@ -98,6 +104,10 @@ jobs:
         with:
           name: we1ssconnect-openwrt-${{ matrix.format }}
           path: pkgs
+      - uses: actions/download-artifact@v7
+        with:
+          name: upgrade-test-packages-${{ matrix.format }}
+          path: pkgs/up
       - name: Install LuCI and We1ssConnect with the release's package manager
         run: |
           docker run --name prep -v "$PWD/pkgs:/pkgs:ro" -v "$PWD/openwrt:/src:ro" \
@@ -106,13 +116,17 @@ jobs:
       - name: Boot it and connect
         run: |
           sudo modprobe -a nft_tproxy nf_tproxy_ipv4 nf_tproxy_ipv6 nft_socket
-          docker run -d --name owrt --privileged -v "$PWD/openwrt:/src:ro" owrt-luci /sbin/init
+          docker run -d --name owrt --privileged -v "$PWD/openwrt:/src:ro" -v "$PWD/pkgs:/pkgs:ro" owrt-luci /sbin/init
           for i in $(seq 1 30); do docker exec owrt ubus list we1ssconnect > /dev/null 2>&1 && break; sleep 1; done
           # OpenWrt's boot drops the address Docker gave eth0; put it and the default route back.
           net='{{range .NetworkSettings.Networks}}{{.IPAddress}}/{{.IPPrefixLen}} {{.Gateway}}{{end}}'
           read -r addr gw <<< "$(docker inspect -f "$net" owrt)"
           docker exec owrt sh -c "ip link set eth0 up; ip addr replace $addr dev eth0; ip route replace default via $gw"
           docker exec owrt sh /src/tests/luci-setup.sh configure
+      - name: Service control and upgrades on the booted router
+        run: |
+          timeout 300 docker exec owrt sh /src/tests/service_test.sh
+          timeout 300 docker exec owrt sh /src/tests/upgrade_test.sh
       - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc

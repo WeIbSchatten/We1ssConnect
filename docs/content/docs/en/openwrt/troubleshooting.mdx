@@ -41,12 +41,12 @@ the tunnel**; test the subscription from the router with `curl -I '<link>'`.
 ## Other clients: podkop, Passwall, OpenClash
 
 podkop, Passwall, Passwall2, OpenClash, Nikki and https-dns-proxy capture traffic and DNS the same
-way, so they cannot run beside We1ssConnect. When the package is installed and on every **Connect**,
+way, so they cannot run beside We1ssConnect. When the package is installed and on every start of the tunnel,
 the ones that are running or start at boot are stopped and their autostart is turned off, along
 with the sing-box service podkop runs through. Nothing is removed; the overview says what was
 stopped.
 
-To go back to podkop, say: press **Disconnect** in We1ssConnect, then turn podkop on under
+To go back to podkop, say: press **Stop** and **Disable autostart** under We1ssConnect **Diagnostics**, then turn podkop on under
 **System → Startup** or over SSH:
 
 ```sh

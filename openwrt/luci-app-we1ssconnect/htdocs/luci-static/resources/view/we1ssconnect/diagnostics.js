@@ -2,6 +2,7 @@
 'require view';
 'require dom';
 'require ui';
+'require poll';
 'require we1ssconnect.common as w1';
 
 const CHECK_NAMES = {
@@ -18,6 +19,7 @@ return view.extend({
 	},
 
 	draw: function(diag, log, st) {
+		this.drawService(st);
 		const checks = (diag.checks || []).map((c) => E('div', { class: 'w1-check' }, [
 			E('span', { class: c.ok ? 'w1-good' : 'w1-bad', style: 'width:18px' }, c.ok ? '✓' : '✗'),
 			E('span', { style: 'flex:1' }, CHECK_NAMES[c.name]
@@ -25,7 +27,8 @@ return view.extend({
 			E('span', { class: 'w1-muted', style: 'font-size:12px' }, c.detail == 'running or starts at boot' ? _('running or starts at boot') : (c.detail || '')),
 		]));
 		dom.content(this.box, [
-			w1.header(_('Diagnostics'), [ 'We1ssConnect ', st.version || '', ' · ', st.singbox || '' ]),
+			w1.header(_('Diagnostics'), [ 'We1ssConnect ', st.version || '', ', ', st.singbox || '' ], st),
+			this.serviceBox,
 			(diag.warnings || []).length ? E('div', { class: 'w1-alert' }, diag.warnings.map((x) => E('div', {}, w1.warning(x)))) : '',
 			E('div', { class: 'w1-toolbar' }, [
 				E('button', { class: 'cbi-button cbi-button-action', click: ui.createHandlerFn(this, 'reload') }, _('Run again')),
@@ -35,6 +38,16 @@ return view.extend({
 			E('div', { class: 'w1-grid' }, [ w1.card(_('Checks'), E('div', {}, checks)) ]),
 			w1.card(_('sing-box log'), E('pre', { class: 'w1-log' }, log.log || _('The log is empty.'))),
 		]);
+	},
+
+	// A command's own answer always redraws; the poll waits while a command is in flight.
+	drawService: function(st, answer) {
+		if (!answer && this.serviceBox.querySelector('.w1-btn[disabled]'))
+			return;
+		dom.content(this.serviceBox, w1.serviceBlock(st, (r) => {
+			this.drawService(r, true);
+			return this.reload();
+		}));
 	},
 
 	reload: function() {
@@ -55,7 +68,10 @@ return view.extend({
 	render: function(data) {
 		this.box = E('div', { class: 'w1-wrap' });
 		this.updateBox = E('span', { style: 'align-self:center' });
+		this.serviceBox = E('div');
 		this.draw(data[0] || {}, data[1] || {}, data[2] || {});
+		// Only the service block: redrawing the checks and the log would lose the reader's scroll.
+		poll.add(() => w1.status().then((r) => this.drawService(r || {})), 5);
 		return this.box;
 	},
 

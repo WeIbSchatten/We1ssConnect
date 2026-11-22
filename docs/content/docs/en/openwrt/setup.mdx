@@ -33,11 +33,15 @@ The overview has the mode switch:
 - **By lists** — only the sites and services from the rules go through the tunnel;
 - **All traffic** — everything goes through the tunnel except direct rules and bypassed devices.
 
-## 4. Connect
+## 4. Start the tunnel
 
-On **Overview** press **Connect**. In a few seconds the state turns to "Connected" and shows the
+On **Overview** press **Start**. In a few seconds the state turns to "Running" and shows the
 current server, the exit IP with the country flag, city and ISP. The middle of the IP is hidden;
 click it to see the whole address. The **Speed test** is there too.
+
+To bring the tunnel up after a router reboot, press **Enable autostart** on the **Diagnostics**
+page. **Stop** and **Restart** are there too, as in podkop: Stop turns the tunnel off now,
+autostart only decides whether it starts at boot.
 
 If something is off, open **Diagnostics**: it shows which part does not work
 ([troubleshooting](./troubleshooting.mdx)).

@@ -7,6 +7,8 @@ import * as svc from 'we1ssconnect.service';
 const USAGE = `We1ssConnect ${svc.VERSION} for OpenWrt
 
   status                  service state, current server, traffic
+  start | stop | restart  run or stop the tunnel now (autostart stays as it is)
+  enable | disable        start the tunnel at boot, or not
   servers                 servers, subscriptions and groups
   import <link|->         add share links (one per line; "-" reads stdin)
   rm <server-id>          remove a server
@@ -32,6 +34,7 @@ let result = null;
 
 switch (cmd) {
 case 'status': result = svc.status(); break;
+case 'start': case 'stop': case 'restart': case 'enable': case 'disable': result = svc.service(cmd); break;
 case 'servers': result = svc.servers(); break;
 case 'import': result = svc.import_links(arg == '-' || arg == null ? readfile('/dev/stdin') : arg); break;
 case 'rm': result = svc.remove_server(arg); break;

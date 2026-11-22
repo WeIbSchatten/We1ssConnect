@@ -22,9 +22,12 @@ description: Управление клиентом по SSH и из скрипт
 | `we1ssconnect log [строк]` | журнал sing-box |
 | `we1ssconnect update-check` / `update` | проверить и установить обновление |
 | `we1ssconnect xray-install` | скачать Xray для серверов REALITY (обычно это происходит само) |
+| `we1ssconnect start` / `stop` / `restart` | запустить, остановить или перезапустить туннель сейчас; автозапуск не меняется |
+| `we1ssconnect enable` / `disable` | включить или выключить запуск туннеля при загрузке роутера |
 
-Служба управляется как обычно: `/etc/init.d/we1ssconnect start|stop|restart`. Включить её
-при загрузке — `uci set we1ssconnect.main.enabled=1 && uci commit we1ssconnect`.
+Как в podkop, это две отдельные вещи. Остановленный туннель поднимется после перезагрузки, если
+включён автозапуск, но не поднимется сам от правки настроек или обновления списков.
+То же умеет `/etc/init.d/we1ssconnect start|stop|restart|enable|disable`.
 
 Пример: добавить подписку и закрепить первый сервер из неё.
 

@@ -92,24 +92,6 @@ msgstr "Обновление идёт в фоне; обновите страни
 msgid "Update"
 msgstr "Обновить"
 
-msgid "Error"
-msgstr "Ошибка"
-
-msgid "Connected"
-msgstr "Подключено"
-
-msgid "Starting…"
-msgstr "Запуск…"
-
-msgid "Off"
-msgstr "Выключено"
-
-msgid "Disconnect"
-msgstr "Отключить"
-
-msgid "Connect"
-msgstr "Подключить"
-
 msgid "By lists"
 msgstr "По спискам"
 
@@ -149,8 +131,8 @@ msgstr "Версия"
 msgid "The last update failed: %s"
 msgstr "Последнее обновление не удалось: %s"
 
-msgid "To keep the tunnel working, these were stopped and their autostart turned off: %s. Nothing was removed; turn them back on under System → Startup after disconnecting here."
-msgstr "Чтобы туннель работал, остановлены и выключены из автозапуска: %s. Ничего не удалено; вернуть их можно в «Система → Загрузка», отключив здесь We1ssConnect."
+msgid "To keep the tunnel working, these were stopped and their autostart turned off: %s. Nothing was removed; turn them back on under System → Startup after stopping the service on the Diagnostics page."
+msgstr "Чтобы туннель работал, остановлены и выключены из автозапуска: %s. Ничего не удалено; вернуть их можно в «Система → Загрузка», остановив службу We1ssConnect в Диагностике."
 
 msgid "Tunnel"
 msgstr "Туннель"
@@ -161,6 +143,9 @@ msgstr "Через туннель идёт всё, кроме прямых пр�
 msgid "Only sites and services from routing rules go through the tunnel."
 msgstr "Через туннель идут только сайты и сервисы из правил маршрутизации."
 
+msgid "Stop, restart and autostart: Diagnostics"
+msgstr "Остановка, перезапуск и автозапуск — в Диагностике"
+
 msgid "Server"
 msgstr "Сервер"
 
@@ -170,8 +155,8 @@ msgstr "Внешний IP"
 msgid "Speed test"
 msgstr "Проверка скорости"
 
-msgid "Connect to see the exit IP."
-msgstr "Подключитесь, чтобы увидеть внешний IP."
+msgid "Start the tunnel to see the exit IP."
+msgstr "Запустите туннель, чтобы увидеть IP выхода."
 
 msgid "Checking…"
 msgstr "Проверка…"
@@ -557,8 +542,8 @@ msgstr "Локальный API sing-box, которым пользуется э�
 msgid "Settings"
 msgstr "Настройки"
 
-msgid "Changes apply after Save & Apply; the tunnel restarts."
-msgstr "Изменения вступают в силу после «Сохранить и применить»; туннель перезапускается."
+msgid "Changes apply after Save & Apply; a running tunnel restarts."
+msgstr "Изменения вступают в силу после «Сохранить и применить»; работающий туннель перезапустится."
 
 msgid "Blocked in Russia"
 msgstr "Заблокированное в России"
@@ -622,6 +607,18 @@ msgstr "Правило %s: неизвестная категория %s."
 
 msgid "%s: invalid filter %s."
 msgstr "%s: неверный фильтр %s."
+
+msgid "Service"
+msgstr "Служба"
+
+msgid "Autostart"
+msgstr "Автозапуск"
+
+msgid "Autostart is on"
+msgstr "Включён"
+
+msgid "Autostart is off"
+msgstr "Выключен"
 
 msgid "no answer"
 msgstr "нет ответа"
@@ -697,6 +694,33 @@ msgstr "Ожидается условие(значение)->действие"
 
 msgid "In selective mode only traffic matched by domain or IP rules reaches the tunnel, so this rule catches almost nothing"
 msgstr "В выборочном режиме в туннель попадает только трафик, совпавший с правилами по доменам или IP, поэтому это правило почти ничего не поймает"
+
+msgid "Start the service"
+msgstr "Запустить"
+
+msgid "Stop the service"
+msgstr "Остановить"
+
+msgid "Restart the service"
+msgstr "Перезапустить"
+
+msgid "Enable autostart"
+msgstr "Включить автозапуск"
+
+msgid "Disable autostart"
+msgstr "Выключить автозапуск"
+
+msgid "Service is running"
+msgstr "Работает"
+
+msgid "Error"
+msgstr "Ошибка"
+
+msgid "Starting…"
+msgstr "Запуск…"
+
+msgid "Service is stopped"
+msgstr "Остановлена"
 
 msgid "We1ssConnect"
 msgstr "We1ssConnect"

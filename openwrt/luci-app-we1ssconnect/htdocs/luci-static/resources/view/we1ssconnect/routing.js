@@ -55,7 +55,7 @@ const ACTIONS = {
 
 return view.extend({
 	load: function() {
-		return Promise.all([ w1.servers(), uci.load('we1ssconnect') ]);
+		return Promise.all([ w1.servers(), uci.load('we1ssconnect'), w1.status() ]);
 	},
 
 	render: function(data) {
@@ -203,8 +203,8 @@ return view.extend({
 		};
 		return m.render().then((node) => {
 			this.root = E('div', { class: 'w1-wrap' }, [
-				w1.header(_('Routing'), _('Rules are checked from top to bottom; the first match wins. Drag rows to change the order.'),
-					E('div', { class: 'w1-seg' }, [ this.buttons.form, this.buttons.text ])),
+				w1.header(_('Routing'), _('Rules are checked from top to bottom; the first match wins. Drag rows to change the order.'), data[2] || {}),
+				E('div', { class: 'w1-toolbar' }, E('div', { class: 'w1-seg' }, [ this.buttons.form, this.buttons.text ])),
 				this.textBox, node,
 			]);
 			let saved = null;

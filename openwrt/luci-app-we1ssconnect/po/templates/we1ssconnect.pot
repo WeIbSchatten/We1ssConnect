@@ -91,24 +91,6 @@ msgstr ""
 msgid "Update"
 msgstr ""
 
-msgid "Error"
-msgstr ""
-
-msgid "Connected"
-msgstr ""
-
-msgid "Starting…"
-msgstr ""
-
-msgid "Off"
-msgstr ""
-
-msgid "Disconnect"
-msgstr ""
-
-msgid "Connect"
-msgstr ""
-
 msgid "By lists"
 msgstr ""
 
@@ -148,7 +130,7 @@ msgstr ""
 msgid "The last update failed: %s"
 msgstr ""
 
-msgid "To keep the tunnel working, these were stopped and their autostart turned off: %s. Nothing was removed; turn them back on under System → Startup after disconnecting here."
+msgid "To keep the tunnel working, these were stopped and their autostart turned off: %s. Nothing was removed; turn them back on under System → Startup after stopping the service on the Diagnostics page."
 msgstr ""
 
 msgid "Tunnel"
@@ -160,6 +142,9 @@ msgstr ""
 msgid "Only sites and services from routing rules go through the tunnel."
 msgstr ""
 
+msgid "Stop, restart and autostart: Diagnostics"
+msgstr ""
+
 msgid "Server"
 msgstr ""
 
@@ -169,7 +154,7 @@ msgstr ""
 msgid "Speed test"
 msgstr ""
 
-msgid "Connect to see the exit IP."
+msgid "Start the tunnel to see the exit IP."
 msgstr ""
 
 msgid "Checking…"
@@ -556,7 +541,7 @@ msgstr ""
 msgid "Settings"
 msgstr ""
 
-msgid "Changes apply after Save & Apply; the tunnel restarts."
+msgid "Changes apply after Save & Apply; a running tunnel restarts."
 msgstr ""
 
 msgid "Blocked in Russia"
@@ -620,6 +605,18 @@ msgid "Rule %s: unknown category %s."
 msgstr ""
 
 msgid "%s: invalid filter %s."
+msgstr ""
+
+msgid "Service"
+msgstr ""
+
+msgid "Autostart"
+msgstr ""
+
+msgid "Autostart is on"
+msgstr ""
+
+msgid "Autostart is off"
 msgstr ""
 
 msgid "no answer"
@@ -695,6 +692,33 @@ msgid "Expected condition(value)->action"
 msgstr ""
 
 msgid "In selective mode only traffic matched by domain or IP rules reaches the tunnel, so this rule catches almost nothing"
+msgstr ""
+
+msgid "Start the service"
+msgstr ""
+
+msgid "Stop the service"
+msgstr ""
+
+msgid "Restart the service"
+msgstr ""
+
+msgid "Enable autostart"
+msgstr ""
+
+msgid "Disable autostart"
+msgstr ""
+
+msgid "Service is running"
+msgstr ""
+
+msgid "Error"
+msgstr ""
+
+msgid "Starting…"
+msgstr ""
+
+msgid "Service is stopped"
 msgstr ""
 
 msgid "We1ssConnect"

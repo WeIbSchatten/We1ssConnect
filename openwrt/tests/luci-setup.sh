@@ -27,6 +27,17 @@ stop() { echo stop >> /root/podkop.calls; }
 	/etc/init.d/podkop enabled && { echo 'FAIL podkop still starts at boot after install'; exit 1; }
 	grep -q stop /root/podkop.calls || { echo 'FAIL podkop was not stopped by the install'; exit 1; }
 	echo 'ok   the install stopped podkop and turned off its autostart'
+	/etc/init.d/we1ssconnect enabled && { echo 'FAIL a fresh install turned autostart on'; exit 1; }
+	echo 'ok   a fresh install leaves autostart off'
+	# A router left "Disconnected" by a release before autostart was split out.
+	. /src/tests/lib/pkg.sh
+	uci set we1ssconnect.main.enabled=0
+	uci commit we1ssconnect
+	/etc/init.d/we1ssconnect enable
+	out="$(reinstall)" || { echo "$out"; echo "FAIL the reinstall failed"; exit 1; }
+	/etc/init.d/we1ssconnect enabled && { echo "$out"; echo 'FAIL a disconnected router got autostart back on upgrade'; exit 1; }
+	[ -z "$(uci -q get we1ssconnect.main.enabled)" ] || { echo 'FAIL the old enabled option is still there'; exit 1; }
+	echo 'ok   an upgrade keeps a disconnected router off and drops the old option'
 	/etc/init.d/network disable
 	/etc/init.d/firewall disable
 	printf 'test\ntest\n' | passwd root > /dev/null
@@ -49,7 +60,7 @@ trojan://pw@192.0.2.10:443#Германия" > /dev/null
 	uci add_list we1ssconnect.r_youtube.subnet=198.51.100.0/24
 	uci set we1ssconnect.r_ru.enabled=1
 	uci commit we1ssconnect
-	ubus call we1ssconnect set_enabled '{"enabled": true}' > /dev/null
+	ubus call we1ssconnect service '{"action": "start"}' > /dev/null
 	sleep 3
 	we1ssconnect status
 	# The start does not wait on the network: lists-update fetches the geoip category in the

@@ -12,9 +12,8 @@ const DATA = { subscriptions: {}, servers: [
 ]};
 
 test('defaults when only the settings section exists', () => {
-	const r = normalize([{ '.type': 'settings', '.name': 'main', enabled: '1' }], DATA);
+	const r = normalize([{ '.type': 'settings', '.name': 'main' }], DATA);
 	eq(r.errors, []);
-	eq(r.cfg.enabled, true);
 	eq(r.cfg.mode, 'selective');
 	eq(r.cfg.ifaces, ['br-lan']);
 	eq(r.cfg.dns, { type: 'doh', server: '1.1.1.1', bootstrap: '77.88.8.8', direct: '77.88.8.8' });

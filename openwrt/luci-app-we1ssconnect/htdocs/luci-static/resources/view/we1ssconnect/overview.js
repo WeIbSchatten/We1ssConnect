@@ -21,15 +21,9 @@ return view.extend({
 	renderState: function(st) {
 		const box = this.box;
 		const running = st.running;
-		const pill = st.error ? E('span', { class: 'w1-pill w1-err' }, _('Error'))
-			: running ? E('span', { class: 'w1-pill w1-on' }, _('Connected'))
-			: E('span', { class: 'w1-pill w1-off' }, st.enabled ? _('Starting…') : _('Off'));
 		const now = this.serverName(st.now);
-
-		const toggle = E('button', {
-			class: 'cbi-button ' + (st.enabled ? 'cbi-button-reset' : 'cbi-button-positive'),
-			click: ui.createHandlerFn(this, () => w1.setEnabled(!st.enabled).then((r) => this.renderState(r)))
-		}, st.enabled ? _('Disconnect') : _('Connect'));
+		// Starting only: stop, restart and autostart live on Diagnostics, as in podkop.
+		const orb = w1.orb(st, (r) => this.renderState(r));
 
 		const seg = E('div', { class: 'w1-seg' }, [ [ 'selective', _('By lists') ], [ 'global', _('All traffic') ] ].map((m) =>
 			E('button', {
@@ -56,7 +50,7 @@ return view.extend({
 
 		const warnings = (st.warnings || []).concat(st.error ? [ st.error ] : []);
 		dom.content(box, [
-			w1.header('We1ssConnect', [ _('Version'), ' ', st.version, ' · ', st.singbox || '' ], pill),
+			w1.header('We1ssConnect', [ _('Version'), ' ', st.version, ', ', st.singbox || '' ], st, now && now.name),
 			w1.updateAvailable(this.update)
 				? E('div', { class: 'w1-alert' }, [ _('Version %s is available.').format(this.update.latest), ' ',
 					E('button', { class: 'cbi-button cbi-button-action', click: ui.createHandlerFn(this, () => w1.update().then(() => w1.notify({}, _('Updating in the background; reload the page in a minute.')))) }, _('Update')),
@@ -64,12 +58,14 @@ return view.extend({
 				: '',
 			warnings.length ? E('div', { class: 'w1-alert' }, warnings.map((x) => E('div', {}, w1.warning(x)))) : '',
 			(st.taken_over || []).length ? E('div', { class: 'w1-card w1-muted', style: 'margin-bottom:12px' },
-				_('To keep the tunnel working, these were stopped and their autostart turned off: %s. Nothing was removed; turn them back on under System → Startup after disconnecting here.').format(st.taken_over.join(', '))) : '',
+				_('To keep the tunnel working, these were stopped and their autostart turned off: %s. Nothing was removed; turn them back on under System → Startup after stopping the service on the Diagnostics page.').format(st.taken_over.join(', '))) : '',
 			E('div', { class: 'w1-grid' }, [
-				w1.card(_('Tunnel'), E('div', {}, [ E('div', { style: 'margin-bottom:10px' }, toggle), seg,
+				w1.card(_('Tunnel'), E('div', { class: 'w1-orbbox' }, [ orb, E('div', { style: 'flex:1;min-width:180px' }, [ seg,
 					E('div', { class: 'w1-muted', style: 'margin-top:8px;font-size:12px' },
 						st.mode == 'global' ? _('Everything goes through the tunnel except direct rules and bypassed devices.')
-							: _('Only sites and services from routing rules go through the tunnel.')) ])),
+							: _('Only sites and services from routing rules go through the tunnel.')),
+					E('div', { style: 'margin-top:10px;font-size:12px' }, E('a', { href: L.url('admin/services/we1ssconnect/diagnostics') },
+						_('Stop, restart and autostart: Diagnostics'))) ]) ])),
 				w1.card(_('Server'), server),
 				w1.card(_('Exit IP'), this.ipBox),
 			]),
@@ -85,7 +81,7 @@ return view.extend({
 		}
 		else if (!running) {
 			this.ipLoaded = false;
-			dom.content(this.ipBox, E('div', { class: 'w1-muted' }, _('Connect to see the exit IP.')));
+			dom.content(this.ipBox, E('div', { class: 'w1-muted' }, _('Start the tunnel to see the exit IP.')));
 		}
 	},
 

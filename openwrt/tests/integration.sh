@@ -30,7 +30,19 @@ check "import adds one server and explains the skipped one" \
 id="$(we1ssconnect servers | ucode -e 'import { readfile } from "fs"; let j = json(readfile("/dev/stdin")); print(filter(j.servers, s => s.ok)[0].id);')"
 check "the server got an id" '[ -n "$id" ]'
 
-uci set we1ssconnect.main.enabled=1
+/etc/init.d/we1ssconnect disable
+check "status shows autostart off" 'we1ssconnect status | grep -q "\"autostart\": false"'
+we1ssconnect enable > /dev/null
+check "enable: the init script starts at boot" '/etc/init.d/we1ssconnect enabled'
+check "enable: status shows autostart on" 'we1ssconnect status | grep -q "\"autostart\": true"'
+we1ssconnect disable > /dev/null
+check "disable: the init script no longer starts at boot" '! /etc/init.d/we1ssconnect enabled'
+check "an unknown action is refused" \
+	'ucode -L "/usr/share/ucode/*.uc" -e "import { service } from \"we1ssconnect.service\"; print(service(\"boot\").error);" | grep -q "must be start"'
+mkdir -p /var/run/we1ssconnect && touch /var/run/we1ssconnect/wanted
+check "status reports a wanted service" 'we1ssconnect status | grep -q "\"wanted\": true"'
+rm -f /var/run/we1ssconnect/wanted
+
 uci set we1ssconnect.r_youtube.enabled=1
 uci set we1ssconnect.r_ru.enabled=1
 uci add we1ssconnect rule > /dev/null
