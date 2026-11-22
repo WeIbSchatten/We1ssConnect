@@ -3,6 +3,12 @@ title: "Version history"
 description: "What changed in each We1ssConnect version."
 ---
 
+## 1.11.4
+
+- Router: the service is controlled like in podkop ([details](../openwrt/setup.mdx)). Start, Stop and Restart run or stop the tunnel now; autostart at boot is a separate switch on Diagnostics, the overview has a large Start button, and every page shows the service state. A stopped tunnel no longer comes back when settings change or lists refresh. New commands `we1ssconnect start|stop|restart|enable|disable` ([CLI](../openwrt/cli.mdx)).
+- Router: an upgrade keeps the service and autostart as they were (a router connected on 1.11.3 stays connected) and no longer deletes the downloaded Xray; a fresh install starts stopped with autostart off.
+- The phone and computer apps are unchanged.
+
 ## 1.11.3
 
 - Phone and computer: with "Russian sites directly" or "Block ads" on, the VPN connects at once instead of waiting for ~100 MB of rule files from GitHub. The presets now need a 9 MB cut-down copy refreshed in the background ([details](../features/routing.mdx)), so ad blocking and direct Russian sites work again on slow or blocked links.
