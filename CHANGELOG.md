@@ -4,6 +4,12 @@ The full history with details is in the documentation:
 [русский](https://weibschatten.github.io/We1ssConnect/ru/docs/help/history/) ·
 [English](https://weibschatten.github.io/We1ssConnect/docs/help/history/).
 
+## 1.11.4
+
+- OpenWrt: the service is controlled like in podkop. Start, Stop and Restart run or stop the tunnel now; autostart at boot is a separate switch on Diagnostics, with a large Start button on the overview and the service state on every page. A stopped tunnel stays stopped when settings change or lists refresh. New commands: `we1ssconnect start|stop|restart|enable|disable`.
+- OpenWrt: a package upgrade keeps the service and autostart as they were (Connect from 1.11.3 carries over) and no longer deletes the downloaded Xray; a fresh install starts stopped with autostart off.
+- The phone and computer apps are unchanged.
+
 ## 1.11.3
 
 - Phone and computer: with "Russian sites directly" or "Block ads" on, the VPN connects at once instead of waiting for ~100 MB of rule files from GitHub; the presets now need a 9 MB cut-down copy, refreshed in the background, so ad blocking and Russian sites work again on slow or blocked links.
